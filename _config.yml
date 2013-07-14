@@ -1,2 +1,15 @@
-name: Your New Jekyll Site
+name: Root2
 pygments: true
+assets:
+  sources:
+    - _assets/fonts
+    - _assets/images
+    - _assets/javascripts
+    - _assets/stylesheets
+  # Files are zipped by s3_website
+  gzip: false
+  css_compressor: sass
+#  baseurl: //assets.charemza.name/assets/
+permalink: blog/posts/:categories/:title
+exclude: 
+  - s3_website.yml

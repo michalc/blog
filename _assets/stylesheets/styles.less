@@ -1,0 +1,196 @@
+/* Colours */
+@main-color: #650000;
+@text-color-on-main: #ffffff;
+@link: #0000ff;
+
+/* Common Gaps */
+@tiny-gap: 5px;
+@small-gap: 10px;
+@medium-gap: 15px;
+@large-gap: 20px;
+@proportional-medium-gap: 1.75em;
+
+/* Common Widths */
+@site-width: 800px;
+@border-width: 2px;
+
+/* Common sizes */
+@tiny: 11px;
+@small: 14px;
+@medium: 15px;
+@large: 20px;
+@huge: 27px;
+
+/* Common-line-height */
+@standard-line-height: 23px;
+
+/* Specific Widths */
+@post-header-width: 300px;
+@post-content-width: 500px;
+
+/* Hide loading fonts */
+.wf-loading {
+	.site-title, .site-subtitle, h2, p, li, .read-more {
+		visibility: hidden;
+	}
+}
+
+.site-header, .site-footer {
+	padding-top: @medium-gap;
+	padding-bottom: @medium-gap;
+	background: @main-color;
+	color: @text-color-on-main;
+	height: @large-gap;
+}
+
+/* Site Width */
+.site-inner {
+	width: @site-width;
+	margin-left: auto; 
+	margin-right: auto; 
+	padding-left: @medium-gap;
+	padding-right: @medium-gap;
+}
+
+/* Header Layout */
+.site-title, .site-subtitle {display: inline-block;}
+.site-title {margin-right: @small-gap;}
+
+.site-title {font-size: @huge; height: @huge; line-height: @huge;}
+.site-subtitle {font-size: @medium;}
+.site-title a {color: @text-color-on-main; font-size: @huge; text-decoration: none;}
+
+/* Overflow */
+html {overflow-y: scroll;}
+
+/* Sticky Footer http://ryanfait.com/ */
+html, body {
+	height: 100%;
+}
+.exceptfooter-wrapper {
+	min-height: 100%;
+	height: auto !important;
+	height: 100%;
+	margin: 0 auto -(@large-gap + 2 * @medium-gap); /* Height of footer including padding */
+}
+.site-footer-wrapper, .footer-push {
+	height: (@large-gap + 2 * @medium-gap); /* Height of footer including padding */
+}
+
+/* Clear */
+.clear {clear:both;}
+
+
+/* Text */
+body {
+	line-height: @standard-line-height;
+	font-size: @medium;
+}
+p, ul {
+	margin: @medium-gap 0;
+}
+h2 {
+	font-size: @large;
+}
+li {
+	margin: @small-gap 0 @small-gap @proportional-medium-gap;
+}
+em {
+	font-style: italic;
+}
+
+/* Footer Style */
+.site-footer a {color: @text-color-on-main;}
+
+/* Main Content */
+.site-content {
+	padding-bottom: @medium-gap;
+}
+
+/* Breadcrumbs */
+.breadcrumbs i {font-size: @medium;vertical-align: middle; margin-left: @tiny-gap; margin-right:@tiny-gap;}
+
+/* Posts */
+.post {
+	margin-top: @medium-gap;
+	padding-top: @medium-gap;
+	border-top: @border-width solid @main-color;
+}
+.post-header {
+	width: @post-header-width;
+	padding-bottom: @medium-gap;
+	float: left;
+}
+.post-subtitle {
+	margin: @tiny-gap 0 0 0;
+	line-height: 1.3em;
+}
+.post-date {
+	font-size: @tiny;
+	margin: 0;
+	line-height: 1.3em;
+}
+.post-wrapper {clear: both;}
+
+.post-content-wrapper {
+	width: @post-content-width;
+	margin-left: @post-header-width
+}
+.post-content > *:first-child {
+	margin-top: 0;
+}
+.post-content > *:last-child {
+	margin-bottom: 0;
+}
+.posts .read-more {
+	text-align: right;
+	margin-top: @medium-gap;
+}
+.posts a.with-icon {
+	color: inherit;
+	text-decoration: none;
+}
+.posts a, .posts a.with-icon .with-icon-text {
+	color: @link;
+	text-decoration: underline;
+}
+
+/* IE9 SVG, needs conditional override of 'filter' to 'none' */
+.gradient {
+	background: url(data:image/svg+xml;base64,PD94bWwgdmVyc2lvbj0iMS4wIiA/Pgo8c3ZnIHhtbG5zPSJodHRwOi8vd3d3LnczLm9yZy8yMDAwL3N2ZyIgd2lkdGg9IjEwMCUiIGhlaWdodD0iMTAwJSIgdmlld0JveD0iMCAwIDEgMSIgcHJlc2VydmVBc3BlY3RSYXRpbz0ibm9uZSI+CiAgPGxpbmVhckdyYWRpZW50IGlkPSJncmFkLXVjZ2ctZ2VuZXJhdGVkIiBncmFkaWVudFVuaXRzPSJ1c2VyU3BhY2VPblVzZSIgeDE9IjAlIiB5MT0iMCUiIHgyPSIwJSIgeTI9IjEwMCUiPgogICAgPHN0b3Agb2Zmc2V0PSIwJSIgc3RvcC1jb2xvcj0iI2ZmZmZmZiIgc3RvcC1vcGFjaXR5PSIwIi8+CiAgICA8c3RvcCBvZmZzZXQ9IjQlIiBzdG9wLWNvbG9yPSIjZmZmZmZmIiBzdG9wLW9wYWNpdHk9IjAiLz4KICAgIDxzdG9wIG9mZnNldD0iOTklIiBzdG9wLWNvbG9yPSIjZmZmZmZmIiBzdG9wLW9wYWNpdHk9IjEiLz4KICAgIDxzdG9wIG9mZnNldD0iMTAwJSIgc3RvcC1jb2xvcj0iI2ZmZmZmZiIgc3RvcC1vcGFjaXR5PSIxIi8+CiAgPC9saW5lYXJHcmFkaWVudD4KICA8cmVjdCB4PSIwIiB5PSIwIiB3aWR0aD0iMSIgaGVpZ2h0PSIxIiBmaWxsPSJ1cmwoI2dyYWQtdWNnZy1nZW5lcmF0ZWQpIiAvPgo8L3N2Zz4=);
+	background: -moz-linear-gradient(top, rgba(255,255,255,0) 0%, rgba(255,255,255,0) 4%, rgba(255,255,255,1) 99%, rgba(255,255,255,1) 100%); /* FF3.6+ */
+	background: -webkit-gradient(linear, left top, left bottom, color-stop(0%,rgba(255,255,255,0)), color-stop(4%,rgba(255,255,255,0)), color-stop(99%,rgba(255,255,255,1)), color-stop(100%,rgba(255,255,255,1))); /* Chrome,Safari4+ */
+	background: -webkit-linear-gradient(top, rgba(255,255,255,0) 0%,rgba(255,255,255,0) 4%,rgba(255,255,255,1) 99%,rgba(255,255,255,1) 100%); /* Chrome10+,Safari5.1+ */
+	background: -o-linear-gradient(top, rgba(255,255,255,0) 0%,rgba(255,255,255,0) 4%,rgba(255,255,255,1) 99%,rgba(255,255,255,1) 100%); /* Opera 11.10+ */
+	background: -ms-linear-gradient(top, rgba(255,255,255,0) 0%,rgba(255,255,255,0) 4%,rgba(255,255,255,1) 99%,rgba(255,255,255,1) 100%); /* IE10+ */
+	background: linear-gradient(to bottom, rgba(255,255,255,0) 0%,rgba(255,255,255,0) 4%,rgba(255,255,255,1) 99%,rgba(255,255,255,1) 100%); /* W3C */
+	filter: progid:DXImageTransform.Microsoft.gradient( startColorstr='#00ffffff', endColorstr='#ffffff',GradientType=0 ); /* IE6-8 */
+}
+.post {
+	position: relative;
+}
+.post-content-end {
+	position: absolute; 
+	right: 0;
+	bottom: 0;
+	width: @post-content-width; 
+	height: (@medium-gap * 4);
+}
+
+
+@media screen and (max-width: 840px) {
+	.site-inner {
+		width: auto;
+	}
+	.post-header {
+		float: none;
+		width: 100%;
+	}
+	.post-content-wrapper {
+		margin: 0;
+		width: 100%;
+	}
+	.post-content-end {
+		width: 100%;
+	}
+}

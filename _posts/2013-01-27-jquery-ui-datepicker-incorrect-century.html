@@ -1,0 +1,14 @@
+---
+layout: post
+title:  "JQuery UI Datepicker Incorrect Century"
+subtitle: "On certain yearRange options"
+date:   2013-01-27 07:55:30
+categories: jquery datepicker 
+
+---
+
+<p>This is a known bug <a href="http://bugs.jqueryui.com/ticket/8873">bugs.jqueryui.com/ticket/8873</a>, but I couldn't find it on a search, so it might be helpful to post here.</p>
+<p>I was creating a datepicker for a date of birth field, with no default value, and with a yearRange of "c-100:c-1". However, the year dropdown kept on jumping to 100 years before the actually selected year. I changed the yearRange option to "c-100:c" and it then worked fine.<p>
+            
+            
+            

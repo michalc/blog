@@ -1,0 +1,20 @@
+---
+layout: post
+title:  "AWS Load Balancer"
+subtitle: "Beware long POSTS: they duplicate"
+date:   2013-01-19 07:55:30
+categories: aws load-balancer
+
+---
+
+<p>A word of warning to those who use <a href="http://aws.amazon.com/elasticloadbalancing/">AWS Elastic Load Balancing</a>. The default configuration is that any request that hasn't had any data sent from the web server for 60 records, results in the balancer resending the request. The reason for this, presumably, is so that if a server has dies mid-way through a request, the user still would get their request processed by, potentially, another server.</p>
+
+<p>However, at <a href="http://www.intelligentgolf.co.uk">intelligentgolf</a>, we do some processing that can result in requests that quite naturally last longer than 60 seconds: sending mass email, or interfacing with external systems, which require 100s or 1000s of external connections to interface with 3rd party legacy systems. In some of these cases, we found that duplications were happening, even though we were sure that the form wasn't being submitted twice.</p>
+
+<p>So, what we do in a lot of cases now:</p>
+
+<ul class="icons">
+  <li><i class="icon-ok"></i>Use a method on the server to detect if a submit button was pressed twice, and effectively ignore the second. This is a good practice in any case, AWS load balancing or not. Javascript checking is not enough here, as the duplications happen due to behaviour of the load balancer, the browser is completely unaware of the duplicate request.</li>
+
+  <li><i class="icon-ok"></i>Do the batch processing in the background, using a cron job, or other similar method.</li>
+</ul>
