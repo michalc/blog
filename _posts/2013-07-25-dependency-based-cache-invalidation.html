@@ -1,0 +1,110 @@
+---
+layout: post
+title:  "Dependency-Based Cache Invalidation"
+subtitle: "Russian doll dependency-based cache invalidation system for PHP and Memcached. Part 1: Design."
+date:   2013-07-25 09:00:00
+categories: php caching 
+
+---
+
+<h3>The problem</h3>
+<p>With an ever-increased user and code-base, with ever increasing amounts of data, we are approaching limits of what any single relational database can handle over at <a href="http://www.intelligentgolf.co.uk/">intelligentgolf</a>. Caching output of database queries and/or generated HTML must be part of any solution, as it's clearly innefficient to be re-calculating the same things again and again on every page load. While caching things for a set amount of time is easy, the problem is that users demand to see their updates as soon as new data is in the system, for all but a few cases. So the cache must be invalidated. To pull out the obligatory quote:</p>
+<blockquote>
+  <p>There are only two hard things in Computer Science: cache invalidation and naming things.</p>
+  <cite>Phil Karlton</cite>
+</blockquote>
+<p>So, liking a challenge, I set out to design a caching system, for PHP, with the following desired qualities:</p>
+<ul class="icons-ul">
+  <li><i class="icon-li icon-caret-right"></i>Users never see out of date content.</li>
+  <li><i class="icon-li icon-caret-right"></i>Not to tightly couple the cache code to any other logic.</li>
+  <li><i class="icon-li icon-caret-right"></i>Not to have to maintain any function that invalidates the cache when a model / database rows is/are updated.</li>
+  <li><i class="icon-li icon-caret-right"></i>Avoid long processes on update of data.</li>
+  <li><i class="icon-li icon-caret-right"></i>Any caching code that explains a dependency to the caching system must be next to the code that uses this dependency.</li>
+  <li><i class="icon-li icon-caret-right"></i>Be flexible enough to cache HTML or arrays of data. Therefore the system can be used to both cache either expensive database calls, or expensive operations in the front-end webserver.</li>
+  <li><i class="icon-li icon-caret-right"></i>Be able to address the slowest / most frequent accessed pages, or parts of pages, first, without a rewrite of the entire code-base.</li>
+  <li><i class="icon-li icon-caret-right"></i>Be suitable for non-trivial cases, where cached content can depend on other potentially cached results and results of other functions. HTML pages often depend on data from multiple tables, expensive database queries and/or post-database processing. This is what I understand Russian doll caching to be.</li>
+  <li><i class="icon-li icon-caret-right"></i>Be suitable for a distributed architecture on virtual servers, such as a load-balanced front-end web servers on AWS.</li>
+  <li><i class="icon-li icon-caret-right"></i>The cache is a single key => value store, where the only access for data is by its primary key, such as Memcached</li>
+  <li><i class="icon-li icon-caret-right"></i>Ultimately, the dream is that entire HTML pages could be loaded without calls to the underlying database.</li>
+</ul>
+<p>What I do think are acceptable trade-offs:</p>
+<ul class="icons-ul">
+  <li><i class="icon-li icon-caret-right"></i>A slight slowdown of code on generation of a result when there is a cache-miss, to accomodate the caching system. The cache could be primed if this is too long.</li>
+  <li><i class="icon-li icon-caret-right"></i>Cached results can, in some circumstances, be needlessly recalculated, as long as the chance of this quickly decreases with time.</p>
+</ul>
+
+<hr />
+
+<h3>Key-Based Invalidation</h3>
+
+<p>The above requirements seem to lead to the option of <em>key-based</em> cache invalidation. This is where items are never expired from the cache. Instead, before fetching an object from a cache, the key that identifies the cached object, is itself amended with a date, version, md5, or some unique modifier, that will change whenever there is a change in the underlying data that the cached object itself depends on.</p>
+
+<p>This can work well for dependencies that are known, or can be appropraitely assumed, before any cached result is started to be calculated. For example, the current time or date, any query string parameters, configuration options, or MD5 of code or template files. However, there can be dependencies that are only determined by querying the underlying database, which is precisely what is to be avoided.</p>
+
+<p>An example of this is a list of pages created by a given user, found by the following SQL.</p>
+
+{% highlight sql %}
+  SELECT id, pagename FROM pages WHERE pages.created_by = 1234
+{% endhighlight %}
+
+<p>What pages those are are only known after the SQL is run.
+
+<hr />
+
+<h3>Dependency-Based Invalidation</h3>
+
+<p>To address this issue, for any new result that is cached, stored with it is a list of <em>dependency identifiers</em>, each with a <em>version identifier</em>, specifying the version at which the dependency was when the cached resulted was computed. Stored separately, is a list of current versions of all the dependencies, which is a) kept updated with the latest version of any dependency, and b) checked before accepting any cached data as a cache hit.</p>
+
+<p>All far so good, but still things needs to be designed.</p>
+
+<hr />
+
+<h3>Dependency Version Identifiers</h3>
+
+<p>How to identify the current version of any dependency needed some thought. I considered MD5 of any dependent data, version numbers, and using a plain-old last-updated time. I decided that last-updated time was the best option. It has certain properties that make it suitable:</p>
+<ul class="icons-ul">
+  <li><i class="icon-li icon-caret-right"></i>Although it can't be regenerated from the data if lost, it can be safely assumed to be the current time, which expires any dependant cached results. Version numbers can't be safely assumed to start from 0, and therefore must be stored permanently.</li>
+  <li><i class="icon-li icon-caret-right"></i>It doesn't depend on the actual data, like MD5, so it can be used for any source, including "abstract" or remote sources that don't really have anything suitable to take an MD5 of.</li>
+  <li><i class="icon-li icon-caret-right"></i>When a cache-miss occurs, checking the last-updated time for any dependency can often only occur after the dependency has been accessed. This means there is race-condition between these, when a second process could have updated the dependency, along with its last-updated time, and potentially causing the first process to store a cached result with an incorrect dependency last-updated time. In order to avoid this, the time at the beginning of the cache-miss can be compared with the last-update time of any dependencies. If any dependency has been updated since the start of the miss, then the result found can be used in the rest of the flow of the page, but not cached. This wouldn't be possible with version numbers or MD5s.</li>
+</ul>
+
+<p>However, there are a few drawbacks.</p>
+<ul class="icons-ul">
+  <li><i class="icon-li icon-caret-right"></i>Updating last-update time as an atomic operation would be a bit more complicated than incrementing a version number, but still possible using Memcached's CAS tokens.</li>
+  <li><i class="icon-li icon-caret-right"></i>A cluster of virtual servers can't be guaranteed to be running at precisily the same time. However, if we can assume a maximum difference in times, say, 2 seconds, then in the case of a cache-miss, the new results will only be stored if all of the dependencies were last updated more the 2 seconds before the start of the miss.</li>
+</ul>
+
+<hr />
+
+<h2>Dependency Idenfitiers</h2>
+
+<p>The structure of a dependency identifier is also cruicial. The code that updates a depedency must use the same identifier that code that uses it. If identifing data by its unique primary key, this is fairly easy. It could be of the form</p>
+
+<pre><code class="block"> [table-name]:[primary-key-value]
+</pre></code>
+
+<p>For example, "users:1234" could be the identifer for a row in the users table.</p>
+
+<p>However, it gets complicated when accessing data by any other means where accessing data by a non-unique key. For example, if wanting to generate a list of pages created by given user in a CMS, this list could be ultimately generated by a SQL like</p>
+
+{% highlight sql %}
+  SELECT id, pagename FROM pages WHERE pages.created_by = 1234
+{% endhighlight %}
+
+<p>Then not only would the dependency list have to include all these pages, but because the list of pages can be increased, or items removed from it, there must be some dependency on the "WHERE" clause. So my design is to have the identifiers in the following format.</p>
+
+<pre><code class="block"> [table-name]:[column-name]:[column-value]
+</code></pre>
+
+<p>I must then ensure that whenever a row is added or removed from the database, then, for every possible column that could be used as a foreign-key, or in a where-clause, then that dependency has to be treated as updated. For example, marking page with id 2145 as deleted would need 2 dependencies updated:</p>
+
+<pre><code class="block"> pages:id:2145
+ pages:created_by:1234
+</code></pre>
+
+<p>I was hoping to avoid having anything but one update of a last-update time for any given dependency, to make data updates fast, but I've not worked out a way around this. At least, I suspect the maximum number of updates to last-update time would be equal to the number of columns of the table being updated, so it shouldn't increase with the amount of dependent cached items increased.<p>
+
+<p>Coming in part 2 are some implementation details, along with, hopefully the code.</p>
+
+
+            
