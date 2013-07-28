@@ -2,6 +2,8 @@
 @main-color: #650000;
 @text-color-on-main: #ffffff;
 @link: #0000ff;
+@subtle-background: #efefef;
+@subtle-background-border: #eeeeee;
 
 /* Common Gaps */
 @tiny-gap: 5px;
@@ -130,7 +132,7 @@ em {
 }
 .post-date {
 	font-size: @tiny;
-	margin: 0;
+	margin: @tiny-gap 0 0 0;
 	line-height: 1.3em;
 }
 .post-wrapper {clear: both;}
@@ -188,6 +190,29 @@ em {
 	height: (@medium-gap * 4);
 }
 
+/* Code */
+.box {
+	display: block;
+	background: @subtle-background;
+	padding: @small-gap;
+	border: 1px solid @subtle-background-border;
+}
+code.block, .highlight, blockquote {
+  .box
+}
+
+/* Quote */
+blockquote {
+  padding: @medium-gap;
+}
+blockquote > p:first-child {
+  margin-top: 0;
+}
+blockquote cite {
+  text-align: right;
+  font-style: italic;
+  display: block;
+}
 
 @media screen and (max-width: 840px) {
 	.site-inner {
