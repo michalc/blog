@@ -1,0 +1,26 @@
+---
+layout: post
+title:  "ECONRESET Errors in node.js"
+subtitle: "Socket.io and Express on the same port"
+date:   2013-08-14 19:00:00
+categories: node.js socket.io 
+
+---
+
+<h3>The Problem</h3>
+<p>Running a basic node.js + express + socket.io setup, I would occasionally get ECONNRESET errors. After a bit of trial and error, I found that this seems to have been caused by running socket.io and express on the same port, port 80.</p>
+<h3>Solution</h3>
+<p>I opened up port 81 on the server, and ran socket.io through port 81. My code to set things up now looks like:</p>
+
+{% highlight javascript %}
+var httpPort = 80;
+var socketIOPort = 81;
+
+var express = require('express');
+var app = express();
+app.listen(httpPort);
+var socketIO = require('socket.io');
+var io = socketIO.listen(socketIOPort);
+{% endhighlight %}
+
+<p>I then had to update the client-side socket.io Javascript to connect on port 81, and so far I've never had these errors since. For reference I'm running node.js v0.10.0, Express v3.3.4 and socket.io v0.9.16.</p>
