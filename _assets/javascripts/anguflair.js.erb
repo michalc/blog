@@ -1,0 +1,120 @@
+(function() {
+
+  var app = angular.module('anguflair',[]);
+
+  app.factory('_', function($window) {
+    return $window._;
+  });
+
+  app.service('stackexchange', function($http) {
+    var base = 'http://api.stackexchange.com/2.1/';
+
+    this.get = function(path, site, key, extraParams) {
+      var params = {
+        site: site,
+        key: key,
+        pagesize: 10
+      };
+      angular.extend(params, extraParams || {});
+      return $http({
+        method: 'GET',
+        url: base + path,
+        params: params
+      });
+    }
+
+    this.getUser = function(userId, site, key) {
+      return this.get('users/' + userId , site, key);
+    }
+
+    this.getReputationHistory = function(userId, site, key) {
+      return this.get('users/' + userId + '/reputation-history', site, key, {withbody: true});
+    }
+
+    this.getPosts = function(ids, site, key) {
+      var stringIds = ids.join(';');
+      return this.get('posts/' + stringIds, site, key);
+    }
+
+    this.getAnswers = function(ids, site, key) {
+      var stringIds = ids.join(';');
+      return this.get('answers/' + stringIds, site, key);
+    }
+
+    this.getQuestions = function(ids, site, key) {
+      var stringIds = ids.join(';');
+      return this.get('questions/' + stringIds, site, key);
+    }
+
+  });
+
+  app.directive('profile', function(stackexchange, _) {
+    return {
+      restrict: 'E',
+      templateUrl: '<%= asset_path("profile.html") %>',
+      scope: {},
+      controller: function($scope, $attrs) {
+        var site = $attrs.site;
+        var userId = $attrs.userId;
+        var key = $attrs.key;
+        var questionIds = [];
+        var answerIds = [];
+
+        $scope.details = {};
+        $scope.state = 'loading';
+
+        // Get users and details of posts
+        // Far too much here? Refactor into service?
+        // Needless extra nesting?
+        stackexchange.getUser(userId, site, key).success(function(result) {
+          $scope.details.user = result.items[0];
+        }).then(function() {
+          // History doesn't contain everything needed
+          return stackexchange.getReputationHistory(userId, site, key).success(function(result) {
+            $scope.details.history = result.items;
+          });
+        }).then(function(result) {
+          var postIds = _.map($scope.details.history, function(item) { return item.post_id });
+          postIds = _.filter(postIds, function(id) {return !!id});
+          return stackexchange.getPosts(postIds, site, key).success(function(result) {
+            var posts = {};
+            _.each(result.items, function(post) {
+              posts[post.post_id] = post;
+            });
+            $scope.details.posts = posts;
+          });
+        }).then(function() {
+          // Fetch all the original answers and questiosn
+          _.each($scope.details.posts, function(post) {
+            if (post.post_type == 'question') questionIds.push(post.post_id);
+            if (post.post_type == 'answer') answerIds.push(post.post_id);
+          });
+          return stackexchange.getAnswers(answerIds,site,key).success(function(result) {
+            var answers = {};
+            _.each(result.items, function(answer) {
+              questionIds.push(answer.question_id);
+              answers[answer.answer_id] = answer;
+            });
+            $scope.answers = answers;
+          });
+        }).then(function() {
+          return stackexchange.getQuestions(questionIds, site, key).success(function(result) {
+            var questions = {};
+            _.each(result.items, function(question) {
+              questions[question.question_id] = question;
+            });
+            $scope.questions = questions;
+          });
+        })
+        .then(function() {
+          $scope.state = 'loaded';
+        }).catch(function() {
+          $scope.state = 'error'
+        })
+
+      }
+    }
+  });
+
+
+})();

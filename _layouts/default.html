@@ -33,12 +33,20 @@
     var s = document.getElementsByTagName('script')[0]; s.parentNode.insertBefore(ga, s);
   })();
   </script>
+  <script src="//cdnjs.cloudflare.com/ajax/libs/lodash.js/2.4.1/lodash.min.js"></script>
+  <script src="//ajax.googleapis.com/ajax/libs/angularjs/1.2.12/angular.min.js"></script>
+  <script src="{% asset_path anguflair.js %}"></script>
 </head>
 <body>
   <div class="exceptfooter-wrapper">
     <div class="site-header"><div class="site-inner">
       <h1 class="site-title"><a href="/">Root 2</a></h1>
       <div class="site-subtitle">Michal Charemza's Blog</div>
+
+      <div class="stacklink">
+        <a href="/stackexchange/" title="Stack Exchange"><span class="text">Stack Exchange profiles</span> <i class="icon-stackexchange"></i></a>
+      </div>
+      <div class="clear"></div>
     </div></div>
 
     <div class="site-content"><div class="site-inner">

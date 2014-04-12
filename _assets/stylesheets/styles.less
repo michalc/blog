@@ -44,6 +44,7 @@
 	color: @text-color-on-main;
 	height: @large-gap;
 }
+.site-header {height: auto}
 
 /* Site Width */
 .site-inner {
@@ -61,6 +62,13 @@
 .site-title {font-size: @huge; height: @huge; line-height: @huge;}
 .site-subtitle {font-size: @medium;}
 .site-title a {color: @text-color-on-main; font-size: @huge; text-decoration: none;}
+
+@stack-height: 23px;
+.stacklink {float: right; font-size: 13px; padding-top: 3px}
+.stacklink a {color: white; text-decoration: none}
+.stacklink img {width: auto; height: 13px; position: relative; top: 3px}
+.stacklink a:hover .text, .stacklink a:active .text {border-bottom: 1px solid white}
+.stacklink i {font-size: 14px}
 
 /* Overflow */
 html {overflow-y: scroll;}
@@ -103,6 +111,19 @@ li {
 em {
 	font-style: italic;
 }
+
+/* Reputation */
+.current-reputation {margin-top: 10px}
+.reputation-changes li {margin-left: 0}
+.reputation-change {padding: 3px; border-radius: 3px; margin-right: 5px; display: inline-block; min-width: 30px; text-align: right}
+.reputation-change-pos {background-color: green; color: white}
+.reputation-change-neg {background-color: red; color: white}
+.reputation-date-type {font-size: 12px; display: inline-block; line-height: 15px; position: relative; top: 5px}
+.reputation-date {display: block; min-width: 150px}
+.reputation-change-type {display: block; min-width: 150px;}
+.reputation-changes li {border-bottom: 1px solid #dddddd; padding-bottom: 5px}
+.reputation-link {display: inline-block}
+
 
 /* Footer Style */
 .site-footer a {color: @text-color-on-main;}
@@ -230,3 +251,6 @@ blockquote cite {
 		width: 100%;
 	}
 }
+
+/* Somewhere the FA style is getting overridden */
+.icon-spin {display: inline-block}
