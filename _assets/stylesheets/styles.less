@@ -105,6 +105,9 @@ h2 {
 h3 {
 	font-weight: 600;
 }
+.highlight {
+	margin-bottom: 15px;
+}
 li {
 	margin: @small-gap 0 @small-gap @proportional-medium-gap;
 }
@@ -234,6 +237,9 @@ blockquote cite {
   font-style: italic;
   display: block;
 }
+blockquote > p:last-child {
+	margin-bottom: 0
+}
 
 @media screen and (max-width: 840px) {
 	.site-inner {
@@ -254,3 +260,19 @@ blockquote cite {
 
 /* Somewhere the FA style is getting overridden */
 .icon-spin {display: inline-block}
+
+/* Inline Code */
+.inline {
+	display: inline;
+}
+code.inline {
+	background: #efefef;
+}
+
+/* Code Font */
+.highlight, code, pre {
+	font-family: "source-code-pro-1", "source-code-pro-2"; font-size: 13px
+}
+.highlight {
+	overflow-x: scroll
+}

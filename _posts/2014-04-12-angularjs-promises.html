@@ -1,0 +1,428 @@
+---
+layout: post
+title:  "AngularJS Promises"
+subtitle: "Chaining, failures, notifications"
+date:   2014-04-12 09:19:00
+categories: angularjs promises
+
+---
+
+<p>AngularJS's promises are an extremely powerful tool. They allow you to make a multi-layered and complex system based on asynchronous functions, with error and in-progress notification handling, all without getting into callback hell.</p>
+
+<p>This post attempts to explain both creating and using AngularJS promises. It assumes some familiariy with AngularJS, specifically defining and injecting services and using controllers.</p>
+
+<ul class="icons-ul">
+  <li><i class="icon-li icon-caret-right"></i> <a href="#what-are-promises">What are promises</a></li>
+  <li><i class="icon-li icon-caret-right"></i> <a href="#using-promises">Using promises</a></li>
+  <li><i class="icon-li icon-caret-right"></i> <a href="#chaining-promises">Chaining promises</a></li>
+  <li><i class="icon-li icon-caret-right"></i> <a href="#resolving-a-derived-promise-immediately">Resolving a derived promise immediately</a></li>
+  <li><i class="icon-li icon-caret-right"></i> <a href="#rejecting-a-derived-promise-immediately">Rejecting a derived promise immediately</a></li>
+  <li><i class="icon-li icon-caret-right"></i> <a href="#deferring-a-derived-promise">Deferring a derived promise</a></li>
+  <li><i class="icon-li icon-caret-right"></i> <a href="#rejection-error-handling-in-promise-chains">Rejection/error handling in promise chains</a></li>
+  <li><i class="icon-li icon-caret-right"></i> <a href="#rejection-error-handling-in-promise-chains">Rejection/error handling in promise chains</a></li>
+  <li><i class="icon-li icon-caret-right"></i> <a href="#layered-apis">Layered APIs</a></li>
+  <li><i class="icon-li icon-caret-right"></i> <a href="#creating-promises">Creating Promises</a></li>
+  <li><i class="icon-li icon-caret-right"></i> <a href="#exceptions-thrown-in-callbacks">Exceptions thrown in callbacks</a></li>
+</ul>
+
+<h3 id="what-are-promises">What are AngularJS promises?</h3>
+
+<p>At the most low-level, a promise is an plain old Javascript object (POJO) with <code class="inline">then</code> and <code class="inline">finally</code> functions:</p>
+
+{% highlight javascript %}
+{
+  'then': function(successCallback, errorCallback, notifyCallback) {
+    // Black box code
+  },
+  'finally': function(finallyCallback) {
+    // Black box code
+  }
+}
+{% endhighlight %}
+
+<p>and they are returned from functions whose meaningful result will be found or calculated later, i.e. asynchronously. The function will choose which of the callbacks to call, depending on success or failure of the asynchronous action. In case of success, the successCallback is called, and the promise is said to be <em>resolved</em> with a result. In case of failure, the error is called, and the promise is said to have been <em>rejected</em> with an error.</p>
+
+<p>You should note:</p>
+
+<ul class="icons-ul">
+  <li><i class="icon-li icon-caret-right"></i> You won't need to construct a promise yourself using object notation. As will be discussed, they will be created via function calls.</li>
+  <li><i class="icon-li icon-caret-right"></i> Angular promises have other functions, but they just shortcuts, so are ommited for this post.</li>
+</ul>
+
+<h3 id="using-promises">Using promises</h3>
+
+<p>A good first step in understanding promises is to use ones that are created by an existing service. A common use of a promise in AngularJS, are ones created by the <code class="inline">$http</code> service.</p>
+
+{% highlight javascript %}
+var promise = $http.get('/my-url');
+promise.then(function(result) {
+  // Do something with the results of the GET request
+});
+{% endhighlight %}
+
+<p>In the preceeding example, the success of the GET request will cause the $http serice to <em>resolve</em> the promise with the result of the GET request. This will then call the successCallback passing this resolved value as the first parameter.</p>
+
+<p>It's quite common to not assign the derived promises to an intermediate variable. The following is equivalent.</p>
+
+{% highlight javascript %}
+$http.get('/my-url').then(function(result) {
+  // Do something with the results of the GET request
+});
+{% endhighlight %}
+
+<p>In the above examples, only the <code class="inline">successCallback</code> is used from the promise. If we want to handle a failure then</p>
+
+{% highlight javascript %}
+$http.get('/my-url-that-might-fail').then(function(result) {
+  // Do something with the result of the GET request if it succeeds
+}, function(error) {
+  // Do something with the error if it fails
+});
+{% endhighlight %}
+
+<p>Although not currently possible, if <code class="inline">$http</code> ever ends up being modified to give in-progress notfications, then this could be used as</p>
+
+{% highlight javascript %}
+$http.get('/my-url').then(function(result) {
+  // Do something with the results of the GET request
+}, function(error) {
+  // Do something with the error
+}, function(update) {
+  // Do something with the update
+});
+{% endhighlight %}
+
+<p>If you want to perform some action after the <code class="inline">$http</code> request has completed, whether it succeeded or failed, then you can use the <code class="inline">finally</code> function.
+
+{% highlight javascript %}
+$http.get('/my-url').finally(function() {
+  // Do something after either success or failure
+});
+{% endhighlight %}
+
+<p>The success, failure, notify callbacks can all be ommited, or passed <code class="inline">null</code> if you have no action to be performed</p>
+
+<h3 id="chaining-promises">Chaining Promises</h3>
+
+<p>The real power from promises comes from chaining. The first key to understanding this is<p>
+
+<blockquote>
+  <p>The <code class="inline">then</code> and <code class="inline">finally</code> functions each return a new promise, known as a <em>derived</em> promise.</p>
+</blockquote>
+
+<p>An example of using derived promises:</p>
+
+{% highlight javascript %}
+var promiseA = $http.get('/my-url');
+var promiseB = promiseA.then(function(result) {
+  // Do something with the results of the GET request
+});
+promiseB.then(function(result) {
+  // Do something with the resolved result of promiseB
+})
+{% endhighlight %}
+
+<p>As with the case of a single promise, it is quite common to not assign the derived promises to intermediate variables. The following is equivalent to the preceeding example:</p>
+
+{% highlight javascript %}
+$http.get('/my-url').then(function(result) {
+  // Do something with the result of the GET request
+}).then(function(results) {
+  // Do something with the resolved result of promiseB
+})
+{% endhighlight %}
+
+<p>The second key to understanding chains are:</p>
+
+<blockquote>
+  <p>Derived promises are resolved/rejected with the returned resolved/rejected value of the callback that was run.</p>
+</blockquote>
+
+<p>In practice, this means there are 3 possible ways of controlling the derived promise. It can be resolved immediately, it can be rejected immediately, or its own resolution/rejection can be deferred further until a 3rd promise has been resolved/rejected, in which case the derived promise is resolved/rejected with the 3rd promise's resolved/rejected value.</p>
+
+<h3 id="resolving-a-derived-promise-immediately">Resolving a derived promise immediately</h3>
+
+<p>If you return anything but a promise from the callback that is run, the derived promise will be resolved immediately with that returned value</p>
+
+{% highlight javascript %}
+$http.get('/my-url').then(function(result) {
+  return 'my-immediate-value';
+}).then(function(results) {
+  // results === 'my-immediate-value';
+})
+{% endhighlight %}
+
+<p>Be aware that not explicty returning a value means that you have returned <code class="inline">undefined</code>, and the derived promise will be resolved with <code class="inline">undefined</code>.</p>
+
+{% highlight javascript %}
+$http.get('/my-url').then(function(result) {
+  // Not returning a value.
+}).then(function(results) {
+  // results === undefined
+})
+{% endhighlight %}
+
+<p>The above applies to both the success and the error callbacks. Returning any non-promise value from the error callback means that the derived promise will be <em>resolved</em>, and not rejected:</p>
+
+{% highlight javascript %}
+$http.get('/my-url-that-does-not-exist').then(function(results) {
+}, function(error) {
+  return 'my-immediate-value';
+}).then(function(results) {
+  // results === 'my-immediate-value'
+})
+{% endhighlight %}
+
+<p>As with the success callback, not returning a value from the error callback means the derived promise will be resolved with <code class="inline">undefined</code></p>
+
+{% highlight javascript %}
+$http.get('/my-url-that-does-not-exist').then(function(result) {
+}, function(error) {
+  // Not returning a value.
+}).then(function(results) {
+  // results === undefined
+})
+{% endhighlight %}
+
+<p>I've done the above accidentally: it derives a resolved promise from a rejected one, which might be be desirable.</p>
+
+<h3 id="rejecting-a-derived-promise-immediately">Rejecting a derived promise immediately</h3>
+
+<p>You may want to <em>reject</em> a derived promise, even if the original promise was resolved. This is done by returning the result of <code class="inline">$q.reject()</code>.</p>
+
+{% highlight javascript %}
+$http.get('/my-url').then(function(result) {
+  return $q.reject('my-failure-reason');
+}).then(function(results) {
+  // The code never gets here
+}, function(error) {
+  // error === 'my-failure-reason'
+});
+{% endhighlight %}
+
+<p>If you want to then fail the derived promise from an error callback, then you can do the same thing in it:</p>
+
+{% highlight javascript %}
+$http.get('/my-url-that does not exist').then(function(results) {
+  // The code never gets here if the GET was unsuccessfull
+}, function(error) {
+   return $q.reject('my-failure-reason');
+}.then(function() {
+  // The code never gets here if the GET was unsuccessfull
+}, function(error) {
+  // error === 'my-failure-reason'
+});
+{% endhighlight %}
+
+<h3 id="deferring-a-derived-promise">Deferring a derived promise</h3>
+
+<p>A powerful aspect of derived promises is that their resolution/rejection can be deferred until another promise has been resolved/rejected. This is done by returning a promise from the success or error callback. For example, if you want to run <code class="inline">$http.get</code> calls sequentially, and then do something after the each is successful, you can do this by returning the result of <code class="inline">$http.get</code> from the callback:
+
+{% highlight javascript %}
+$http.get('/my-first-url').then(function(results) {
+  return $http.get('/my-second-url')
+}).then(function(results) {
+  // results here are the results of the GET to /my-second-url 
+});
+{% endhighlight %}
+
+<p>Because each <code class="inline">then</code> call again returns a promise, you can easily add to this chain:</p>
+
+{% highlight javascript %}
+$http.get('/my-first-url').then(function(results) {
+  return $http.get('/my-second-url')
+}).then(function(results) {
+  return $http.get('/my-third-url')
+}).then(function(results) {
+  // results here are the results of the GET to /my-third-url 
+});
+{% endhighlight %}
+
+<h3 id="rejection-error-handling-in-promise-chains">Rejection/error handling in promise chains</h3>
+
+<p>If a promise is rejected, then every subsequent promise in the chain will be rejected, until one is reached with an error callback.</p>
+
+{% highlight javascript %}
+$http.get('/my-first-url-that-fails').then(function(results) {
+  // Never called
+  return $http.get('/my-second-url')
+}).then(function(results) {
+  // Never called
+  return $http.get('/my-third-url')
+}).then(function(results) {
+  // results here are the results of the GET to /my-third-url 
+}, function(error) {
+  // Error callback called
+});
+{% endhighlight %}
+
+<p>When specifying an error callback, be careful what you return. If you return a non-promise value, which includes <code class="inline">undefined</code> by not specifying a return value, then the derived promise for that callback will be <em>resolved</em>, and not rejected.</p>
+
+{% highlight javascript %}
+$http.get('/my-first-url-that-fails').then(function(result) {
+  // Never called
+  return $http.get('/my-second-url')
+}, function(error) {
+  // Error callback called
+}).then(function(results) {
+  // This *is* called, because the previous
+  // callback returned undefined
+  return $http.get('/my-third-url')
+});
+{% endhighlight %}
+
+
+<h3 id="layered-apis">Layered APIs</h3>
+
+<p>A common use of promises is chaining them via layered APIs. A typical pattern in AngularJS is to have calls to <code class="inline">$http</code> functions in a service, so controllers are not aware that <code class="inline">$http</code> is used.</p>
+
+<pre><code class="block">MyController -> MyService -> $http</code></pre>
+
+<p>You can do this using a structure like:</p>
+
+{% highlight javascript %}
+// In MyService
+this.fetchResults = function() {
+  return $http.get('/my-url');
+};
+
+// In MyController
+$scope.fetchResults = function() {
+  MyService.fetchResults().then(function(results) {
+    // Do something with results
+  });
+}
+{% endhighlight %}
+
+<p>However, this means that the controller will be exposed to HTTP headers and statuses. To hide this lower-level detail, you can add post-processing in the service via a derived promises:</p>
+
+{% highlight javascript %}
+this.fetchResults = function() {
+  return $http.get('/my-url').then(function(results) {
+    // Just return the HTTP body
+    return results.data;
+  );
+};
+{% endhighlight %}
+
+<p>You can also include some of your own error handling, so in the case of a failed request, the controller can be ignorant of any details of HTTP:</p>
+
+{% highlight javascript %}
+// In MyService
+this.fetchResults = function() {
+  return $http.get('/my-url').then(function(results) {
+    // Just return the http body
+    return results.data;
+), function(error) {
+  return $q.reject('Oh no!');
+});
+
+// In MyController
+$scope.fetchResults = function() {
+  MyService.fetchResults().then(function(results) {
+    // Do something with results
+  }, function(error) {
+    // Do something with error if it occurs
+    // which would be 'Oh no!'
+  });
+}
+{% endhighlight %}
+
+
+<h3 id="creating-promises">Creating Promises</h3>
+
+<p>If you're not chaining onto an existing promise, you might need to create a new, non-derived, promise. You can do this by calling <code class="inline">$q.defer()</code>. This returns a <em>deferred</em> object:</p>
+
+{% highlight javascript %}
+var deferred = $q.defer();
+{% endhighlight %} 
+
+<p>The deferred object contains a promise, and methods to call to control that promise:</p>
+
+{% highlight javascript %}
+{
+  'resolve': function(result) {
+    // Black box code
+  },
+  'reject': function(error) {
+    // Black box code
+  },
+  'notify': function(update) {
+    // Black box code
+  },
+  'promise': // Promise as described above
+}
+{% endhighlight %}
+
+<p>When you want to resolve the promise, you can call the <code class="inline">resolve</code> function. Similarly for the <code class="inline">reject</code> and <code class="inline">notify</code> functions.</p>
+
+<p>Using this, a simple timer (ignoring the existence of <code class="inline">$timeout</code>) can be written as</p>
+
+{% highlight javascript %}
+var simpleTimeout = function(time) {
+  var deferred = $q.defer();
+  $window.setTimeout(function() {
+    deferred.resolve('Done!');
+  }, time);
+  return deferred.promise;
+}
+{% endhighlight %}
+
+<p>Which could be used as:</p>
+
+{% highlight javascript %}
+simpleTimeout(1000).then(function(result) {
+  // Code gets here after 1 second, and
+  // result === 'Done!'
+});
+{% endhighlight %}
+
+
+<p>You could also have a timer that sends a notification:</p>
+
+{% highlight javascript %}
+var simpleTimeout = function(time) {
+  var deferred = $q.defer();
+
+  window.setTimeout(function() {
+    deferred.resolve('Done!');
+  }, time);$
+
+  window.setTimeout(function() {
+    deferred.notify('Half way there!');
+  }, time/2);
+
+  return deferred.promise;
+}
+{% endhighlight %}
+
+<p>Which could be use as:</p>
+
+{% highlight javascript %}
+simpleTimeout(1000).then(function(result) {
+  // Code gets here after 1 second, and
+  // result === 'Done!'
+}, null, function(update) {
+  // After 1/2 second, code gets here
+  // and update === 'Half way there!'
+)};
+{% endhighlight %}
+
+
+<h3 id="exceptions-thrown-in-callbacks">Exceptions thrown in callbacks</h3>
+
+<p>A not very documented feature of Angular promises is that when exceptions are thrown in the callbacks, via <code class="inline">throw</code>, then the derived promise will be rejected with that thrown value.</p>
+
+{% highlight javascript %}
+$http.get('/my-url').then(function(results) {
+  throw 'my-failure-reason';
+}).then(function(results) {
+  // The code never gets here
+}, function(error) {
+  // error === 'my-failure-reason'
+});
+{% endhighlight %}
+
+<p>This will also trigger Angular's registered exception handler, so it's not quite equivalent to using <code class="inline">$q.reject()</code>.</p>
+
+            
