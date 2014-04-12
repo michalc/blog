@@ -59,9 +59,9 @@ promise.then(function(result) {
 });
 {% endhighlight %}
 
-<p>In the preceeding example, the success of the GET request will cause the $http serice to <em>resolve</em> the promise with the result of the GET request. This will then call the successCallback passing this resolved value as the first parameter.</p>
+<p>In the preceeding example, the success of the GET request will cause the <code class="inline">$http</code> service to <em>resolve</em> the promise with the result of the GET request. This will then call the successCallback passing this resolved value as the first parameter.</p>
 
-<p>It's quite common to not assign the derived promises to an intermediate variable. The following is equivalent.</p>
+<p>It's quite common to not assign promises to an intermediate variable. The following is equivalent to the preceding example.</p>
 
 {% highlight javascript %}
 $http.get('/my-url').then(function(result) {
@@ -215,7 +215,7 @@ $http.get('/my-url-that does not exist').then(function(results) {
 
 <h3 id="deferring-a-derived-promise">Deferring a derived promise</h3>
 
-<p>A powerful aspect of derived promises is that their resolution/rejection can be deferred until another promise has been resolved/rejected. This is done by returning a promise from the success or error callback. For example, if you want to run <code class="inline">$http.get</code> calls sequentially, and then do something after the each is successful, you can do this by returning the result of <code class="inline">$http.get</code> from the callback:
+<p>A powerful aspect of derived promises is that their resolution/rejection can be deferred until another promise has been resolved/rejected. This is done by returning a promise from the success or error callback. For example, if you want to run <code class="inline">$http.get</code> calls sequentially, and then do something after the final is successful, you can do this by returning the result of <code class="inline">$http.get</code> from the callback:
 
 {% highlight javascript %}
 $http.get('/my-first-url').then(function(results) {
@@ -383,11 +383,11 @@ simpleTimeout(1000).then(function(result) {
 var simpleTimeout = function(time) {
   var deferred = $q.defer();
 
-  window.setTimeout(function() {
+  $window.setTimeout(function() {
     deferred.resolve('Done!');
   }, time);$
 
-  window.setTimeout(function() {
+  $window.setTimeout(function() {
     deferred.notify('Half way there!');
   }, time/2);
 
