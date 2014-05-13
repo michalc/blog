@@ -1,2 +1,3 @@
+Sitemap: http://charemza.name/sitemap.xml
 User-agent: *
 Disallow:

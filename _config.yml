@@ -1,4 +1,4 @@
-name: Root2
+name: Michal Charemza
 pygments: true
 assets:
   sources:
@@ -12,5 +12,9 @@ assets:
   css_compressor: sass
 #  baseurl: //assets.charemza.name/assets/
 permalink: blog/posts/:categories/:title
+url: http://charemza.name
 exclude: 
   - s3_website.yml
+sitemap:
+  file: sitemap.xml
+  include: index.html

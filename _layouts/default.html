@@ -2,64 +2,47 @@
 <html>
 <head>
   <meta http-equiv="Content-Type" content="text/html;charset=utf-8" />
-  <title>{{ site.name }} - {{ page.title }}</title>
+  {% if page.title %}
+  <title>{{ page.title }} - {{ site.name }}</title>
+  {% else %}
+  <title>{{ site.name }} - Full stack web developer</title>
+  {% endif %}
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  {% stylesheet site %}
-  <link rel="shortcut icon" href="{% asset_path favicon.ico %}">
-  <script type="text/javascript">
-  (function() {
-    var config = {
-    kitId: 'vho4csp',
-    scriptTimeout: 3000
-  };
-  var h=document.getElementsByTagName("html")[0];h.className+=" wf-loading";var t=setTimeout(function(){h.className=h.className.replace(/(\s|^)wf-loading(\s|$)/g," ");h.className+=" wf-inactive"},config.scriptTimeout);var tk=document.createElement("script"),d=false;tk.src='//use.typekit.net/'+config.kitId+'.js';tk.type="text/javascript";tk.async="true";tk.onload=tk.onreadystatechange=function(){var a=this.readyState;if(d||a&&a!="complete"&&a!="loaded")return;d=true;clearTimeout(t);try{Typekit.load(config)}catch(b){}};var s=document.getElementsByTagName("script")[0];s.parentNode.insertBefore(tk,s)
-  })();
-</script>
-  <!--[if gte IE 9]>
-    <style type="text/css">
-      .gradient {
-        filter: none;
-      }
-    </style>
+  <!--[if lt IE 9]>
+  {% javascript html5shiv %}
   <![endif]-->
-  <script type="text/javascript">
-    var _gaq = _gaq || [];
-  _gaq.push(['_setAccount', 'UA-38006161-1']);
-  _gaq.push(['_trackPageview']);
-
-  (function() {
-    var ga = document.createElement('script'); ga.type = 'text/javascript'; ga.async = true;
-    ga.src = ('https:' == document.location.protocol ? 'https://ssl' : 'http://www') + '.google-analytics.com/ga.js';
-    var s = document.getElementsByTagName('script')[0]; s.parentNode.insertBefore(ga, s);
-  })();
-  </script>
-  <script src="//cdnjs.cloudflare.com/ajax/libs/lodash.js/2.4.1/lodash.min.js"></script>
-  <script src="//ajax.googleapis.com/ajax/libs/angularjs/1.2.12/angular.min.js"></script>
-  <script src="{% asset_path anguflair.js %}"></script>
+  {% stylesheet site %}
+  <script src="//ajax.googleapis.com/ajax/libs/angularjs/1.2.16/angular.min.js"></script>
+  <script src="//ajax.googleapis.com/ajax/libs/angularjs/1.2.16/angular-animate.min.js"></script>
+  {% javascript reputation %}
+  <script src="//use.typekit.net/vho4csp.js"></script>
+  <script>try{Typekit.load();}catch(e){}</script>
+  <link rel="shortcut icon" href="{% asset_path favicon.ico %}">
 </head>
-<body>
-  <div class="exceptfooter-wrapper">
-    <div class="site-header"><div class="site-inner">
-      <h1 class="site-title"><a href="/">Root 2</a></h1>
-      <div class="site-subtitle">Michal Charemza's Blog</div>
+<body itemscope itemtype="http://schema.org/WebPage">
+  <header class="page-sidebar" id="michal-charemza-author" itemprop="author" itemscope itemtype="http://schema.org/Person">
+    <div class="page-sidebar-content">
+      <a href="/">
+        <p class="photo"><img alt="Michal Charemza" src="http://www.gravatar.com/avatar/aee325364d63c12d9ead987c3bdf3d08.png?s=125" width="125" height="125" itemprop="image"></p>
+        <h1 itemprop="name">Michal Charemza</h1>
+        <p itemprop="jobTitle">Full stack web developer</p>
+      </a>
+      <p class="reputation" data-ng-app="reputation" data-reputation data-user-id="1319998" data-site="stackoverflow.com" data-key="IuEWeQbgKqLACgi0FNMcOQ(("></p>
+      <p><a href="mailto:michal@charemza.name"><span itemprop="email">michal@charemza.name</span></a></p>
+    </div>
+  </header>
+  <div class="page-content"><div class="page-content-inner">
+      {{content}}
+  </div></div>
 
-      <div class="stacklink">
-        <a href="/stackexchange/" title="Stack Exchange"><span class="text">Stack Exchange profiles</span> <i class="icon-stackexchange"></i></a>
-      </div>
-      <div class="clear"></div>
-    </div></div>
+  <script>
+  (function(i,s,o,g,r,a,m){i['GoogleAnalyticsObject']=r;i[r]=i[r]||function(){
+  (i[r].q=i[r].q||[]).push(arguments)},i[r].l=1*new Date();a=s.createElement(o),
+  m=s.getElementsByTagName(o)[0];a.async=1;a.src=g;m.parentNode.insertBefore(a,m)
+  })(window,document,'script','//www.google-analytics.com/analytics.js','ga');
 
-    <div class="site-content"><div class="site-inner">
-      <div class="posts">
-        {{ content }}
-
-      </div>
-
-    </div></div>
-    <div class="footer-push"></div>
-  </div>
-  <div class="site-footer-wrapper"><div class="site-footer"><div class="site-inner">
-    <a href="mailto:michal@charemza.name">michal@charemza.name</a>
-  </div></div></div>
+  ga('create', 'UA-38006161-1', 'charemza.name');
+  ga('send', 'pageview');
+  </script>
 </body>
 </html>

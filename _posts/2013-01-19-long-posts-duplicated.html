@@ -13,8 +13,8 @@ categories: aws load-balancer
 
 <p>So, what we do in a lot of cases now:</p>
 
-<ul class="icons-ul">
-  <li><i class="icon-li icon-ok"></i>Use a method on the server to detect if a submit button was pressed twice, and effectively ignore the second. This is a good practice in any case, AWS load balancing or not. Javascript checking is not enough here, as the duplications happen due to behaviour of the load balancer, the browser is completely unaware of the duplicate request.</li>
+<ul class="fa-ul">
+  <li><i class="fa-li fa fa-check"></i>Use a method on the server to detect if a submit button was pressed twice, and effectively ignore the second. This is a good practice in any case, AWS load balancing or not. Javascript checking is not enough here, as the duplications happen due to behaviour of the load balancer, the browser is completely unaware of the duplicate request.</li>
 
-  <li><i class="icon-li icon-ok"></i>Do the batch processing in the background, using a cron job, or other similar method.</li>
+  <li><i class="fa-li fa fa-check"></i>Do the batch processing in the background, using a cron job, or other similar method.</li>
 </ul>

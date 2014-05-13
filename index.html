@@ -1,29 +1,27 @@
 ---
 layout: default
-title: Michal Charemza's Blog
 ---
 
 <p>A few of my thoughts on a few web-related issues. Feel free to contact me at <a href="mailto:michal@charemza.name">michal@charemza.name</a> or post a comment.</p>
-{% for post in site.posts %}
-<div class="posts">
-  <div class="post-wrapper"><div class="post">
-    <div class="post-header">
-      <h2>{{ post.title }}</h2>
-      <p class="post-subtitle">{{ post.subtitle }} </p>
-      <p class="post-date">{{ post.date | date_to_string }}</p>
-    </div>
-    <div class="post-content-wrapper"><div class="post-content">
+<div itemscope itemtype="http://schema.org/Blog">
+  {% for post in site.posts %}
+  <section class="post-summary" itemprop="blogPost" itemscope itemtype="http://schema.org/BlogPosting" itemref="michal-charemza-author">
+    <a href="{{ post.url }}" >
+      <meta itemprop="url" content="{{ site.url }}{{ post.url }}">
+      <header>
+        <i class="fa fa-angle-right"></i>
+        <h1 itemprop="headline">{{ post.title }}</h1>
+        <p class="post-subtitle" itemprop="alternativeHeadline">{{ post.subtitle }} </p>
+        <p class="post-date"><time datetime="{{post.date | date: '%Y-%m-%d'}}" itemprop="datePublished">{{ post.date | date_to_string }}</time></p>
+      </header>
+      <div itemprop="about">
       {% if post.content contains "<!-- more -->" %}
         {{ post.content | split:"<!-- more -->" | first % }}
       {% else %}
         <p>{{ post.content | strip_html | truncatewords:50 }}</p>
       {% endif %}
-      <div class="read-more"><a href="{{ post.url }}" class="with-icon"><i class="icon-arrow-right"></i> <span class="with-icon-text">Read more...</span></a></div>
-    </div></div>
-  </div></div>
-  <div class="clear"></div>
+      </div>
+    </a>
+  </section>
+  {% endfor %}
 </div>
-
-
-
-{% endfor %}

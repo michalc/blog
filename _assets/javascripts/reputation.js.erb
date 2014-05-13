@@ -1,0 +1,45 @@
+(function() {
+
+  var app = angular.module('reputation',['ngAnimate']);
+
+  app.service('stackexchange', function($http) {
+    var base = 'http://api.stackexchange.com/2.1/';
+
+    this.get = function(path, site, key, extraParams) {
+      var params = {
+        site: site,
+        key: key,
+        pagesize: 10
+      };
+      angular.extend(params, extraParams || {});
+      return $http({
+        method: 'GET',
+        url: base + path,
+        params: params
+      });
+    }
+
+    this.getUser = function(userId, site, key) {
+      return this.get('users/' + userId , site, key);
+    }
+  });
+
+  app.directive('reputation', function(stackexchange) {
+    return {
+      templateUrl: '<%= asset_path("reputation.html") %>',
+      controller: function($scope, $attrs) {
+        var site = $attrs.site;
+        var userId = $attrs.userId;
+        var key = $attrs.key;
+
+        $scope.state = 'loading';
+        stackexchange.getUser(userId, site, key).then(function(results) {
+          $scope.user = results.data.items[0];
+          console.log($scope.user);
+          $scope.state = 'loaded';
+        });
+      }
+    };
+  });
+
+})();
