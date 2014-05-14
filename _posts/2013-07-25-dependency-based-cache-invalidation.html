@@ -4,7 +4,6 @@ title:  "Dependency-Based Cache Invalidation"
 subtitle: "Russian doll dependency-based cache invalidation system for PHP and Memcached. Part 1: Design."
 date:   2013-07-25 09:00:00
 categories: php caching 
-
 ---
 
 <h2>The problem</h2>
@@ -30,7 +29,7 @@ categories: php caching
 <p>What I do think are acceptable trade-offs:</p>
 <ul class="fa-ul">
   <li><i class="fa-li fa fa-caret-right"></i>A slight slowdown of code on generation of a result when there is a cache-miss, to accomodate the caching system. The cache could be primed if this is too long.</li>
-  <li><i class="fa-li fa fa-caret-right"></i>Cached results can, in some circumstances, be needlessly recalculated, as long as the chance of this quickly decreases with time.</p>
+  <li><i class="fa-li fa fa-caret-right"></i>Cached results can, in some circumstances, be needlessly recalculated, as long as the chance of this quickly decreases with time.</li>
 </ul>
 
 <h2>Key-Based Invalidation</h2>
@@ -73,7 +72,7 @@ categories: php caching
 <p>The structure of a dependency identifier is also cruicial. The code that updates a depedency must use the same identifier that code that uses it. If identifing data by its unique primary key, this is fairly easy. It could be of the form</p>
 
 <pre><code class="block"> [table-name]:[primary-key-value]
-</pre></code>
+</code></pre>
 
 <p>For example, "users:1234" could be the identifer for a row in the users table.</p>
 
