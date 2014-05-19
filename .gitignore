@@ -1,3 +1,4 @@
 _site
 .DS_Store
 _environment.sh
+node_modules
