@@ -18,6 +18,9 @@ exclude:
   - node_modules
   - Gruntfile.js
   - npm-debug.log
+  - validation-report.json
+  - validation-status.json
+  - package.json
 sitemap:
   file: sitemap.xml
   include: index.html

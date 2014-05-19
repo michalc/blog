@@ -20,11 +20,23 @@ module.exports = function(grunt) {
           dest: '.'
         }]
       }
+    },
+
+    validation: {
+      prod: {
+        options: {
+          reset: true
+        },
+        files: [{
+          src: ['_site/**/*.html', '!_site/assets/*.html'] 
+        }]
+      }
     }
   });
  
-  grunt.registerTask('default', ['jekyll:prod','htmlmin:prod']);
+  grunt.registerTask('default', ['jekyll:prod','htmlmin:prod','validation']);
 
   grunt.loadNpmTasks('grunt-jekyll');
   grunt.loadNpmTasks('grunt-contrib-htmlmin');
+  grunt.loadNpmTasks('grunt-html-validation');
 };
