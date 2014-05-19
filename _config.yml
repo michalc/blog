@@ -16,6 +16,8 @@ url: http://charemza.name
 exclude: 
   - s3_website.yml
   - node_modules
+  - Gruntfile.js
+  - npm-debug.log
 sitemap:
   file: sitemap.xml
   include: index.html
