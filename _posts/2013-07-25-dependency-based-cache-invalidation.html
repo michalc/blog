@@ -71,8 +71,8 @@ categories: php caching
 
 <p>The structure of a dependency identifier is also cruicial. The code that updates a depedency must use the same identifier that code that uses it. If identifing data by its unique primary key, this is fairly easy. It could be of the form</p>
 
-<pre><code class="block"> [table-name]:[primary-key-value]
-</code></pre>
+<div class="highlight"><pre><code class="block"> [table-name]:[primary-key-value]
+</code></pre></div>
 
 <p>For example, "users:1234" could be the identifer for a row in the users table.</p>
 
@@ -84,14 +84,14 @@ categories: php caching
 
 <p>Then not only would the dependency list have to include all these pages, but because the list of pages can be increased, or items removed from it, there must be some dependency on the "WHERE" clause. So my design is to have the identifiers in the following format.</p>
 
-<pre><code class="block"> [table-name]:[column-name]:[column-value]
-</code></pre>
+<div class="highlight"><pre><code class="block"> [table-name]:[column-name]:[column-value]
+</code></pre></div>
 
 <p>I must then ensure that whenever a row is added or removed from the database, then, for every possible column that could be used as a foreign-key, or in a where-clause, then that dependency has to be treated as updated. For example, marking page with id 2145 as deleted would need 2 dependencies updated:</p>
 
-<pre><code class="block"> pages:id:2145
+<div class="highlight"><pre><code class="block"> pages:id:2145
  pages:created_by:1234
-</code></pre>
+</code></pre></div>
 
 <p>I was hoping to avoid having anything but one update of a last-update time for any given dependency, to make data updates fast, but I've not worked out a way around this. At least, I suspect the maximum number of updates to last-update time would be equal to the number of columns of the table being updated, so it shouldn't increase with the amount of dependent cached items increased.<p>
 
