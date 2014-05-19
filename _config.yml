@@ -15,6 +15,7 @@ permalink: blog/posts/:categories/:title
 url: http://charemza.name
 exclude: 
   - s3_website.yml
+  - node_modules
 sitemap:
   file: sitemap.xml
   include: index.html
