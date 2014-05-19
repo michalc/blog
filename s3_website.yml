@@ -30,6 +30,9 @@ s3_endpoint: EU
 
 cloudfront_distribution_id: <%= ENV['BLOG_S3_CLOUDFRONT_ID'] %>
 
+redirects:
+  blog/posts/node.js/socket.io/nodejs-socketio-express-econreset-same-port/index.html: /blog/posts/node.js/socket.io/nodejs-socketio-express-econnreset-same-port/
+
 #cloudfront_distribution_config:
   #default_cache_behavior:
   #  min_TTL: <%= 60 * 60 * 24 %>
