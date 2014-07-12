@@ -35,7 +35,6 @@
         $scope.state = 'loading';
         stackexchange.getUser(userId, site, key).then(function(results) {
           $scope.user = results.data.items[0];
-          console.log($scope.user);
           $scope.state = 'loaded';
         });
       }
