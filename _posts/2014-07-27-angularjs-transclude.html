@@ -1,0 +1,54 @@
+---
+layout: post
+title:  "AngularJS Transclude"
+subtitle: "Break free from the DOM: move compiled elements to arbitrary locations"
+date: 2014-07-27 09:19:00
+categories: angularjs transclude
+
+---
+
+<p>Transclusion allows a directive to move clone(s) of the contents of a directive to an arbitrary place in the DOM. Usually this is at the original location of the directive, wrapped in some extra elements, but it doesn't have to be. So why move the element? You might want components to still have access to the original scope, with any models and methods, but for page-layout or CSS reasons be elsewhere.</p>
+
+{% highlight html %}{% raw %}
+<move>
+  Contents bound to local scope {{variables}}
+</move>
+{% endraw %}{% endhighlight %}
+
+<p>Example components that use this could be</p>
+
+<ul class="fa-ul">
+  <li><i class="fa-li fa fa-caret-right"></i> Context menu</li>
+  <li><i class="fa-li fa fa-caret-right"></i> Dialog box</li>
+  <li><i class="fa-li fa fa-caret-right"></i> Sidebar</li>
+  <li><i class="fa-li fa fa-caret-right"></i> Alert box or notification area.</li>
+</ul>
+
+<p>One thing to keep in mind is that you'll have to make sure you remove the element from the DOM when the original scope is destroyed. The high-level code would look like the following.</p>
+
+{% highlight javascript %}
+app.directive('move', function($document, $timeout, $rootScope) {
+  return {
+    restrict: 'E',
+    transclude: 'element',
+    link: function(scope, element, attrs, controller, transclude) {
+      transclude(scope, function(clone) {
+        // Inject the element somewhere in the page
+      });
+      scope.$on('$destroy', function() {
+        // Remove the element from the DOM
+      });
+    }
+  };
+});
+{% endhighlight %}
+
+<p>There are a few techniques that can be used to communicate the clone of the element to the new location.</p>
+
+<ul class="fa-ul">
+  <li><i class="fa-li fa fa-caret-right"></i> Directly walk the DOM to inject the clone, jQuery-style.</li>
+  <li><i class="fa-li fa fa-caret-right"></i> Use <code class="inline">require</code> to pass the clone to another directive by calling its controller directive</li>
+  <li><i class="fa-li fa fa-caret-right"></i> Fire off the clone using an Angular event <code class="inline">$emit</code> or <code class="inline">$broadcast</code>. Another directive would be listening to this event and inject the clone.</li>
+</ul>
+
+<p>I should admit, I've not used this technique for anything but a few tests, so there could be some consequences about this that I haven't encountered.</p>
