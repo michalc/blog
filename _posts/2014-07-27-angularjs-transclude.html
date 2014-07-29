@@ -28,7 +28,7 @@ categories: angularjs transclude
 <p>One thing to keep in mind is that you'll have to make sure you remove the element from the DOM when the original scope is destroyed. The high-level code would look like the following.</p>
 
 {% highlight javascript %}
-app.directive('move', function($document, $timeout, $rootScope) {
+app.directive('move', function() {
   return {
     restrict: 'E',
     transclude: 'element',
