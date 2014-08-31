@@ -21,6 +21,7 @@ exclude:
   - validation-report.json
   - validation-status.json
   - package.json
+  - README.md
 sitemap:
   file: sitemap.xml
   include: index.html
