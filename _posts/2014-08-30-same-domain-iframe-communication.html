@@ -1,0 +1,72 @@
+---
+layout: post
+title:  "Same-domain iframe communication"
+subtitle: "AngularJS scope events for same-domain bi-directional iframe communication"
+date: 2014-07-27 09:19:00
+categories: angularjs iframe
+
+---
+
+<p>It's possible for Angular apps to communicate, where one is running in an iframe of a parent, using standard scope events. This means you can treat an iframe much like a custom directive, responding to <code class="inline">$broadcast</code>-ed events, or <code class="inline">$emit</code>-ting its own.</p>
+
+<p>This technique relies on the child app being able to access the <code class="inline">$scope</code> of the iframe element in the parent app. This is possible by using <code class="inline">$window.frameElement</code> to access the iframe element from within the child window, and the <code class="inline">angular.element</code> <code class="inline">scope</code> function to get its <code class="inline">$scope</code>. The child app can then call the parent app's <code class="inline">$on</code> and <code class="inline">$emit</code> functions.</p> 
+
+<p>For simplicity, I've opted to do this in two functions on the <code class="inline">$rootScope</code> of the child app, which I've called <code class="inline">$parentEmit</code>, and <code class="inline">$parentOn</code>. These are used exactly like their <code class="inline">$on</code> and <code class="inline">$emit</code> counterparts, except that they always listen or emit from the scope of the iframe element in the parent app.</p>
+
+{% highlight javascript %}
+appInIframe.run(function($rootScope, $window) {
+  var parentAngular = $window.parent.angular;
+  var iframeScope = parentAngular.element($window.frameElement).scope();
+
+  $rootScope.$parentEmit = function() {
+    iframeScope.$emit.apply(iframeScope, arguments);
+    iframeScope.$apply();   
+  };
+  
+  $rootScope.$parentOn = function(name, callback) {
+    iframeScope.$on(name, function() {
+      callback.apply(null, arguments);
+      $rootScope.$apply();
+    });
+  };
+});
+{% endhighlight %}
+
+<p>Then in any controller in the child app that wants to communicate with the parent, you can use these functions as per the following example.</p>
+
+{% highlight javascript %}
+appInIframe.controller('ChildController', function($scope) {
+  $scope.messages = [];
+  $scope.message = function() {
+    $scope.$parentEmit('from-iframe','Sent from iframe');
+  };
+  $scope.$parentOn('from-parent', function(e, message) {
+    $scope.messages.push(message);
+  });
+});
+{% endhighlight %}
+
+<p>The controller in the parent app can then use standard <code class="inline">$broadcast</code> and <code class="inline">$on</code> to commnicate to the iframe.</p>
+
+{% highlight javascript %}
+appInParentWindow.controller('ParentController', function($scope) {
+  $scope.messages = [];
+  $scope.$on('from-iframe', function(e, message) {
+    $scope.messages.push(message);
+  });
+  
+  $scope.message = function() {
+    $scope.$broadcast('from-parent', 'Sent from parent');
+  };
+});
+{% endhighlight %}
+
+<p>You can see an <a href="http://plnkr.co/edit/WFcL58">example of this technique in a plunker</a>.</p>
+
+<p>Benefits of this technique over some others are given below.</p>
+
+<ul class="fa-ul">
+  <li><i class="fa-li fa fa-caret-right"></i> No additional global functions added to either the parent or the iframe window. Although yes, it does depend on <code class="inline">angular</code> being global in the parent window.</li>
+  <li><i class="fa-li fa fa-caret-right"></i> The parent controller is ignorant of the fact that events go into an iframe.</li>
+  <li><i class="fa-li fa fa-caret-right"></i> IDs are not used by parent or child. Because the parent uses the standard <code class="inline">$broadcast</code> and <code class="inline">$on</code> functions, targeting a specific iframe from the parent controller uses exactly the same techniques you might use to target a custom directive.</li>
+</ul>
