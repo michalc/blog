@@ -5,7 +5,6 @@ assets:
     - _assets/fonts
     - _assets/images
     - _assets/javascripts
-    - _assets/partials
     - _assets/stylesheets
   # Files are zipped by s3_website
   gzip: false
