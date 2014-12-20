@@ -1,0 +1,63 @@
+---
+layout: post
+title:  "Throttled variable changes"
+subtitle: "Delay variable changes in AngularJS templates using shadowing"
+date: 2014-12-20 10:00:00
+categories: angularjs templates
+
+---
+
+<p>Usually shadowing introduced by prototypical inheritance of <code class="inline">$scope</code> is something to be avoided, often the source of bugs cause by <a href="https://www.youtube.com/watch?v=ZhfUv0spHCY&amp;feature=youtu.be&amp;t=32m51s">not having a dot in models</a>. However, there is a way it can be used to throttle variable changes in templates.</p>
+
+<p>Thottling variable changes is something you might want to do to avoid flickering of fast changing variables, so the user has a chance to see each state of the interface for a reasonable length of time. A "loading" message or spinner is quite typical, but if it ends up being shown for an extremely short amount of time, say 10ms due to a request having been cached, it can suggest something is a bit broken, or at least not give the user a great experience as it could be.</p>
+
+<p>A small directive can do this, using throttle from <a href="https://lodash.com/">Lo-dash</a> or <a href="http://underscorejs.org/">Underscore</a>.</p>
+
+{% highlight javascript %}
+app.directive('throttle', function($window) {
+  var WAIT_TIME = 750;
+
+  return {
+    scope: true,
+    link: function(scope, element, attrs) {
+      var name = attrs.throttle;
+
+      function setValue(value) {
+        // Shadow the value in the child scope
+        scope[name] = value;
+
+        // The leading edge of the _.throttle callback
+        // is called within a digest, but later ones are not
+        scope.$$phase || scope.$apply();
+      }
+
+      scope.$parent.$watch(name, $window._.throttle(setValue, WAIT_TIME));
+    }
+  };
+});
+{% endhighlight %}
+
+<p>which can be used as follows.</p>
+
+{% highlight html %}
+<div throttle="state">
+  <div ng-if="state == 'loading'">Loading...</div>
+  <div ng-if="state == 'loaded'">[Loaded template]</div>
+</div>
+{% endhighlight %}
+
+<p>Then in the parent controller you can set the throttled variable, <code class="inline">state</code> in the above case, as often as you like, and you can be confident that the effect won't be seen in the template more often than every 750ms.</p>
+
+<p>Benefits of this technique over some others are given below.</p>
+
+<ul class="fa-ul">
+  <li><i class="fa-li fa fa-caret-right"></i> The same name of variable is used throughout the template as in the controller that sets the variable. So you can really easily introduce this to existing templates, or remove it if you want to later.</li>
+  <li><i class="fa-li fa fa-caret-right"></i> The logic is purely in the template. The controller and factories/services don't need any code to throttle the variable changes.</li>
+</ul>
+
+<p>Limitations or drawbacks of this method are below.</p>
+
+<ul class="fa-ul">
+  <li><i class="fa-li fa fa-caret-right"></i> You can only use this for variables <em>without</em> a dot in them. However, my use case is for simple state variables that just contain a string representing the current state of the interface, which don't need to be set anywhere but in the parent controller, so they don't need a dot.</li>
+  <li><i class="fa-li fa fa-caret-right"></i> The private variable <code class="inline">$$phase</code> is used to create a safeApply equivalent. This could be worked-around, but most likely by re-implementing <code class="inline">_.throttle</code>.</li>
+</ul>
