@@ -69,7 +69,7 @@
     return {
       template: '<span>' +
                   '<span ng-if="loaded" ng-class="{\'from-server\': !fromCache}">' +
-                    '<a href="{{user.link}}"><i class="fa fa-stack-overflow"></i><span class="icon-link-text">{{user.reputation}}</span></a>' +
+                    '<a href="{{user.link}}"><i class="fa fa-stack-overflow"></i><span class="icon-link-text">{{user.reputation | number:0}}</span></a>' +
                   '</span>' +
                 '</span>',
       controller: function($scope, $attrs) {
