@@ -1,0 +1,96 @@
+---
+layout: post
+title:  "Animating elements moving between lists"
+subtitle: "Anchored CSS transitions to move elements between ng-repeat lists"
+date: 2015-07-19 10:00:00
+categories: angularjs animation
+
+---
+
+<p>Animating elements between parts of an application can be tricky. The beauty of <code class="inline">ng-repeat</code> means we can declare that a list, such as a <code class="inline">ul</code>, should represent a data model, such as an <code class="inline">Array</code> of data, and the list keeps up to date with whatever changes we make to the underlying model. The tricky bit comes when we want to view not just current state of the model, but transitions between states, such as 
+
+<ul class="fa-ul">
+  <li><i class="fa-li fa fa-caret-right"></i> removal of an item from a list,</li>
+  <li><i class="fa-li fa fa-caret-right"></i> addition of an item to a list, or</li>
+  <li><i class="fa-li fa fa-caret-right"></i> moving an item from one list to another.</li>
+</ul>
+
+<p>Pre-Angular 1.4, it was fairly straightforward to animate addition or removal of items from an <code class="inline">ng-repeat</code> powered list using <code class="inline">.ng-enter</code> and <code class="inline">.ng-leave</code> transitions. With 1.4, we can now animate moving a peice of data from one list to another.</p>
+
+<p>The key to this is the <code class="inline">ng-animate-ref</code> attribute. If the ref-value on an <em>outgoing</em> element matches an element on an <em>incoming</em> element, then Angular clones the outgoing element, inserts the clone positioned absolutely on the page, and using CSS transitions moves it from the position of the outgoing to the position of the incoming.</p>
+
+<p>What <em>outgoing</em> and <em>incoming</em> mean is that their addition to and removal from the DOM are subject to <code class="inline">.ng-enter</code> and <code class="inline">.ng-leave</code> transitions, either on themselves, or on a parent element. For example, we can animate the heights of elements to or from 0 when they are added or removed from a list:<p>
+
+{% highlight html %}
+<ul class="list">
+  <li class="item" ng-repeat="item in listA" ng-click="toB(item)">
+    Item: {% raw %}{{{% endraw %} item.id }}
+  </li>
+</ul>
+<ul class="list">
+  <li class="item" ng-repeat="item in listB" ng-click="toA(item)">
+    Item: {% raw %}{{{% endraw %} item.id }}
+  </li>
+</ul>
+{% endhighlight %}
+
+<p>with CSS transitions defined as:</p>
+
+{% highlight css %}
+/* New element set to 0 height after addition to DOM... */
+.item.ng-enter {
+  transition: 0.1s linear all;
+  height: 0;
+}
+
+/* ...then transitioned to 30px */
+.item.ng-enter.ng-enter-active {
+  height: 30px;
+}
+
+/* Existing element set to 30px height just before removal... */
+.item.ng-leave {
+  transition: 0.1s linear all;
+  height: 30px;
+}
+
+/* ... then transitioned to 0 */
+.item.ng-leave.ng-leave-active {
+  height: 0;
+}
+{% endhighlight %}
+
+<p>The above rules work because at the appropriate points in the addition and removal of elements from <code class="inline">ng-repeat</code> lists, Angular adds the classes on the elements and allows the browser to perform the CSS transitions.</p>
+
+<p>Once the list elements are subject to <code class="inline">.ng-enter</code> and <code class="inline">.ng-leave</code> transitions, we add a wrapper <code class="inline">span</code> to each element, with an <code class="inline">ng-animate-ref</code> attribute containing the ID of the item, so Angular can match each element leaving the DOM with one entering.</p>
+
+{% highlight html %}
+<ul class="list" title="List A">
+  <li class="item" ng-repeat="item in listA" ng-click="toB(item)">
+    <span class="item-contents" ng-animate-ref="{% raw %}{{{% endraw %} item.id }}">Item: {% raw %}{{{% endraw %} item.id }}</span>
+  </li>
+</ul>
+<ul class="list" title="List B">
+  <li class="item" ng-repeat="item in listB" ng-click="toA(item)">
+    <span class="item-contents" ng-animate-ref="{% raw %}{{{% endraw %} item.id }}">Item: {% raw %}{{{% endraw %} item.id }}</span>
+  </li>
+</ul>
+{% endhighlight %}
+
+<p>Note that depending on the transitions we want, we might not need the extra wrapping <code class="inline">span</code>, but it keeps the code as flexible as possible, and avoids any ambiguity about what transitions are happening on what elements: the enter and leave transitions take place on the <code class="inline">.item</code> elements, and the animations between the lists happen on the <code class="inline">.item-contents</code> elements.</p>
+
+<p>We can control the CSS transition with a single style rule on the <code class="inline">.ng-anchor-in</code> class that Angular adds to the cloned element.</p>
+
+{% highlight css %}
+.item-contents.ng-anchor-in {
+  transition: 0.2s linear all;
+}
+{% endhighlight %}
+
+<p>You can have a more complex transition if you want by also having a transition on <code class="inline">.ng-anchor-out</code>, but this is not necessary for this case. You can see the <a href="https://docs.angularjs.org/api/ngAnimate">docs for ngAnimate</a> for more information.</p>
+
+<p>You can see this in-action, together with the the rest of the boilerplate Javascript and CSS, in the below Plunker. Each item cam be moved by clicking on it.</p>
+
+<iframe src="http://embed.plnkr.co/L0XJS3vEZOACgKqtnqF3/preview"></iframe>
+
+<p>That's it! There isn't really much to it.</p>

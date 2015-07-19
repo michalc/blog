@@ -34,7 +34,7 @@ module.exports = function(grunt) {
     }
   });
  
-  grunt.registerTask('default', ['jekyll:prod','htmlmin:prod','validation']);
+  grunt.registerTask('default', ['jekyll:prod','htmlmin:prod'/*,'validation'*/]);
 
   grunt.loadNpmTasks('grunt-jekyll');
   grunt.loadNpmTasks('grunt-contrib-htmlmin');
