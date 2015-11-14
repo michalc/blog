@@ -1,0 +1,17 @@
+sudo: false
+language: node_js
+node_js:
+  - "0.12"
+env:
+  - NODE_ENV=production
+  - BLOG_S3_ID=AKIAIQZBO3RZKJALD43Q
+  - BLOG_S3_BUCKET=charemza.name
+  - BLOG_S3_CLOUDFRONT_ID=E3GG1AV0LRMNSG
+  - secure: "RLcXW7p2ujEaFr2Iqr1e0lTwXOjSp4nQ7cLiecL1CL9KE+xeHNwwiGcoPjFSFL7QVLJnJTCHX3SNK2MYRo6x1kAIF9pNmiQ82pBHNu5NVLrCRelwqPfMgWegNvWWuv7QlRhj7pOP2Qu2qhnyHEn2VDnAOHFqui4Alu15vF5M7iE="
+before_install:
+  - rvm install 2.2.3
+  - bundle install
+script:
+  - gulp
+after_success:
+  - s3_website push
