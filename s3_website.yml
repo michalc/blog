@@ -24,7 +24,7 @@ gzip:
 
 s3_endpoint: EU
 
-# ignore_on_server: that_folder_of_stuff_i_dont_keep_locally
+ignore_on_server: assets/proxima-nova
 
 # s3_reduced_redundancy: true
 
