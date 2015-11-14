@@ -11,6 +11,8 @@ env:
     - secure: "RLcXW7p2ujEaFr2Iqr1e0lTwXOjSp4nQ7cLiecL1CL9KE+xeHNwwiGcoPjFSFL7QVLJnJTCHX3SNK2MYRo6x1kAIF9pNmiQ82pBHNu5NVLrCRelwqPfMgWegNvWWuv7QlRhj7pOP2Qu2qhnyHEn2VDnAOHFqui4Alu15vF5M7iE="
 before_install:
   - rvm install 2.2.3
+  - rvm use 2.2.3
+  - gem install bundler
   - bundle install
 script:
   - gulp
