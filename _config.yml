@@ -1,5 +1,5 @@
 name: Michal Charemza
-pygments: true
+highlighter: true
 assets:
   sources:
     - _assets/fonts
