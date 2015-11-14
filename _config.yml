@@ -15,7 +15,8 @@ url: http://charemza.name
 exclude: 
   - s3_website.yml
   - node_modules
-  - Gruntfile.js
+  - Gemfile
+  - Gemfile.lock
   - gulpfile.js
   - npm-debug.log
   - validation-report.json
