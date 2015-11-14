@@ -1,4 +1,6 @@
 name: Michal Charemza
+source: src
+destination: build
 highlighter: true
 assets:
   sources:
@@ -13,17 +15,8 @@ assets:
 permalink: blog/posts/:categories/:title
 url: http://charemza.name
 exclude: 
+  - .DS_Store
   - .gitignore
-  - s3_website.yml
-  - node_modules
-  - Gemfile
-  - Gemfile.lock
-  - gulpfile.js
-  - npm-debug.log
-  - validation-report.json
-  - validation-status.json
-  - package.json
-  - README.md
 sitemap:
   file: sitemap.xml
   include: index.html

@@ -5,6 +5,8 @@ s3_bucket: <%= ENV['BLOG_S3_BUCKET'] %>
 # Below are examples of all the available configurations.
 # See README for more detailed info on each of them.
 
+site: build
+
 max_age:
    "assets/*": <%= 60 * 60 * 24 * 7 %>
    "favicon.ico": <%= 60 * 60 * 24 * 7 %>
