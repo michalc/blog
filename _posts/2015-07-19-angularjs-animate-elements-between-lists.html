@@ -7,7 +7,7 @@ categories: angularjs animation
 
 ---
 
-<p>Animating elements between parts of an application can be tricky. The beauty of <code class="inline">ng-repeat</code> means we can declare that a list, such as a <code class="inline">ul</code>, should represent a data model, such as an <code class="inline">Array</code> of data, and the list keeps up to date with whatever changes we make to the underlying model. The tricky bit comes when we want to view not just current state of the model, but transitions between states, such as 
+<p>Animating elements between parts of an application can be tricky. The beauty of <code class="inline">ng-repeat</code> means we can declare that a list, such as a <code class="inline">ul</code>, should represent a data model, such as an <code class="inline">Array</code> of data, and the list keeps up to date with whatever changes we make to the underlying model. The tricky bit comes when we want to view not just current state of the model, but transitions between states, such as</p>
 
 <ul class="fa-ul">
   <li><i class="fa-li fa fa-caret-right"></i> removal of an item from a list,</li>
@@ -19,7 +19,7 @@ categories: angularjs animation
 
 <p>The key to this is the <code class="inline">ng-animate-ref</code> attribute. If the ref-value on an <em>outgoing</em> element matches an element on an <em>incoming</em> element, then Angular clones the outgoing element, inserts the clone positioned absolutely on the page, and using CSS transitions moves it from the position of the outgoing to the position of the incoming.</p>
 
-<p>What <em>outgoing</em> and <em>incoming</em> mean is that their addition to and removal from the DOM are subject to <code class="inline">.ng-enter</code> and <code class="inline">.ng-leave</code> transitions, either on themselves, or on a parent element. For example, we can animate the heights of elements to or from 0 when they are added or removed from a list:<p>
+<p>What <em>outgoing</em> and <em>incoming</em> mean is that their addition to and removal from the DOM are subject to <code class="inline">.ng-enter</code> and <code class="inline">.ng-leave</code> transitions, either on themselves, or on a parent element. For example, we can animate the heights of elements to or from 0 when they are added or removed from a list:</p>
 
 {% highlight html %}
 <ul class="list">
