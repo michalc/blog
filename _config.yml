@@ -16,6 +16,7 @@ exclude:
   - s3_website.yml
   - node_modules
   - Gruntfile.js
+  - gulpfile.js
   - npm-debug.log
   - validation-report.json
   - validation-status.json
