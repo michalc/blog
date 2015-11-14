@@ -13,6 +13,7 @@ assets:
 permalink: blog/posts/:categories/:title
 url: http://charemza.name
 exclude: 
+  - .gitignore
   - s3_website.yml
   - node_modules
   - Gemfile
