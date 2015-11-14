@@ -1,6 +1,4 @@
-_site
 .DS_Store
 _environment.sh
-node_modules
 validation-report.json
 validation-status.json
