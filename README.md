@@ -5,16 +5,24 @@ The source for my personal blog at [http://charemza.name/](http://charemza.name/
 
 ## Build
 
-To build the site into the `build` directory:
+To build the site into the `build` directory for the first time:
 
 ```
 rvm install 2.2.3
 rvm use 2.2.3
 gem install bundler
 bundle install
-npm install --production
+npm install
+gulp fonts
 gulp
 ```
+
+Subsequent changes can be built by:
+
+```
+gulp
+```
+
 
 ## Deploy
 

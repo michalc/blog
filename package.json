@@ -5,5 +5,8 @@
     "gulp": "^3.9.0",
     "gulp-html5-lint": "^1.1.0",
     "gulp-minify-html": "^1.0.4"
+  },
+  "devDependencies": {
+    "gulp-download": "0.0.1"
   }
 }
