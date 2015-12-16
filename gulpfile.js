@@ -1,6 +1,7 @@
 var gulp = require('gulp');
 
-// Unfortunately can't keep the fonts in this repository, so download them from charemza.name
+// Unfortunately can't keep the fonts in this repository for licensing reasons
+// so download them from charemza.name
 gulp.task('fonts', function() {
   var download = require('gulp-download');
   var rename = require('gulp-regex-rename');
