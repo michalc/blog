@@ -13,7 +13,6 @@ rvm use 2.2.3
 gem install bundler
 bundle install
 npm install
-gulp fonts
 gulp
 ```
 

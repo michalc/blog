@@ -13,7 +13,7 @@ gulp.task('fonts', function() {
   .pipe(gulp.dest('src/_assets/fonts/proxima-nova'));
 });
 
-gulp.task('jekyll', function(gulpCallBack) {
+gulp.task('jekyll', ['fonts'], function(gulpCallBack) {
   var spawn = require('child_process').spawn;
   var jekyll = spawn('jekyll', ['build'], {stdio: 'inherit'});
 
