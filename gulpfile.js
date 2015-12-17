@@ -3,15 +3,19 @@ var gulp = require('gulp');
 // Unfortunately can't keep the fonts in this repository for licensing reasons
 // so download them from charemza.name
 gulp.task('fonts', function() {
-  var download = require('gulp-download');
-  var rename = require('gulp-regex-rename');
+  var download = require('gulp-download-stream');
+  var rename = require('gulp-rename');
 
   return download([
     'http://charemza.name/assets/proxima-nova/2D48A7_0_0-67e7438dc823bfc16e9b3ef293063daf.woff',
     'http://charemza.name/assets/proxima-nova/2D48A7_1_0-98f78589365b036ffdd1110af0639760.woff',
     'http://charemza.name/assets/proxima-nova/2D48A7_2_0-132aedb0469a775130a3b5d0d3d4f37a.woff'
-  ]).pipe(rename(/(.+)-.+\.woff$/, '$1.woff'))
-  .pipe(gulp.dest('src/_assets/fonts/proxima-nova'));
+  ])
+    .pipe(rename(function(path) {
+      path.basename = path.basename.replace(/(.+)-.+$/, '$1');
+      return path;
+    }))
+    .pipe(gulp.dest('src/_assets/fonts/proxima-nova'));
 });
 
 gulp.task('jekyll', ['fonts'], function(gulpCallBack) {

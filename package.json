@@ -3,9 +3,9 @@
   "license": "MIT",
   "dependencies": {
     "gulp": "^3.9.0",
-    "gulp-download": "0.0.1",
+    "gulp-download-stream": "0.0.4",
     "gulp-html5-lint": "^1.1.0",
     "gulp-minify-html": "^1.0.4",
-    "gulp-regex-rename": "^0.1.0"
+    "gulp-rename": "^1.2.2"
   }
 }
