@@ -27,19 +27,12 @@ gulp.task('jekyll', ['fonts'], function(gulpCallBack) {
   });
 });
 
-gulp.task('htmlmin', ['jekyll'], function() {
-  var minifyHtml = require('gulp-minify-html');
-
-  return gulp.src('_site/**/*.html')
-    .pipe(minifyHtml())
-    .pipe(gulp.dest('_site'));
-});
-
-gulp.task('html5-lint', ['htmlmin'], function() {
+gulp.task('html5-lint', ['jekyll'], function() {
   var html5Lint = require('gulp-html5-lint');
 
-  return gulp.src('_site/**/*.html')
+  return gulp.src('build/**/*.html')
     .pipe(html5Lint());
 });
 
 gulp.task('default', ['html5-lint']);
+
