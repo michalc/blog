@@ -37,7 +37,7 @@ gulp.task('html5-lint', ['jekyll'], function() {
 
 gulp.task('build', ['html5-lint']);
 
-gulp.task('publish', [], function() {
+gulp.task('publish', ['build'], function() {
   var awspublish = require('gulp-awspublish');
   var mergeStream = require('merge-stream');
   var concurrent = require('concurrent-transform');

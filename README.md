@@ -25,4 +25,10 @@ gulp
 
 ## Deploy
 
-This project is deployed onto Amazon S3 using Travis. See the [.travis.yml](.travis.yml) file for details.
+This project is deployed onto Amazon S3 using Travis, which will run
+
+```
+gulp publish
+```
+
+See the [.travis.yml](.travis.yml) file for details.

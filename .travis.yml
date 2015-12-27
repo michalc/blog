@@ -13,6 +13,5 @@ before_install:
   - gem install bundler
   - bundle install
 script:
-  - gulp
-after_success:
   - gulp publish
+
