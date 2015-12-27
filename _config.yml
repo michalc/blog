@@ -20,3 +20,4 @@ exclude:
 sitemap:
   file: sitemap.xml
   include: index.html
+

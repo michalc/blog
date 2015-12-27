@@ -5,10 +5,8 @@ node_js:
 env:
   global:
     - NODE_ENV=production
-    - BLOG_S3_ID=AKIAIQZBO3RZKJALD43Q
-    - BLOG_S3_BUCKET=charemza.name
-    - BLOG_S3_CLOUDFRONT_ID=E3GG1AV0LRMNSG
-    - secure: "RLcXW7p2ujEaFr2Iqr1e0lTwXOjSp4nQ7cLiecL1CL9KE+xeHNwwiGcoPjFSFL7QVLJnJTCHX3SNK2MYRo6x1kAIF9pNmiQ82pBHNu5NVLrCRelwqPfMgWegNvWWuv7QlRhj7pOP2Qu2qhnyHEn2VDnAOHFqui4Alu15vF5M7iE="
+    - AWS_ACCESS_KEY_ID=AKIAJBPGNDSHUF77W2KA
+    - secure: "Oes79ZNcVC5SprsErSTiT+xmRUKQ/mIwuRQ+j2+jH3YoXowEY2uh2rbs2LodTNJ33IteTdJ/DjtyxgkCBDxJsk3oNPpwZuTl5YYGr/R2ODO2+ggRgLtwpT7/QWVviWqe2bYKSLfn0DjQT9BuY/srEAGvY42ovLxDhxC3t9EvifY="
 before_install:
   - rvm install 2.2.3
   - rvm use 2.2.3
@@ -17,4 +15,4 @@ before_install:
 script:
   - gulp
 after_success:
-  - s3_website push
+  - gulp publish
