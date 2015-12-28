@@ -2,24 +2,26 @@
 <html>
 <head>
   <meta http-equiv="Content-Type" content="text/html;charset=utf-8" />
-  {% if page.title %}
-  <title>{{ page.title }} - {{ site.name }}</title>
-  {% else %}
+  {{#if title}}
+  <title>{{ title }} - {{ site.name }}</title>
+  {{else}}
   <title>{{ site.name }} - Full stack web developer</title>
-  {% endif %}
+  {{/if}}
   <meta name="description" content="{{ page.subtitle }}">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  {% stylesheet site %}
+  <base href="/">
+  <link rel="stylesheet" href="{{ lookup assets 'assets/stylesheets/site.css' }}">
   <script src="//ajax.googleapis.com/ajax/libs/angularjs/1.4.0/angular.min.js" defer></script>
   <script src="//ajax.googleapis.com/ajax/libs/angularjs/1.4.0/angular-animate.min.js" defer></script>
-  {% javascript reputation defer %}
-  <link rel="shortcut icon" href="{% asset_path favicon.ico %}">
+  <script src="//ajax.googleapis.com/ajax/libs/angularjs/1.4.0/angular-animate.min.js" defer></script>
+  <script src="{{ lookup assets 'assets/javascripts/reputation.js' }}" defer></script>
+  <link rel="shortcut icon" href="{{ lookup assets 'assets/images/favicon.ico' }}">
 </head>
 <body itemscope itemtype="http://schema.org/WebPage">
   <header class="page-sidebar" id="michal-charemza-author" itemprop="author" itemscope itemtype="http://schema.org/Person">
     <div class="page-sidebar-content">
       <a href="/">
-        <p class="photo"><img alt="Michal Charemza" src="{% asset_path michal-charemza.jpeg %}" width="125" height="125" itemprop="image"></p>
+        <p class="photo"><img alt="Michal Charemza" src="{{ lookup assets 'assets/images/michal-charemza.jpeg' }}" width="125" height="125" itemprop="image"></p>
         <h1 itemprop="name">Michal Charemza</h1>
         <p itemprop="jobTitle">Full stack web developer</p>
       </a>
@@ -28,7 +30,7 @@
     </div>
   </header>
   <div class="page-content"><div class="page-content-inner">
-      {{content}}
+      <%= contents %>
   </div></div>
 
   <script>

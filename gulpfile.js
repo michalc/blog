@@ -1,13 +1,30 @@
 var gulp = require('gulp');
 var BUILD_DIR = 'build';
 
-// Unfortunately can't keep the fonts in this repository for licensing reasons
-// so download them from charemza.name
-gulp.task('fonts', function() {
+gulp.task('build', function() {
+  var Promise = require('bluebird');
+  var dateformat = require('dateformat');
+  var ellipsize = require('ellipsize');
+  var handlebars = require('gulp-compile-handlebars');
+  var data = require('gulp-data');
   var download = require('gulp-download-stream');
+  var filter = require('gulp-filter');
+  var frontMatter = require('gulp-front-matter');
+  var less = require('gulp-less');
+  var md5 = require('gulp-md5');
   var rename = require('gulp-rename');
+  var wrap = require('gulp-wrap');
+  var mergeStream = require('merge-stream');
+  var path = require('path');
+  var prism = require('prismjs');
+  var streamToArray = require('stream-to-array');
+  var striptags = require('striptags');
+  var through = require('through2');
+  var buffer = require('vinyl-buffer');
 
-  return download([
+  // Unfortunately can't keep the fonts in this repository for licensing reasons
+  // so download them from charemza.name
+  var remoteFonts = download([
     'http://charemza.name/assets/proxima-nova/2D48A7_0_0-67e7438dc823bfc16e9b3ef293063daf.woff',
     'http://charemza.name/assets/proxima-nova/2D48A7_1_0-98f78589365b036ffdd1110af0639760.woff',
     'http://charemza.name/assets/proxima-nova/2D48A7_2_0-132aedb0469a775130a3b5d0d3d4f37a.woff'
@@ -16,26 +33,179 @@ gulp.task('fonts', function() {
       path.basename = path.basename.replace(/(.+)-.+$/, '$1');
       return path;
     }))
-    .pipe(gulp.dest('src/_assets/fonts/proxima-nova'));
-});
+    .pipe(through.obj(function(file, enc, cb) {
+      file.path = 'assets/fonts/proxima-nova/' + file.relative;
+      this.push(file);
+      cb();
+    }))
+    .pipe(buffer());
 
-gulp.task('jekyll', ['fonts'], function(gulpCallBack) {
-  var spawn = require('child_process').spawn;
-  var jekyll = spawn('jekyll', ['build'], {stdio: 'inherit'});
+  var all = mergeStream(gulp.src(['src/**/*','!src/**/_*']), remoteFonts);
 
-  jekyll.on('exit', function(code) {
-    gulpCallBack(code === 0 ? null : 'ERROR: Jekyll process exited with code: '+code);
+  // Assets
+  var binaryAssets = all
+    .pipe(filter(['assets/images/**/*.*', 'assets/fonts/**/*.*']))
+    .pipe(data(function(file) {
+      return {
+        originalRelative: file.relative
+      } 
+    }))
+    .pipe(md5());
+
+  // Original asset path to md5-ed path
+  var assetFileNames = {};
+  var binaryAssetFileNameStream = binaryAssets
+    .pipe(through.obj(function(file, enc, done) {
+       assetFileNames[file.data.originalRelative] = '/' + file.relative
+       this.push(file);
+       done();
+    }));
+  var binaryAssetFileNamePromise = streamToArray(binaryAssetFileNameStream).then(function() {
+    return assetFileNames;
   });
+
+  function addBinaryAssetData() {
+    return data(function(file) {
+      return binaryAssetFileNamePromise.then(function(assetFileNames) {
+        return {
+          assets: assetFileNames
+        };
+      });
+    });
+  }
+
+  // Scripts
+  var scripts = all
+    .pipe(filter(['assets/javascripts/**/*.*']));
+
+  // Styles
+  var styles = all
+    .pipe(filter(['assets/stylesheets/site.less']))
+    .pipe(less({paths: [path.join(__dirname, 'node_modules/prismjs/themes')]}))
+    .pipe(addBinaryAssetData())
+    .pipe(handlebars())
+
+  var textAssets = mergeStream(scripts, styles)
+    .pipe(data(function(file) {
+      return {
+        originalRelative: file.relative
+      }
+    }))
+    .pipe(md5());
+
+  var textAssetFileNameStream = textAssets
+    .pipe(through.obj(function(file, enc, done) {
+       assetFileNames[file.data.originalRelative] = '/' + file.relative
+       this.push(file);
+       done();
+    }));
+
+  var allAssetFileNamePromise = streamToArray(textAssetFileNameStream).then(function() {
+    return assetFileNames;
+  });
+
+  function addAllAssetData() {
+    return data(function(file) {
+      return allAssetFileNamePromise.then(function(assetFileNames) {
+        return {
+          assets: assetFileNames
+        };
+      });
+    });
+  }
+
+  // Posts
+  var posts = all
+    .pipe(filter(['posts/**/*']))
+    .pipe(frontMatter({property: 'data'}))
+    .pipe(through.obj(function(file, enc, cb) {
+      var parsed = path.parse(file.relative);
+      var relativePath = 'blog/posts/' + file.data.categories.split(' ').join('/') + '/' + parsed.name + '/index.html';
+      file.path = path.join(file.base, relativePath);
+      this.push(file); 
+      cb();
+    }))
+    .pipe(data(function(file) {
+      return {
+        summary: ellipsize(striptags(file.contents.toString()), 250),
+        url: path.parse(file.relative).dir + '/'
+      }
+    }))
+    .pipe(wrap({src: 'src/_layouts/post.html'}))
+    .pipe(wrap({src: 'src/_layouts/default.html'}));
+
+  var postDataStream = posts
+    .pipe(through.obj(function(file, enc, done) {
+       this.push(file.data);
+       done();
+    }));
+  var postDataPromise = streamToArray(postDataStream).then(function(postDatas) {
+    return postDatas.reverse();
+  });
+
+  // Index
+  var index = all
+    .pipe(filter(['index.html']))
+    .pipe(frontMatter())
+    .pipe(data(function(file) {
+       return postDataPromise.then(function(postDatas) {
+         return {
+           posts: postDatas,
+           date: postDatas.reduce(function(max, current) {
+            return Math.max(max, (new Date(current.date)).getTime());
+           }, 0)
+         };
+       });
+     }))
+    .pipe(wrap({src: 'src/_layouts/default.html'}));
+  var indexPromise = streamToArray(index);
+
+  // Sitemap
+  var sitemap = all
+    .pipe(filter(['sitemap.xml']))
+    .pipe(data(function(file) {
+       return postDataPromise.then(function(postData) {
+         return {
+           posts: postData
+         };
+       });
+     }))
+    .pipe(data(function(file, cb) {
+      indexPromise.then(function(indexFiles) {
+        cb(undefined, {
+          index: indexFiles[0].data
+        });
+      })
+    }));
+
+  var html = mergeStream(sitemap, index, posts)
+    .pipe(addAllAssetData())
+    .pipe(handlebars({
+       site: {
+         name: 'Michal Charemza',
+         url: 'http://charemza.name/'
+       }
+     }, {
+       helpers: {
+         isodate: function(date) {
+           return (new Date(date)).toISOString();
+         },
+         nicedate: function(date) {
+           return dateformat(date, 'dddd mmmm dS, yyyy');
+         },
+         highlight: function(language, options) {
+           return new handlebars.Handlebars.SafeString('<div class="highlight"><pre><code>' + prism.highlight(options.fn(this), prism.languages[language]) + '</code></pre></div>');
+         }
+       }
+     }));
+  
+  // Static
+  var static = all
+    .pipe(filter(['favicon.ico', 'robots.txt']));
+
+  return mergeStream(binaryAssets, textAssets, html, static)
+    .pipe(gulp.dest('build'))
 });
-
-gulp.task('html5-lint', ['jekyll'], function() {
-  var html5Lint = require('gulp-html5-lint');
-
-  return gulp.src('**/*.html', {cwd: BUILD_DIR})
-    .pipe(html5Lint());
-});
-
-gulp.task('build', ['html5-lint']);
 
 gulp.task('publish', ['build'], function() {
   var awspublish = require('gulp-awspublish');

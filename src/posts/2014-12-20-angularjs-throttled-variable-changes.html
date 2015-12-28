@@ -13,7 +13,7 @@ categories: angularjs templates
 
 <p>A small directive can do this, using throttle from <a href="https://lodash.com/">Lo-dash</a> or <a href="http://underscorejs.org/">Underscore</a>.</p>
 
-{% highlight javascript %}
+{{#highlight 'javascript'}}
 app.directive('throttle', function($window) {
   var WAIT_TIME = 750;
 
@@ -35,16 +35,16 @@ app.directive('throttle', function($window) {
     }
   };
 });
-{% endhighlight %}
+{{/highlight}}
 
 <p>which can be used as follows.</p>
 
-{% highlight html %}
+{{#highlight 'markup'}}
 <div throttle="state">
   <div ng-if="state == 'loading'">Loading...</div>
   <div ng-if="state == 'loaded'">[Loaded template]</div>
 </div>
-{% endhighlight %}
+{{/highlight}}
 
 <p>Then in the parent controller you can set the throttled variable, <code class="inline">state</code> in the above case, as often as you like, and you can be confident that the effect won't be seen in the template more often than every 750ms.</p>
 
