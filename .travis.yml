@@ -10,5 +10,5 @@ env:
 install:
   - for f in .modules/*.tgz; do tar -zxf "$f" -C node_modules/; done
 script:
-  - gulp publish
+  - ./node_modules/gulp/bin/gulp.js publish
 
