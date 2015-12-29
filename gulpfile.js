@@ -222,8 +222,21 @@ gulp.task('publish', ['build'], function() {
   // All files are forced since gulp-awspublish doesn't
   // sync if there are just http header changes
   function publish(headers) {
-    return concurrent(publisher.publish(headers,{ force:true}), 8);
+    return concurrent(publisher.publish(headers, {force: true}), 8);
   }
+
+  // Cache 1 week, no gzip
+  var binaryResources = gulp.src(['**/*.ico', '**/*.woff', '**/*.jpeg'], {cwd: BUILD_DIR})
+    .pipe(publish({
+      'Cache-Control': 'max-age=' + 60 * 60 * 24 * 7 + ', no-transform, public'
+    }));
+
+  // Cache 1 week, +  gzip
+  var textResources = gulp.src(['**/*.js', '**/*.css'], {cwd: BUILD_DIR})
+    .pipe(awspublish.gzip())
+    .pipe(publish({
+      'Cache-Control': 'max-age=' + 60 * 60 * 24 * 7 + ', no-transform, public'
+    }));
 
   // Cache 5 mins + gzip
   var html = gulp.src('**/*.html', {cwd: BUILD_DIR})
@@ -236,19 +249,6 @@ gulp.task('publish', ['build'], function() {
   var meta = gulp.src(['robots.txt', 'sitemap.xml'], {cwd: BUILD_DIR})
     .pipe(publish({
       'Cache-Control': 'max-age=' + 60 * 5 + ', no-transform, public'
-    }));
-
-  // Cache 1 week, +  gzip
-  var textResources = gulp.src(['**/*.js', '**/*.css'], {cwd: BUILD_DIR})
-    .pipe(awspublish.gzip())
-    .pipe(publish({
-      'Cache-Control': 'max-age=' + 60 * 60 * 24 * 7 + ', no-transform, public'
-    }));
-
-  // Cache 1 week, no gzip
-  var binaryResources = gulp.src(['**/*.ico', '**/*.woff', '**/*.jpeg'], {cwd: BUILD_DIR})
-    .pipe(publish({
-      'Cache-Control': 'max-age=' + 60 * 60 * 24 * 7 + ', no-transform, public'
     }));
 
   return mergeStream(html, meta, textResources, binaryResources)
