@@ -7,11 +7,6 @@ env:
     - NODE_ENV=production
     - AWS_ACCESS_KEY_ID=AKIAJBPGNDSHUF77W2KA
     - secure: "Oes79ZNcVC5SprsErSTiT+xmRUKQ/mIwuRQ+j2+jH3YoXowEY2uh2rbs2LodTNJ33IteTdJ/DjtyxgkCBDxJsk3oNPpwZuTl5YYGr/R2ODO2+ggRgLtwpT7/QWVviWqe2bYKSLfn0DjQT9BuY/srEAGvY42ovLxDhxC3t9EvifY="
-before_install:
-  - rvm install 2.2.3
-  - rvm use 2.2.3
-  - gem install bundler
-  - bundle install
 script:
   - gulp publish
 
