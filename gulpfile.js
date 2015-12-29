@@ -209,9 +209,29 @@ gulp.task('build', function() {
 });
 
 gulp.task('publish', ['build'], function() {
+  var Promise = require('bluebird');
+  var concurrent = require('concurrent-transform');
   var awspublish = require('gulp-awspublish');
   var mergeStream = require('merge-stream');
-  var concurrent = require('concurrent-transform');
+  var through = require('through2');
+
+  function streamToPromise(stream) {
+    return new Promise(function(resolve, reject) {
+        stream.on("end", resolve);
+        stream.on("error", reject);
+    });
+  }
+
+  function waitForPromise(promise) {
+    return through.obj(function(file, enc, cb) {
+      var self = this;
+      promise.then(function() {
+        self.push(file);
+        cb();
+      });
+    });
+  }
+
   var publisher = awspublish.create({
     region: 'eu-west-1',
     params: {
@@ -230,6 +250,7 @@ gulp.task('publish', ['build'], function() {
     .pipe(publish({
       'Cache-Control': 'max-age=' + 60 * 60 * 24 * 7 + ', no-transform, public'
     }));
+  var binaryPromise = streamToPromise(binaryResources);
 
   // Cache 1 week, +  gzip
   var textResources = gulp.src(['**/*.js', '**/*.css'], {cwd: BUILD_DIR})
@@ -237,21 +258,33 @@ gulp.task('publish', ['build'], function() {
     .pipe(publish({
       'Cache-Control': 'max-age=' + 60 * 60 * 24 * 7 + ', no-transform, public'
     }));
+  var textPromise = streamToPromise(textResources);
 
   // Cache 5 mins + gzip
-  var html = gulp.src('**/*.html', {cwd: BUILD_DIR})
+  var blog = gulp.src('blog/**/*.html', {cwd: BUILD_DIR, base: BUILD_DIR})
     .pipe(awspublish.gzip())
+    .pipe(waitForPromise(Promise.all([binaryPromise, textPromise])))
     .pipe(publish({
       'Cache-Control': 'max-age=' + 60 * 5 + ', no-transform, public'
     }));
+  var blogPromise = streamToPromise(blog);
+
+  var index = gulp.src('index.html', {cwd: BUILD_DIR})
+    .pipe(awspublish.gzip())
+    .pipe(waitForPromise(blogPromise))
+    .pipe(publish({
+      'Cache-Control': 'max-age=' + 60 * 5 + ', no-transform, public'
+    }));
+  var indexPromise = streamToPromise(index);
 
   // Cache 5 mins, no gzip
   var meta = gulp.src(['robots.txt', 'sitemap.xml'], {cwd: BUILD_DIR})
+    .pipe(waitForPromise(indexPromise))
     .pipe(publish({
       'Cache-Control': 'max-age=' + 60 * 5 + ', no-transform, public'
     }));
 
-  return mergeStream(html, meta, textResources, binaryResources)
+  return mergeStream(binaryResources, textResources, blog, index, meta)
     .pipe(publisher.sync())
     .pipe(awspublish.reporter());
 });
