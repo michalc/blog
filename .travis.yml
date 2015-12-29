@@ -1,12 +1,14 @@
 sudo: false
 language: node_js
 node_js:
-  - "5.3.0"
+  - "4.2.4"
 env:
   global:
     - NODE_ENV=production
     - AWS_ACCESS_KEY_ID=AKIAJBPGNDSHUF77W2KA
     - secure: "Oes79ZNcVC5SprsErSTiT+xmRUKQ/mIwuRQ+j2+jH3YoXowEY2uh2rbs2LodTNJ33IteTdJ/DjtyxgkCBDxJsk3oNPpwZuTl5YYGr/R2ODO2+ggRgLtwpT7/QWVviWqe2bYKSLfn0DjQT9BuY/srEAGvY42ovLxDhxC3t9EvifY="
+install:
+  - for f in .modules/*.tgz; do tar -zxf "$f" -C node_modules/; done
 script:
   - gulp publish
 
