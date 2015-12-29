@@ -1,6 +1,6 @@
 # blog [![Build Status](https://travis-ci.org/michalc/blog.svg?branch=master)](https://travis-ci.org/michalc/blog)
 
-The source for my personal blog at [http://charemza.name/](http://charemza.name/), powered by Jekyll, hosted on AWS S3 with Cloudfront as CDN, deployed using Travis.
+The source for my personal blog at [http://charemza.name/](http://charemza.name/), built using gulp, hosted on AWS S3 with Cloudfront as CDN, and deployed using Travis.
 
 
 ## Build
@@ -8,10 +8,6 @@ The source for my personal blog at [http://charemza.name/](http://charemza.name/
 To build the site into the `build` directory for the first time:
 
 ```
-rvm install 2.2.3
-rvm use 2.2.3
-gem install bundler
-bundle install
 npm install
 gulp
 ```
@@ -31,4 +27,4 @@ This project is deployed onto Amazon S3 using Travis, which will run
 gulp publish
 ```
 
-See the [.travis.yml](.travis.yml) file for details.
+See the [.travis.yml](.travis.yml) file for details. If running locally must have AWS credentials loaded so the [AWS Node.js SDK](https://aws.amazon.com/sdk-for-node-js/) can find them.
