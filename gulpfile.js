@@ -120,7 +120,8 @@ gulp.task('build', function() {
     .pipe(frontMatter({property: 'data'}))
     .pipe(through.obj(function(file, enc, cb) {
       var parsed = path.parse(file.relative);
-      var relativePath = 'blog/posts/' + file.data.categories.split(' ').join('/') + '/' + parsed.name + '/index.html';
+      var name = parsed.name.replace(/^\d\d\d\d-\d\d-\d\d-/,'');
+      var relativePath = 'blog/posts/' + file.data.categories.split(' ').join('/') + '/' + name + '/index.html';
       file.path = path.join(file.base, relativePath);
       this.push(file); 
       cb();
