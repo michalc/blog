@@ -171,11 +171,11 @@ gulp.task('build', function() {
          };
        });
      }))
-    .pipe(data(function(file, cb) {
-      indexPromise.then(function(indexFiles) {
-        cb(undefined, {
+    .pipe(data(function(file) {
+      return indexPromise.then(function(indexFiles) {
+        return {
           index: indexFiles[0].data
-        });
+        };
       })
     }));
 
