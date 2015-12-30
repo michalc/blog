@@ -245,6 +245,8 @@ gulp.task('publish', ['build'], function() {
         promise.then(function() {
           self.push(file);
           cb();
+        }, function(err) {
+          cb(new Error(err));
         });
       }
     });
