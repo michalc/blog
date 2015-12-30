@@ -17,9 +17,9 @@ gulp.task('build', function() {
   var mergeStream = require('merge-stream');
   var path = require('path');
   var prism = require('prismjs');
+  var stream = require('stream');
   var streamToArray = require('stream-to-array');
   var striptags = require('striptags');
-  var through = require('through2');
   var buffer = require('vinyl-buffer');
 
   // Unfortunately can't keep the fonts in this repository for licensing reasons
@@ -33,10 +33,13 @@ gulp.task('build', function() {
       path.basename = path.basename.replace(/(.+)_.+$/, '$1');
       return path;
     }))
-    .pipe(through.obj(function(file, enc, cb) {
-      file.path = 'assets/fonts/proxima-nova/' + file.relative;
-      this.push(file);
-      cb();
+    .pipe(stream.Transform({
+      objectMode: true,
+      transform: function(file, enc, cb) {
+        file.path = 'assets/fonts/proxima-nova/' + file.relative;
+        this.push(file);
+        cb();
+      }
     }))
     .pipe(buffer());
 
@@ -55,10 +58,13 @@ gulp.task('build', function() {
   // Original asset path to md5-ed path
   var assetFileNames = {};
   var binaryAssetFileNameStream = binaryAssets
-    .pipe(through.obj(function(file, enc, done) {
-       assetFileNames[file.data.originalRelative] = '/' + file.relative
-       this.push(file);
-       done();
+    .pipe(stream.Transform({
+      objectMode: true,
+      transform: function(file, enc, done) {
+        assetFileNames[file.data.originalRelative] = '/' + file.relative
+        this.push(file);
+        done();
+      }
     }));
   var binaryAssetFileNamePromise = streamToArray(binaryAssetFileNameStream).then(function() {
     return assetFileNames;
@@ -94,10 +100,13 @@ gulp.task('build', function() {
     .pipe(md5());
 
   var textAssetFileNameStream = textAssets
-    .pipe(through.obj(function(file, enc, done) {
-       assetFileNames[file.data.originalRelative] = '/' + file.relative
-       this.push(file);
-       done();
+    .pipe(stream.Transform({
+      objectMode: true,
+      transform: function(file, enc, done) {
+        assetFileNames[file.data.originalRelative] = '/' + file.relative
+        this.push(file);
+        done();
+      }
     }));
 
   var allAssetFileNamePromise = streamToArray(textAssetFileNameStream).then(function() {
@@ -118,13 +127,16 @@ gulp.task('build', function() {
   var posts = all
     .pipe(filter(['posts/**/*']))
     .pipe(frontMatter({property: 'data'}))
-    .pipe(through.obj(function(file, enc, cb) {
-      var parsed = path.parse(file.relative);
-      var name = parsed.name.replace(/^\d\d\d\d-\d\d-\d\d-/,'');
-      var relativePath = 'blog/posts/' + file.data.categories.split(' ').join('/') + '/' + name + '/index.html';
-      file.path = path.join(file.base, relativePath);
-      this.push(file); 
-      cb();
+    .pipe(stream.Transform({
+      objectMode: true,
+      transform: function(file, enc, cb) {
+        var parsed = path.parse(file.relative);
+        var name = parsed.name.replace(/^\d\d\d\d-\d\d-\d\d-/,'');
+        var relativePath = 'blog/posts/' + file.data.categories.split(' ').join('/') + '/' + name + '/index.html';
+        file.path = path.join(file.base, relativePath);
+        this.push(file); 
+        cb();
+      }
     }))
     .pipe(data(function(file) {
       return {
@@ -136,9 +148,12 @@ gulp.task('build', function() {
     .pipe(wrap({src: 'src/_layouts/default.html'}));
 
   var postDataStream = posts
-    .pipe(through.obj(function(file, enc, done) {
-       this.push(file.data);
-       done();
+    .pipe(stream.Transform({
+      objectMode: true,
+      transform: function(file, enc, done) {
+        this.push(file.data);
+        done();
+      }
     }));
   var postDataPromise = streamToArray(postDataStream).then(function(postDatas) {
     return postDatas.reverse();
@@ -213,7 +228,7 @@ gulp.task('publish', ['build'], function() {
   var concurrent = require('concurrent-transform');
   var awspublish = require('gulp-awspublish');
   var mergeStream = require('merge-stream');
-  var through = require('through2');
+  var stream = require('stream');
 
   function streamToPromise(stream) {
     return new Promise(function(resolve, reject) {
@@ -223,12 +238,15 @@ gulp.task('publish', ['build'], function() {
   }
 
   function waitFor(promise) {
-    return through.obj(function(file, enc, cb) {
-      var self = this;
-      promise.then(function() {
-        self.push(file);
-        cb();
-      });
+    return stream.Transform({
+      objectMode: true,
+      transform: function(file, enc, cb) {
+        var self = this;
+        promise.then(function() {
+          self.push(file);
+          cb();
+        });
+      }
     });
   }
 
