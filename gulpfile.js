@@ -140,7 +140,7 @@ gulp.task('build', function() {
     }))
     .pipe(data(function(file) {
       return {
-        summary: ellipsize(striptags(file.contents.toString()), 250),
+        summary: ellipsize(striptags(handlebars.Handlebars.compile(file.contents.toString())()), 250),
         url: path.parse(file.relative).dir + '/'
       }
     }))

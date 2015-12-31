@@ -1,0 +1,41 @@
+---
+layout: post
+title:  "Defer node stream processing"
+subtitle: "Delay chain of piped streams until a promise is resolved"
+date: 2015-12-31 10:00:00
+categories: node streams
+
+---
+
+<p>There might be times when you have a chain of piped streams where you want to delay a part of the chain until a promise is resolved. You can do with a function that returns a simple Transform stream.</p>
+
+{{#highlight 'javascript'}}
+function waitFor(promise) {
+  return stream.Transform({
+    objectMode: true,
+    transform: function(file, enc, cb) {
+      var self = this;
+      promise.then(function() {
+        self.push(file);
+        cb();
+      }, function(err) {
+        cb(new Error(err));
+      });
+    }
+  });
+}
+{{/highlight}}
+
+<p>You would need to pipe to the return value of the above function, and it will effectively delay downstream piping until the promise is resolved. This can be useful in a gulp task, where you won't want to split it up into sub-tasks, but still want one part of the processed before another.</p>
+
+<p>As a example, taking part of the gulpfile for this blog, I defer publishing html files until images and stylesheets have been uploaded, so any visitors to the site mid-update don't see a broken site.</p>
+
+{{#highlight 'javascript'}}
+  var blog = gulp.src('blog/**/*.html', {cwd: BUILD_DIR, base: BUILD_DIR})
+    .pipe(awspublish.gzip())
+    .pipe(waitFor(Promise.all([binaryResourcesDone, textResourcesDone])))
+    .pipe(publish({
+      'Cache-Control': 'max-age=' + 60 * 5 + ', no-transform, public'
+    }));
+{{/highlight}}
+
