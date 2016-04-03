@@ -45,16 +45,18 @@ function formatNumber(num) {
 var ReputationBox = React.createClass({
   displayName: 'ReputationBox',
   getInitialState: function() {
+    var cachedReputation = localStorage.getItem('user-' + USER_ID);
     return {
-      data: ''
+      data: cachedReputation || ''
     };
   },
   componentDidMount: function() {
     var self = this;
     SE.getUser(USER_ID, SITE, KEY).then(function(user) {
       self.setState({
-        data: formatNumber(user.reputation)
+        data: user.reputation
       });
+      localStorage.setItem('user-' + USER_ID, user.reputation);
     });
   },
   render: function() {
@@ -62,7 +64,7 @@ var ReputationBox = React.createClass({
     return (
       React.createElement('span', {className: "reputation"}, 
         React.createElement('i', {className: "fa fa-stack-overflow"}),
-        React.createElement('span', {className: "icon-link-text"}, this.state.data)
+        React.createElement('span', {className: "icon-link-text"}, formatNumber(this.state.data))
       )
     );
   }
