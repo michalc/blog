@@ -63,7 +63,8 @@ var ReputationBox = React.createClass({
       React.createElement('span', {className: "reputation"}, 
         React.createElement('i', {className: "fa fa-stack-overflow"}),
         ' ',
-        this.state.data)
+        React.createElement('span', {className: "icon-link-text"}, this.state.data)
+      )
     );
   }
 });
