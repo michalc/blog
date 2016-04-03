@@ -58,15 +58,21 @@ var ReputationBox = React.createClass({
     });
   },
   render: function() {
+    if (!this.state.data) return false;
     return (
-      React.createElement('span', {className: "reputation"},
-        this.state.data
-      )
+      React.createElement('span', {className: "reputation"}, 
+        React.createElement('i', {className: "fa fa-stack-overflow"}),
+        ' ',
+        this.state.data)
     );
   }
 });
-ReactDOM.render(
-  React.createElement(ReputationBox, null),
-  document.getElementById('reputation')
-);
+
+
+document.addEventListener("DOMContentLoaded", function() {
+  ReactDOM.render(
+    React.createElement(ReputationBox, null),
+    document.getElementById('reputation')
+  );
+});
 
