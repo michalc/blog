@@ -1,99 +1,72 @@
-(function() {
-  'use strict';
+var React = require('react');
+var ReactDOM = require('react-dom');
+var fetch = require('whatwg-fetch');
+var _ = require('lodash');
 
-  var app = angular.module('reputation',['ngAnimate']);
+// whatwg-fetch polyfill doesn't work if the browser has fetch!
+if (window.fetch) fetch = window.fetch;
 
-  // Returns a notification with a cached value of results,
-  // and then resolve with recent value
-  app.factory('cacheNotification', function($window, $q, $rootScope) {
-    return function() {
-      var args = Array.prototype.slice.call(arguments, 2);
-      if (!$window.sessionStorage) return func.apply(null, args);
+var USER_ID = 1319998;
+var SITE = "stackoverflow.com";
+var KEY = "IuEWeQbgKqLACgi0FNMcOQ((";
 
-      var deferred = $q.defer();
-      var func = arguments[0];
-      var baseKey = 'cache-notification-' + arguments[1];
-      var cacheKey = baseKey + '-' + $window.JSON.stringify(args);
-      var cached = $window.sessionStorage.getItem(cacheKey);
+var SE = (function() {
+  var base = 'http://api.stackexchange.com/2.1/';
 
-      if (cached !== null) {
-        $rootScope.$evalAsync(function() {
-          deferred.notify($window.JSON.parse(cached));
-        });
-      }
+  function toQueryString(obj) {
+    return _.map(obj,function(v,k){
+      return encodeURIComponent(k) + '=' + encodeURIComponent(v);
+    }).join('&');
+  };
 
-      func.apply(null, args).then(function(result) {
-        $window.sessionStorage.setItem(cacheKey, $window.JSON.stringify(result));
-        deferred.resolve(result);
-      }, function(error) {
-        $window.sessionStorage.removeItem(cacheKey);
-        deferred.reject(error);
-      });
-
-      return deferred.promise;
-    };
-  });
-
-  app.factory('stackexchange', function($http, $window, cacheNotification) {
-    var base = 'http://api.stackexchange.com/2.1/';
-
-    function get(path, site, key, extraParams) {
-      var params = {
-        site: site,
-        key: key,
-        pagesize: 10
-      };
-      angular.extend(params, extraParams || {});
-      return $http({
-        method: 'GET',
-        url: base + path,
-        params: params
-      });
+  function getUser(userId, site, key) {
+    var params = {
+      site: site,
+      key: key,
+      pagesize: 10
     };
 
-    function getUserFromSE(userId, site, key) {
-      return get('users/' + userId , site, key).then(function(results) {
-        return results.data.items[0];
-      });
-    };
+    return fetch(base + 'users/' + userId + '?' + toQueryString(params)).then(function(response) {
+      return response.json();
+    }).then(function(response) {
+      return response.items[0];
+    });
+  };
 
-    function getUser(userId, site, key) {
-      return cacheNotification(getUserFromSE, 'get-user', userId, site, key);
-    };
-
-    return {
-      getUser: getUser
-    };
-  });
-
-  app.directive('reputation', function($timeout, stackexchange) {
-    return {
-      template: '<span>' +
-                  '<span ng-if="loaded" ng-class="{\'from-server\': !fromCache}">' +
-                    '<a href="{{user.link}}"><i class="fa fa-stack-overflow"></i><span class="icon-link-text">{{user.reputation | number:0}}</span></a>' +
-                  '</span>' +
-                '</span>',
-      controller: function($scope, $attrs) {
-        var site = $attrs.site;
-        var userId = $attrs.userId;
-        var key = $attrs.key;
-        $scope.fromCache = false;
-        $scope.loaded = false;
-
-        stackexchange.getUser(userId, site, key).then(function(user) {
-          // Update of reputation from server deliberatly slightly
-          // after display of cached results for less jarring UI
-          return $timeout(function() {
-            $scope.user = user;
-            $scope.loaded = true;
-          }, $scope.fromCache ? '1000': 0);
-        }, null, function(cachedUser) {
-          $scope.user = cachedUser;
-          $scope.fromCache = true;
-          $scope.loaded = true;
-        });
-      }
-    };
-  });
-
+  return {
+    getUser: getUser
+  };
 })();
+
+function formatNumber(num) {
+  return num.toString().replace(/(\d)(?=(\d{3})+(?!\d))/g, "$1,");
+}
+
+var ReputationBox = React.createClass({
+  displayName: 'ReputationBox',
+  getInitialState: function() {
+    return {
+      data: ''
+    };
+  },
+  componentDidMount: function() {
+    var self = this;
+    SE.getUser(USER_ID, SITE, KEY).then(function(user) {
+      self.setState({
+        data: formatNumber(user.reputation)
+      });
+    });
+  },
+  render: function() {
+    return (
+      React.createElement('span', {className: "reputation"},
+        this.state.data
+      )
+    );
+  }
+});
+ReactDOM.render(
+  React.createElement(ReputationBox, null),
+  document.getElementById('reputation')
+);
+

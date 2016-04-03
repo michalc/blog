@@ -21,6 +21,8 @@ gulp.task('build', function() {
   var streamToArray = require('stream-to-array');
   var striptags = require('striptags');
   var buffer = require('vinyl-buffer');
+  var browserify = require('browserify');
+  var gutil = require('gulp-util');
 
   // Unfortunately can't keep the fonts in this repository for licensing reasons
   // so download them from charemza.name
@@ -81,8 +83,19 @@ gulp.task('build', function() {
   }
 
   // Scripts
+  var intoStream = require('into-stream');
   var scripts = all
-    .pipe(filter(['assets/javascripts/**/*.*']));
+    .pipe(filter(['assets/javascripts/**/*.*']))
+    .pipe(stream.Transform({
+      objectMode: true,
+      transform: function(file, enc, done) {
+        var bundle = browserify(intoStream(file.contents));
+        file.contents = bundle.bundle()
+        this.push(file);
+        done();
+      }
+    }))
+    .pipe(buffer());
 
   // Styles
   var styles = all

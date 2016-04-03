@@ -11,8 +11,6 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <base href="/">
   <link rel="stylesheet" href="{{ lookup assets 'assets/stylesheets/site.css' }}">
-  <script src="//ajax.googleapis.com/ajax/libs/angularjs/1.4.0/angular.min.js" defer></script>
-  <script src="//ajax.googleapis.com/ajax/libs/angularjs/1.4.0/angular-animate.min.js" defer></script>
   <script src="{{ lookup assets 'assets/javascripts/reputation.js' }}" defer></script>
   <link rel="shortcut icon" href="{{ lookup assets 'assets/images/favicon.ico' }}">
 </head>
@@ -24,7 +22,7 @@
         <h1 itemprop="name">Michal Charemza</h1>
         <p itemprop="jobTitle">Full stack web developer</p>
       </a>
-      <p class="reputation" data-ng-app="reputation" data-reputation data-user-id="1319998" data-site="stackoverflow.com" data-key="IuEWeQbgKqLACgi0FNMcOQ(("></p>
+      <p id="reputation" class="reputation"></p>
       <p><a href="mailto:michal@charemza.name"><span itemprop="email">michal@charemza.name</span></a></p>
     </div>
   </header>
