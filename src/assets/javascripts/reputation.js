@@ -1,10 +1,10 @@
 var React = require('react');
 var ReactDOM = require('react-dom');
-var fetch = require('whatwg-fetch');
 var _ = require('lodash');
 
-// whatwg-fetch polyfill doesn't work if the browser has fetch!
-if (window.fetch) fetch = window.fetch;
+// Polyfills and so set globals
+require('es6-promise').polyfill();
+require('isomorphic-fetch');
 
 var USER_ID = 1319998;
 var SITE = "stackoverflow.com";
