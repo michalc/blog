@@ -21,9 +21,16 @@ gulp
 
 ## Deploy
 
-This project is deployed onto Amazon S3 using Travis, which will run
+Dependencies must be tar-gzipped and committed before deployment by running [https://www.npmjs.com/package/pac](pac)
 
 ```
+pac
+```
+
+Pushing to master will trigger Travis to deploy onto Amazon S3. For reference, Travis will run
+
+```
+for f in .modules/*.tgz; do tar -zxf "$f" -C node_modules/; done
 gulp publish
 ```
 
