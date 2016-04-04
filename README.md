@@ -21,7 +21,7 @@ gulp
 
 ## Deploy
 
-Dependencies must be tar-gzipped and committed before deployment by running [https://www.npmjs.com/package/pac](pac)
+Dependencies must be tar-gzipped and committed before deployment by running [pac](https://www.npmjs.com/package/pac)
 
 ```
 pac
