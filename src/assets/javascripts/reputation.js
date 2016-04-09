@@ -42,6 +42,14 @@ function formatNumber(num) {
   return num.toString().replace(/(\d)(?=(\d{3})+(?!\d))/g, "$1,");
 }
 
+var user = SE.getUser(USER_ID, SITE, KEY).then(function(user) {
+  return user;
+  self.setState({
+     data: user.reputation
+  });
+  localStorage.setItem('user-' + USER_ID, user.reputation);
+});
+
 var ReputationBox = React.createClass({
   displayName: 'ReputationBox',
   getInitialState: function() {
@@ -52,7 +60,7 @@ var ReputationBox = React.createClass({
   },
   componentDidMount: function() {
     var self = this;
-    SE.getUser(USER_ID, SITE, KEY).then(function(user) {
+    user.then(function(user) {
       self.setState({
         data: user.reputation
       });
