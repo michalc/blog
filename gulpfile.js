@@ -26,7 +26,7 @@ gulp.task('build', function() {
   var gutil = require('gulp-util');
 
   function isProduction() {
-    gutil.env.NODE_ENV === 'production';
+    return process.env.NODE_ENV === 'production';
   }
 
   function ifProduction(func) {
