@@ -11,6 +11,7 @@ gulp.task('build', function() {
   var filter = require('gulp-filter');
   var frontMatter = require('gulp-front-matter');
   var less = require('gulp-less');
+  var uglify = require('gulp-uglify');
   var md5 = require('gulp-md5');
   var rename = require('gulp-rename');
   var wrap = require('gulp-wrap');
@@ -23,6 +24,10 @@ gulp.task('build', function() {
   var buffer = require('vinyl-buffer');
   var browserify = require('browserify');
   var gutil = require('gulp-util');
+
+  function ifProduction(func) {
+    return gutil.env.NODE_ENV === 'production' ? func() : gutil.noop();
+  }
 
   // Unfortunately can't keep the fonts in this repository for licensing reasons
   // so download them from charemza.name
@@ -95,7 +100,8 @@ gulp.task('build', function() {
         done();
       }
     }))
-    .pipe(buffer());
+    .pipe(buffer())
+    .pipe(ifProduction(uglify));
 
   // Styles
   var styles = all
