@@ -25,9 +25,15 @@ gulp.task('build', function() {
   var browserify = require('browserify');
   var gutil = require('gulp-util');
 
-  function ifProduction(func) {
-    return gutil.env.NODE_ENV === 'production' ? func() : gutil.noop();
+  function isProduction() {
+    gutil.env.NODE_ENV === 'production';
   }
+
+  function ifProduction(func) {
+    return isProduction() ? func() : gutil.noop();
+  }
+
+  gutil.log(isProduction() ? 'Production build' : 'Development build');
 
   // Unfortunately can't keep the fonts in this repository for licensing reasons
   // so download them from charemza.name
