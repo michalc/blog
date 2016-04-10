@@ -10,7 +10,7 @@ gulp.task('build', function() {
   var download = require('gulp-download-stream');
   var filter = require('gulp-filter');
   var frontMatter = require('gulp-front-matter');
-  var less = require('gulp-less');
+  var sass = require('gulp-sass');
   var uglify = require('gulp-uglify');
   var md5 = require('gulp-md5');
   var rename = require('gulp-rename');
@@ -110,9 +110,10 @@ gulp.task('build', function() {
     .pipe(ifProduction(uglify));
 
   // Styles
+  console.log([path.join(__dirname, 'node_modules/prismjs/themes')]);
   var styles = all
-    .pipe(filter(['assets/stylesheets/site.less']))
-    .pipe(less({paths: [path.join(__dirname, 'node_modules/prismjs/themes')]}))
+    .pipe(filter(['assets/stylesheets/site.scss']))
+    .pipe(sass({includePaths: [path.join(__dirname, 'node_modules/prismjs/themes')]}))
     .pipe(addBinaryAssetData())
     .pipe(handlebars())
 
