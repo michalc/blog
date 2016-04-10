@@ -43,7 +43,6 @@ $subtle-time: 300ms;
 
 /* Box Sizing */
 * {
-  -moz-box-sizing: border-box;
   box-sizing: border-box;
 }
 
@@ -252,7 +251,6 @@ p, ul, nav {
     font-size: 40px;
     line-height: 40px;
     transition: right $subtle-time;
-    -webkit-transition: right $subtle-time;
     position: relative;
     right: 0;
     top: -7px; /* Tweak */
@@ -302,7 +300,8 @@ code.inline {
 
 /* Code Font */
 .highlight, code, pre {
-	font-family: "Source Code Pro"; font-size: 13px;
+	font-family: "Source Code Pro";
+  font-size: 13px;
 }
 .highlight {
   background: #efefef;
@@ -345,7 +344,6 @@ blockquote {
   }
 }
 .reputation span.from-server.ng-enter {
-  -webkit-transition: opacity $subtle-time;
   transition: opacity $subtle-time;
   opacity: 0;
 }
