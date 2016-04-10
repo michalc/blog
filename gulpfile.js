@@ -12,6 +12,7 @@ gulp.task('build', function() {
   var frontMatter = require('gulp-front-matter');
   var sass = require('gulp-sass');
   var postcss = require('gulp-postcss');
+  var cleancss = require('gulp-clean-css');
   var autoprefixer = require('autoprefixer');
   var uglify = require('gulp-uglify');
   var md5 = require('gulp-md5');
@@ -119,7 +120,8 @@ gulp.task('build', function() {
     .pipe(handlebars())
     .pipe(postcss([
       autoprefixer({browsers: ['last 2 versions']})
-    ]));
+    ]))
+    .pipe(cleancss());
 
   var textAssets = mergeStream(scripts, styles)
     .pipe(data(function(file) {
