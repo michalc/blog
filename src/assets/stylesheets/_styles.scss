@@ -17,6 +17,9 @@ $light: 300;
 $regular: 400;
 $bold: 700;
 
+$breakpoint-small: 400px;
+$breakpoint-medium: 500px;
+
 /* Colour combos */
 @mixin inverse() {
 	background: $main-color;
@@ -40,89 +43,105 @@ $bold: 700;
   box-sizing: border-box;
 }
 
-
 /* Main Layout */
 html {
   height: 100%;
   overflow-y: scroll;
 }
-body {
-  min-height: 100%;
-}
+
 html, body {
   padding: 0
 }
 
-body {
-  display: table;
-  table-layout: fixed;
-  width: 100%;
-}
-.page-sidebar {
-  display: table-cell;
-}
-.page-sidebar, .page-sidebar-content {
-	width: 33.333333%;
-  height: 100%;
-}
-.page-content {
-	width: 66.666666%;
-  display: table-cell;
-}
-.page-content-inner {
-  max-width: 760px;
-}
-
-/* Sidebar Position */
-.page-sidebar {
-  position: relative;
-}
-.page-sidebar-content {
-  top: 0;
-  position: fixed;
-}
-
-@media (max-width: 767px) {
-  body {
-    display: block;
-  }
-  .page-sidebar, .page-content-inner, .page-sidebar-content, .page-content {
-    width: 100%;
-    display: block;
-    max-width: none;
-    float: none;
-    position: static;
-  }
-}
-
 /* Main Fonts */
-html body {
+body {
   font-family: "ProximaNova";
   font-weight: $regular;
 	line-height: 1.5em;
 }
+
 em {
   font-style: italic;
 }
 
-/* Main Spacing */
-.page-content-inner {
-	padding: $large-spacing;
-  @media (max-width: 767px) {
-    padding: $standard-spacing $medium-spacing;
-  }
-  @media (max-width: 480px) {
-    padding: $standard-spacing;
+h1 {
+  font-weight: $bold;
+  font-size: 20px;
+  line-height: inherit;
+  text-shadow: 0px 1px 1px rgba(0, 0, 0, 0.8);
+  margin-bottom: 0.2em;
+  @media (min-width: $breakpoint-medium) {
+    font-size: 30px;
   }
 }
-.page-sidebar-content {
-	padding-top: $large-spacing;
-  @media (max-width: 767px) {
-    padding: $standard-spacing $medium-spacing;
+
+.page-header-inner,
+.page-content-inner {
+  max-width: 700px;
+  margin: 0 auto;
+}
+
+.page-header {
+  padding: $standard-spacing;
+  @include inverse();
+  font-weight: $light;
+}
+
+.page-header-inner {
+  display: flex;
+  justify-content: space-between;
+}
+
+.page-header-left {
+  display: flex;
+  flex-direction: column;
+  justify-content: space-around;
+}
+
+.page-header-right {
+  display: flex;
+  align-items: center;
+}
+
+.page-header-p {
+  margin: 0;
+}
+
+.reputation {
+  display: none;
+  @media (min-width: $breakpoint-small) {
+    display: block;
+    margin-right: 10px;
   }
-  @media (max-width: 480px) {
-    padding: $standard-spacing;
+  @media (min-width: $breakpoint-medium) {
+     margin-right: 15px;
   }
+}
+
+.job-title {
+  display: none;
+  @media (min-width: $breakpoint-medium) {
+    display: block;
+  }
+}
+
+.avatar {
+  border-radius: 62.5px;
+  border: 3px solid white;
+  display: block;
+
+  height: 50px;
+  width: 50px;
+  border-radius: 25px;
+  @media (min-width: $breakpoint-medium) {
+    height: 80px;
+    width: 80px;
+    border-radius: 40px;
+  }
+}
+
+.page-content {
+  padding: $standard-spacing;
 }
 
 /* Common Spacing */
@@ -153,71 +172,15 @@ p, ul, nav {
   }
 }
 
-/* Sidebar */
-.page-sidebar {
-  @include inverse();
-  font-weight: $light;
- 	text-align: center;
-  .page-sidebar-content > a {
-    display: block;
-    margin-bottom: $standard-spacing;
-    @media (max-width: 767px) {
-      margin-bottom: 0;
-    }
-    &:hover {
-      text-decoration: none;
-    }
-  }
- 	h1 {
-    font-weight: $bold;
- 	  font-size: 30px;
- 	  text-shadow: 0px 1px 1px rgba(0, 0, 0, 0.8);
-    @media (max-width: 991px) {
-      font-size: 25px;
-    }
-    @media (max-width: 480px) {
-      font-size: 20px;
-    }
- 	}
- 	img {
-	  border-radius: 62.5px;
-	  border: 3px solid white; 	
-    @media (max-width: 767px) {
-      height: 75px;
-      width: 75px;
-    }
-    @media (max-width: 480px) {
-      height: 50px;
-      width: 50px;
-    }
- 	}
- 	h1 + p {
- 	  font-size: 14px;
-    @media (max-width: 767px) {
-      font-size: 14px;
-    }
-    @media (max-width: 480px) {
-      display: none;
-    }
- 	}
-  @media (max-width: 767px) {
-    p {
-      margin-bottom: 0;
-      font-size: 14px;
-    }
-    text-align: left;
-    .photo {
-      float: right;
-      margin-left: $standard-spacing;
-    }
-  }
-}
-
 /* Post Summary + Post Header */
 .post-summary, .post > header {
   h2 {
     font-weight: $bold;
-  	font-size: 26px;
+  	font-size: 22px;
+    margin-bottom: 0.2em;
+    @media (min-width: $breakpoint-medium) {
+      font-size: 26px;
+    }
   }
   p.post-subtitle {
     margin-bottom: 0;
@@ -274,6 +237,9 @@ p, ul, nav {
   }
   margin-bottom: $standard-spacing;
 }
+.post-date {
+  font-size: 80%;
+}
 
 /* Comments */
 .comments {
@@ -316,34 +282,6 @@ blockquote {
     display: block;
     text-align: right;
   }
-}
-
-/* Reputation */
-.reputation {
-  height: 24px;
-  i {
-    width: 16px
-  }
-  .icon-link-text {
-    font-size: 14px;
-  }
-  @media (max-width: 767px) {
-    float: right;
-    margin-top: -24px;
-  }
-  @media (max-width: 480px) {
-    margin-top: -12px;
-  }
-  @media (max-width: 380px) {
-    display: none;
-  }
-}
-.reputation span.from-server.ng-enter {
-  transition: opacity $subtle-time;
-  opacity: 0;
-}
-.reputation span.from-server.ng-enter.ng-enter-active {
-  opacity: 1
 }
 
 /* Icon Links */
