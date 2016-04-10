@@ -3,17 +3,6 @@ $main-color: #950000;
 $text-on-main-color: #ffffff;
 $text-on-background: #333333;
 
-/* Fonts */
-@mixin main-font() {
-	font-family: "ProximaNova-Regular";
-}
-@mixin bold() {
-	font-family: "ProximaNova-Bold";
-}
-@mixin light() {
-	font-family: "ProximaNova-Light";
-}
-
 /* Spacing */
 $large-spacing: 80px;
 $medium-spacing: 40px;
@@ -22,6 +11,11 @@ $smaller-spacing: 15px;
 
 /* Times */
 $subtle-time: 300ms;
+
+/* Fonts */
+$light: 300;
+$regular: 400;
+$bold: 700;
 
 /* Colour combos */
 @mixin inverse() {
@@ -103,7 +97,8 @@ body {
 
 /* Main Fonts */
 html body {
-  @include main-font();
+  font-family: "ProximaNova";
+  font-weight: $regular;
 	line-height: 1.5em;
 }
 em {
@@ -161,7 +156,7 @@ p, ul, nav {
 /* Sidebar */
 .page-sidebar {
   @include inverse();
-  @include light();
+  font-weight: $light;
  	text-align: center;
   .page-sidebar-content > a {
     display: block;
@@ -174,7 +169,7 @@ p, ul, nav {
     }
   }
  	h1 {
-    @include bold();
+    font-weight: $bold;
  	  font-size: 30px;
  	  text-shadow: 0px 1px 1px rgba(0, 0, 0, 0.8);
     @media (max-width: 991px) {
@@ -221,7 +216,7 @@ p, ul, nav {
 /* Post Summary + Post Header */
 .post-summary, .post > header {
   h2 {
-    @include bold();
+    font-weight: $bold;
   	font-size: 26px;
   }
   p.post-subtitle {
@@ -271,7 +266,7 @@ p, ul, nav {
 .post {
   h3 {
     font-size: 20px;
-    @include bold();
+    font-weight: $bold;
     @include standard-border();
     padding-top: $standard-spacing;
     margin-top: $standard-spacing;
