@@ -11,6 +11,8 @@ gulp.task('build', function() {
   var filter = require('gulp-filter');
   var frontMatter = require('gulp-front-matter');
   var sass = require('gulp-sass');
+  var postcss = require('gulp-postcss');
+  var autoprefixer = require('autoprefixer');
   var uglify = require('gulp-uglify');
   var md5 = require('gulp-md5');
   var rename = require('gulp-rename');
@@ -110,12 +112,14 @@ gulp.task('build', function() {
     .pipe(ifProduction(uglify));
 
   // Styles
-  console.log([path.join(__dirname, 'node_modules/prismjs/themes')]);
   var styles = all
     .pipe(filter(['assets/stylesheets/site.scss']))
     .pipe(sass({includePaths: [path.join(__dirname, 'node_modules/prismjs/themes')]}))
     .pipe(addBinaryAssetData())
     .pipe(handlebars())
+    .pipe(postcss([
+      autoprefixer({browsers: ['last 2 versions']})
+    ]));
 
   var textAssets = mergeStream(scripts, styles)
     .pipe(data(function(file) {
