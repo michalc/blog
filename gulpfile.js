@@ -27,6 +27,7 @@ gulp.task('build', function() {
   var buffer = require('vinyl-buffer');
   var browserify = require('browserify');
   var gutil = require('gulp-util');
+  var babel = require('gulp-babel');
 
   function isProduction() {
     return process.env.NODE_ENV === 'production';
@@ -100,6 +101,7 @@ gulp.task('build', function() {
   var intoStream = require('into-stream');
   var scripts = all
     .pipe(filter(['assets/javascripts/**/*.*']))
+    .pipe(babel())
     .pipe(stream.Transform({
       objectMode: true,
       transform: function(file, enc, done) {

@@ -70,10 +70,9 @@ var ReputationBox = React.createClass({
   render: function() {
     if (!this.state.data) return false;
     return (
-      React.createElement('span', {className: "reputation"}, 
-        React.createElement('i', {className: "fa fa-stack-overflow"}),
-        React.createElement('span', {className: "icon-link-text"}, formatNumber(this.state.data))
-      )
+      <span className="reputation">
+        <i className="fa fa-stack-overflow" /><span className="icon-link-text">{formatNumber(this.state.data)}</span>
+      </span>
     );
   }
 });
