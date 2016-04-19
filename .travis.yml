@@ -5,8 +5,8 @@ node_js:
 env:
   global:
     - NODE_ENV=production
-    - AWS_ACCESS_KEY_ID=AKIAJBPGNDSHUF77W2KA
-    - secure: "Oes79ZNcVC5SprsErSTiT+xmRUKQ/mIwuRQ+j2+jH3YoXowEY2uh2rbs2LodTNJ33IteTdJ/DjtyxgkCBDxJsk3oNPpwZuTl5YYGr/R2ODO2+ggRgLtwpT7/QWVviWqe2bYKSLfn0DjQT9BuY/srEAGvY42ovLxDhxC3t9EvifY="
+    - AWS_ACCESS_KEY_ID=AKIAJCPKMW75PSFUC2LQ
+    - secure: "Befk9OSMDwfgs5JmoVAzotEuWlndATyZ7nTJBI8AwX7s8GWYBO8oiYPz3HAX1fKV4limqMXxLPjALpVDhLyvwSaYJlinzOp1VfXpLBjaG6fX7A6gLIJJN0xccJDZ43UnoF3q3tbAOjaO6VR6Qm4TeSuJJX0+uq9BOHwfkWesJLM="
 install:
   - for f in .modules/*.tgz; do tar -zxf "$f" -C node_modules/; done
 script:
