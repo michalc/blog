@@ -299,39 +299,37 @@ gulp.task('publish', ['build'], function() {
     return concurrent(publisher.publish(headers, {force: true}), 8);
   }
 
-  // Cache 1 week, no gzip
+  // Cache 1 week
   var binaryResources = gulp.src(['**/*.ico', '**/*.woff', '**/*.jpeg'], {cwd: BUILD_DIR})
     .pipe(publish({
       'Cache-Control': 'max-age=' + 60 * 60 * 24 * 7 + ', no-transform, public'
     }));
   var binaryResourcesDone = streamToPromise(binaryResources);
 
-  // Cache 1 week, +  gzip
+  // Cache 1 week
   var textResources = gulp.src(['**/*.js', '**/*.css'], {cwd: BUILD_DIR})
-    .pipe(awspublish.gzip())
     .pipe(publish({
       'Cache-Control': 'max-age=' + 60 * 60 * 24 * 7 + ', no-transform, public'
     }));
   var textResourcesDone = streamToPromise(textResources);
 
-  // Cache 5 mins + gzip
+  // Cache 5 mins
   var blog = gulp.src('blog/**/*.html', {cwd: BUILD_DIR, base: BUILD_DIR})
-    .pipe(awspublish.gzip())
     .pipe(waitFor(Promise.all([binaryResourcesDone, textResourcesDone])))
     .pipe(publish({
       'Cache-Control': 'max-age=' + 60 * 5 + ', no-transform, public'
     }));
   var blogDone = streamToPromise(blog);
 
+  // Cache 5 mins
   var index = gulp.src('index.html', {cwd: BUILD_DIR})
-    .pipe(awspublish.gzip())
     .pipe(waitFor(blogDone))
     .pipe(publish({
       'Cache-Control': 'max-age=' + 60 * 5 + ', no-transform, public'
     }));
   var indexDone = streamToPromise(index);
 
-  // Cache 5 mins, no gzip
+  // Cache 5 mins
   var meta = gulp.src(['robots.txt', 'sitemap.xml'], {cwd: BUILD_DIR})
     .pipe(waitFor(indexDone))
     .pipe(publish({
