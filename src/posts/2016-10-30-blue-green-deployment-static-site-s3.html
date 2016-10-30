@@ -1,0 +1,50 @@
+---
+layout: post
+title:  "Blue-Green Deployment of Static Site on S3"
+subtitle: "API Gateway in a blue-green deployment strategy"
+date: 2016-10-30 16:00:00
+categories: devops aws 
+
+---
+
+<p>This post contains the high level steps for the site architecture and deployment strategy for <a href="http://martinfowler.com/bliki/BlueGreenDeployment.html">blue-green deployment</a> for a static site hosted on <a href="https://aws.amazon.com/s3/">S3</a>.</p>
+
+<p>There are a few things that are required for a reasonable blue-green strategy.</p>
+
+<ul class="fa-ul">
+  <li><i class="fa-li fa fa-caret-right"></i> No downtime between releases.</li>
+  <li><i class="fa-li fa fa-caret-right"></i> Atomic deployment. A visitor sees a whole working version from before or after the deployment. This can be tricky because a user doesn't request a site atomically, i.e. first the HTML is requested, and then some time later all the static resources.</li>
+  <li><i class="fa-li fa fa-caret-right"></i> E2E tests run on a certification environment that has the bare minimum of changes between it and production.</li>
+</ul>
+
+<p>To acheive this, you can place the entire site behind an <a href="https://aws.amazon.com/api-gateway/">API Gateway</a>. Although the documentation and marketing material hints that it is only suitable for APIs to be consumed programatically, there is nothing stopping it being used for an API to be consumed by people, i.e. a site made up of HTML, CSS, JavaScript, images and fonts. A few features of API Gateway make this possible.</p>
+
+<ul class="fa-ul">
+  <li><i class="fa-li fa fa-caret-right"></i> API gateway has the concept of <a href="http://docs.aws.amazon.com/apigateway/latest/developerguide/stages.html">stages</a>, where you deploy and API to a stage, and then, later, atomically update another stage to that deployment.</li>
+  <li><i class="fa-li fa fa-caret-right"></i> API gateway can <a href="http://docs.aws.amazon.com/apigateway/latest/developerguide/integrating-api-with-aws-services-s3.html">proxy requests to S3</a>, so the entire site can placed behind the API gateway.</li>
+  <li><i class="fa-li fa fa-caret-right"></i> API gateway supports <a href="http://docs.aws.amazon.com/apigateway/latest/developerguide/how-to-custom-domains.html">custom domains</a> and the ability to <a href="http://docs.aws.amazon.com/apigateway/latest/developerguide/how-to-custom-domains.html#how-to-custom-domains-mapping-basePath-examples">map paths</a> to specific stages.</li>
+</ul>
+
+<p>With these features in mind, the overal architecture of the site is as follows.</p>
+
+<ul class="fa-ul">
+	<li><i class="fa-li fa fa-caret-right"></i> You have the entire web site defined as an API, with appropriate resources for the HTML and static assets. A <a href="http://docs.aws.amazon.com/apigateway/latest/developerguide/create-api-using-import-export-api.html">Swagger definition file</a> is a reasonable choice for this.</li>
+	<li><i class="fa-li fa fa-caret-right"></i> Have 2 stages setup for the API, each with a custom domain. The public domain of the site has an API mapping from root to the production stage; and another domain, which is used for certification, has an API mapping from root to the certification stage.</li>
+  <li><i class="fa-li fa fa-caret-right"></i> A single S3 bucket for the assets, i.e. everthing except the HTML. These must have versioned file names, such had fragment of md5 hash of contents.<li>
+  <li><i class="fa-li fa fa-caret-right"></i> Two S3 buckets for the html. One for production and one for certification.</li>
+</ul>
+
+<p>A strategy to deploy using this is below.</p>
+
+<ul class="fa-ul">
+	<li><i class="fa-li fa fa-caret-right"></i> Deploy static assets, making sure that each is has a file name that is versioned with an MD5 of its contents, and existing assets are not deleted.</li>
+	<li><i class="fa-li fa fa-caret-right"></i> Determine which bucket is in production. One choice is to actually embed this as a mock route in the Swagger definition file, and download this in the build script, so you have an up to date file.</li>
+	<li><i class="fa-li fa fa-caret-right"></i> Modify the Swagger definition file so requests for HTML are proxied to the certification bucket. You could use your favourite template language for this.</li>
+	<li><i class="fa-li fa fa-caret-right"></i> Deploy the API to the certification stage. Take note of the deploymentId.</li>
+	<li><i class="fa-li fa fa-caret-right"></i> Run E2E tests.</li>
+	<li><i class="fa-li fa fa-caret-right"></i> If they all pass, update the production stage so its deploymentId is set to the certification stage.</li>
+</ul>
+
+<p>At every stage above, a visitor to the public site will either see the old site, or the new site. To keep this post brief, not part of this strategy is removal of assets that are no longer used.</p>
+
+<p>That's it!</p>
