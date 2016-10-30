@@ -29,8 +29,8 @@ categories: devops aws
 
 <ul class="fa-ul">
 	<li><i class="fa-li fa fa-caret-right"></i> You have the entire web site defined as an API, with appropriate resources for the HTML and static assets. A <a href="http://docs.aws.amazon.com/apigateway/latest/developerguide/create-api-using-import-export-api.html">Swagger definition file</a> is a reasonable choice for this.</li>
-	<li><i class="fa-li fa fa-caret-right"></i> Have 2 stages setup for the API, each with a custom domain. The public domain of the site has an API mapping from root to the production stage; and another domain, which is used for certification, has an API mapping from root to the certification stage.</li>
-  <li><i class="fa-li fa fa-caret-right"></i> A single S3 bucket for the assets, i.e. everthing except the HTML. These must have versioned file names, such had fragment of md5 hash of contents.<li>
+	<li><i class="fa-li fa fa-caret-right"></i> 2 stages setup for the API, each with a custom domain. The public domain of the site has an API mapping from root to the production stage; and another domain, which is used for certification, has an API mapping from root to the certification stage.</li>
+  <li><i class="fa-li fa fa-caret-right"></i> A single S3 bucket for the assets, i.e. everything except the HTML. These must have versioned file names, such as having a fragment of the md5 hash of the contents.<li>
   <li><i class="fa-li fa fa-caret-right"></i> Two S3 buckets for the html. One for production and one for certification.</li>
 </ul>
 
