@@ -37,7 +37,7 @@ categories: devops aws
 <p>A strategy to deploy using this is below.</p>
 
 <ul class="fa-ul">
-	<li><i class="fa-li fa fa-caret-right"></i> Deploy static assets, making sure that each is has a file name that is versioned with an MD5 of its contents, and existing assets are not deleted.</li>
+	<li><i class="fa-li fa fa-caret-right"></i> Deploy static assets to the asset bucket, making sure that each is has a file name that is versioned with an MD5 of its contents, and existing assets are not deleted.</li>
 	<li><i class="fa-li fa fa-caret-right"></i> Determine which bucket is in production. One choice is to actually embed this as a mock route in the Swagger definition file, and download this in the build script, so you have an up to date file.</li>
 	<li><i class="fa-li fa fa-caret-right"></i> Modify the Swagger definition file so requests for HTML are proxied to the certification bucket. You could use your favourite template language for this.</li>
 	<li><i class="fa-li fa fa-caret-right"></i> Deploy the API to the certification stage. Take note of the deploymentId.</li>
