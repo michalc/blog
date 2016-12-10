@@ -18,7 +18,7 @@ if (condition) {
 }
 {{/highlight}}
 
-<p>If you can extract out common logic from <code class="inline">doFooImpurely</code> and <code class="inline">doBarImpurely</code> into a meaningful intermediate variable that can be calculated purely, so the code is of the following form.</p>
+<p>If you can extract out common logic from <code class="inline">doFooImpurely</code> and <code class="inline">doBarImpurely</code> into a meaningful intermediate variable that can be calculated purely, so the code is of the following form</p>
 
 {{#highlight 'javascript'}}
 const intermediateValue = condition ? getFooValuePurely() : getBarValuePurely()
