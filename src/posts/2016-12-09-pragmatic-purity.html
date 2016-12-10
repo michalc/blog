@@ -12,17 +12,17 @@ categories: programming pure
 
 {{#highlight 'javascript'}}
 if (condition) {
-  doFooImpurely()
+  doFooImpurely();
 } else {
-  doBarImpurely()
+  doBarImpurely();
 }
 {{/highlight}}
 
 <p>If you can extract out common logic from <code class="inline">doFooImpurely</code> and <code class="inline">doBarImpurely</code> into a meaningful intermediate variable that can be calculated purely, so the code is of the following form</p>
 
 {{#highlight 'javascript'}}
-const intermediateValue = condition ? getFooValuePurely() : getBarValuePurely()
-doImpurely(intermediateValue)
+const intermediateValue = condition ? getFooValuePurely() : getBarValuePurely();
+doImpurely(intermediateValue);
 {{/highlight}}
 
 <p>then I would recommend considering it. Even if the total cycomatic complexity of the code is equal to what it was, I usually judge the latter to be better because</p>
@@ -31,3 +31,26 @@ doImpurely(intermediateValue)
   <li><i class="fa-li fa fa-caret-right"></i> the pure and impure parts of the code are separate, and so better due to the standard separation of concerns arguments;</li>
   <li><i class="fa-li fa fa-caret-right"></i> depending on what is inside <code class="inline">doImpurely</code>, there are likely to be fewer impure code paths: this is often better since there are fewer ways state can change or side effects can happen.</li>
 </ul>
+
+<p>The benefit is greater in more complex cases.</p>
+
+{{#highlight 'javascript'}}
+if (condition) {
+  doFooImpurely();
+} else if (anotherCondition) {
+  doBarImpurely();
+} else {
+  doQuxImpurely();
+}
+{{/highlight}}
+
+<p>If you can extract out the pure logic, the code can then take the below form.</p>
+
+{{#highlight 'javascript'}}
+const intermediateValue = 
+   condition        ? getFooValuePurely() :
+  (anotherCondition ? getQuxValuePurely() : getBarValuePurely());
+doImpurely(intermediateValue);
+{{/highlight}}
+
+<p>If you're not a fan of the nested ternary operator, you can easily restructure the pure part of the code: make it a series of if statements, extract out to another function, etc. A really nice benefit of pure code is that you can really easily move code about, and have confidence that it doesn't negatively affect the code that "does stuff", i.e. the impure code.</p>
