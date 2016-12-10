@@ -25,7 +25,7 @@ const intermediateValue = condition ? getFooValuePurely() : getBarValuePurely()
 doImpurely(intermediateValue)
 {{/highlight}}
 
-<p>then I would recommend considering it. Even though the cycomatic complexity of these are equal, I usually judge the latter to be better because</p>
+<p>then I would recommend considering it. Even if the total cycomatic complexity of the code is equal to what it was, I usually judge the latter to be better because</p>
 
 <ul class="fa-ul">
   <li><i class="fa-li fa fa-caret-right"></i> the pure and impure parts of the code are separate, and so better due to the standard separation of concerns arguments;</li>
