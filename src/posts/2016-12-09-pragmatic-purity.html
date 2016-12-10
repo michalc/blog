@@ -1,0 +1,33 @@
+---
+layout: post
+title:  "Pragmatic Purity"
+subtitle: "Keep pure and impure code separate, with fewer impure code paths"
+date: 2016-12-09 16:00:00
+categories: programming pure 
+
+---
+
+
+<p>The code below follows a common pattern in impure code.</p>
+
+{{#highlight 'javascript'}}
+if (condition) {
+  doFooImpurely()
+} else {
+  doBarImpurely()
+}
+{{/highlight}}
+
+<p>If you can extract out common logic from <code class="inline">doFooImpurely</code> and <code class="inline">doBarImpurely</code> into a meaningful intermediate variable that can be calculated purely, so the code is of the following form.</p>
+
+{{#highlight 'javascript'}}
+const intermediateValue = condition ? getFooValuePurely() : getBarValuePurely()
+doImpurely(intermediateValue)
+{{/highlight}}
+
+<p>then I would recommend considering it. Even though the cycomatic complexity of these are equal, I usually judge the latter to be better because</p>
+
+<ul class="fa-ul">
+  <li><i class="fa-li fa fa-caret-right"></i> the pure and impure parts of the code are separate, and so better due to the standard separation of concerns arguments;</li>
+  <li><i class="fa-li fa fa-caret-right"></i> depending on what is inside <code class="inline">doImpurely</code>, there are likely to be fewer impure code paths: this is often better since there are fewer ways state can change or side effects can happen.</li>
+</ul>
