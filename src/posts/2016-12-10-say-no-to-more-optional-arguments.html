@@ -40,9 +40,26 @@ def my_func(a, b=None):
     ...
 {{/highlight}}
 
-<p>This is a run-time check, even though you know, at write-time, that the case you want this to run is in the new call site. Having write-time knowledge that you convert to a run-time check is often needlessly increasing the cyclomatic complexity of the code. Essentially this makes the code smelly, and is a sign of laziness or a response to fear of touching existing code.</p>
+<p>This is a run-time check, even though you know, at write-time, that the case you want this to run is in the new call site. Having write-time knowledge that you convert to a run-time check is often needlessly increasing the cyclomatic complexity of the code. Essentially this makes the code smelly, is a sign of laziness or a response to fear of touching existing code, and it biases the code: the original use case is clearer than than the new one. All this is likely to make further changes to the code more difficult.</p>
 
-<p>What to do about this depends on the actual code in question. However, often there is code in the function that should be factored out to be called directly from the call sites, perhaps as one or two new functions. So the two call sites can look more similar to each other as below.</p>
+<p>One small improvement is to not have a default value in the parameter list, so the function looks like<p>
+
+{{#highlight 'python'}}
+def my_func(a, b):
+  ...
+  if b is not None:
+    ...
+{{/highlight}}
+
+<p>and change the original call site to explicitly pass <code class="inline">None</code>.</p>.
+{{#highlight 'python'}}
+# Original call site
+my_func(a=arg_original, b=None)
+{{/highlight}}
+
+<p>However, exactly because you can pass <code class="inline">None</code>, and the function handles this case separately, <code class="inline">b</code> is still a <a href="http://mypy.readthedocs.io/en/latest/kinds_of_types.html#the-type-of-none-and-optional-types">de-facto optional argument</a> to the function.</p>
+
+<p>What to do about this depends on the actual code in question. However, often there is code in the function that can be factored out to be called directly from the call sites, perhaps as a meaningul return value from one or two new functions</p>
 
 {{#highlight 'python'}}
 # Original call site
@@ -51,5 +68,7 @@ my_func(a=arg_original, b=foo())
 # New call site
 my_func(a=arg_new, b=bar())
 {{/highlight}}
+
+<p>so the code of <code class="inline">my_func</code> no longer has a special case of handling <code class="inline">b</code> being <code class="inline">None</code>.
 
 <p>This has the benefits that it keeps the reponsibility of the original function small, chances are it has limited the increase of cyclomatic complexity, and it does not bias the code base: the new call site is as clear and deliberate as the original call site.</p>
