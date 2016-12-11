@@ -59,7 +59,7 @@ my_func(a=arg_original, b=None)
 
 <p>However, exactly because you can pass <code class="inline">None</code>, and the function handles this case separately, <code class="inline">b</code> is still a <a href="http://mypy.readthedocs.io/en/latest/kinds_of_types.html#the-type-of-none-and-optional-types">de-facto optional argument</a> to the function.</p>
 
-<p>What to do about this depends on the actual code in question. However, often there is code in the function that can be factored out to be called directly from the call sites, perhaps as a meaningul return value from one or two new functions</p>
+<p>What to do about this depends on the actual code in question. However, often there is code in the function that can be factored out to functions called directly from the call sites.</p>
 
 {{#highlight 'python'}}
 # Original call site
