@@ -21,18 +21,14 @@ def my_func(a, b=None):
   ...
 {{/highlight}}
 
-<p>So after adding this, you would have two (or more) call sites:</p>
+<p>So after adding this, you would have two (or more) call sites.</p>
 
 {{#highlight 'python'}}
 # Original call site
-my_func(a=arg)
-{{/highlight}}
+my_func(a=arg_original)
 
-<p>and</p>
-
-{{#highlight 'python'}}
 # New call site
-my_func(a=arg_1, b=arg_2)
+my_func(a=arg_new_1, b=arg_new_2)
 {{/highlight}}
 
 <p>and quite likely inside the function there will be at least one new block of code that modifies its behaviour in the new case.</p>
@@ -46,18 +42,14 @@ def my_func(a, b=None):
 
 <p>This is a run-time check, even though you know, at write-time, that the case you want this to run is in the new call site. Having write-time knowledge that you convert to a run-time check is often needlessly increasing the cyclomatic complexity of the code. Essentially this makes the code smelly, and is a sign of laziness or a response to fear of touching existing code.</p>
 
-<p>What to do about this depends on the actual code in question. However, often there is code in the function that should be factored out to be called directly from the call sites, perhaps as one or two new functions. So the two call sites can look more similar to each other. For example</p>
+<p>What to do about this depends on the actual code in question. However, often there is code in the function that should be factored out to be called directly from the call sites, perhaps as one or two new functions. So the two call sites can look more similar to each other as below.</p>
 
 {{#highlight 'python'}}
 # Original call site
-my_func(a=arg, b=foo())
-{{/highlight}}
+my_func(a=arg_original, b=foo())
 
-<p>and</p>
-
-{{#highlight 'python'}}
 # New call site
-my_func(a=arg, b=bar())
+my_func(a=arg_new, b=bar())
 {{/highlight}}
 
 <p>This has the benefits that it keeps the reponsibility of the original function small, chances are it has limited the increase of cyclomatic complexity, and it does not bias the code base: the new call site is as clear and deliberate as the original call site.</p>
