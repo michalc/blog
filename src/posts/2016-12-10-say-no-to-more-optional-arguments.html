@@ -40,7 +40,7 @@ def my_func(a, b=None):
     ...
 {{/highlight}}
 
-<p>This is a run-time check, even though you know, at write-time, that the case you want this to run is in the new call site. Having write-time knowledge that you convert to a run-time check is often needlessly increasing number of branches in the code<sup><a href="#footnote-1">1</a></sup>. I suspect is a response to personal bias against touching existing code, and it biases the code itself: the original use case is clearer than than the new one. All this, I suspect, is likely to make further changes to the code more difficult.</p>
+<p>This is a run-time check, even though you know, at write-time, that the case you want this to run is in the new call site. Having write-time knowledge that you convert to a run-time check is often needlessly increasing number of branches in the code<sup><a href="#footnote-1">1</a></sup>. I suspect it is a response to personal bias against touching existing code, and it biases the code itself: the original use case is clearer than than the new one. All this, I suspect, is likely to make further changes to the code more difficult.</p>
 
 <p>One small improvement is to not have a default value in the parameter list, so the function looks like<p>
 
