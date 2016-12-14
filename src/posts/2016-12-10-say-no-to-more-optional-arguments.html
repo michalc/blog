@@ -40,7 +40,7 @@ def my_func(a, b=None):
     ...
 {{/highlight}}
 
-<p>This is a run-time check, even though you know, at write-time, that the case you want this to run is in the new call site. Having write-time knowledge that you convert to a run-time check is often needlessly increasing the cyclomatic complexity of the code. Essentially this makes the code smelly, is a sign of laziness or a response to fear of touching existing code, and it biases the code: the original use case is clearer than than the new one. All this is likely to make further changes to the code more difficult.</p>
+<p>This is a run-time check, even though you know, at write-time, that the case you want this to run is in the new call site. Having write-time knowledge that you convert to a run-time check is often needlessly increasing the cyclomatic complexity of the code<sup><a href="#footnote-1">1</a></sup>. I suspect is a response to personal bias against touching existing code, and it biases the code itself: the original use case is clearer than than the new one. All this, I suspect, is likely to make further changes to the code more difficult.</p>
 
 <p>One small improvement is to not have a default value in the parameter list, so the function looks like<p>
 
@@ -71,4 +71,28 @@ my_func(a=arg_new, b=bar())
 
 <p>so the code of <code class="inline">my_func</code> no longer has a special case of handling <code class="inline">b</code> being <code class="inline">None</code>.
 
-<p>This has the benefits that it keeps the reponsibility of the original function small, chances are it has limited the increase of cyclomatic complexity, and it does not bias the code base: the new call site is as clear and deliberate as the original call site.</p>
+<p>In some cases, if you're working in a language that allows lambda functions, it might be clearer to extract out a lambda function that you pass in.</p>
+
+{{#highlight 'python'}}
+# Original call site
+my_func(a=arg_original, b=lambda x: foo(x))
+
+# New call site
+my_func(a=arg_new, b=lambda x: bar(x))
+{{/highlight}}
+
+<p>And of course, if you're working in an object oriented language, it might be appropriate to go the whole hog and pass in an object.</p>
+
+{{#highlight 'python'}}
+# Original call site
+my_func(a=arg_original, b=new Foo())
+
+# New call site
+my_func(a=arg_new, b=new Bar())
+{{/highlight}}
+
+<p>These changes have benefits that they keeps the reponsibility of the original function small, chances are it has limited the increase of cyclomatic complexity, and it does not bias the code base: the new call site is as clear and deliberate as the original call site.</p>
+
+<hr>
+
+<p id="footnote-1"><sup>1</sup> This statement only has relevance if cyclomatic complexity is seen as something to be deliberatly avoided, a view which may be oversimplisitc, and in some cases, counter-productive. I am wary of following it too strictly.</p> 
