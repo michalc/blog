@@ -111,7 +111,7 @@ describe('my homepage', function() {
     browser.get('http://mypage.com');
     input = element(by.xpath('//label[text()="Name"]/following::input[1]'))
     input.sendKeys('Julie');
-    greeting = element(by.xpath('//label[text()="Greeting"]/following::input[1]'))
+    greeting = element(by.xpath('//label[text()="Greeting"]/following::p[1]'))
     expect(greeting.getText()).toEqual('Hello Julie!');
   });
 });
