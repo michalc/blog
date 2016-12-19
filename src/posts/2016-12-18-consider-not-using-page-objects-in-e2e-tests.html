@@ -16,7 +16,7 @@ categories: angularjs e2e
 
 <h3>Reason 1: They obscure behaviour</h3>
 
-<p>Consider the <a href="https://github.com/angular/protractor/blob/7b371fcd9e47904dd6e3a226edc70292f08a2547/docs/page-objects.md">official example</a></p>
+<p>Consider the <a href="https://github.com/angular/protractor/blob/7b371fcd9e47904dd6e3a226edc70292f08a2547/docs/page-objects.md">official example</a> below.</p>
 
 {{#highlight 'javascript'}}
 var AngularHomepage = function() {
@@ -37,13 +37,15 @@ var AngularHomepage = function() {
 };
 {{/highlight}}
 
-<p>Because of the behaviour of <code class="inline">ElementFinder</code>, the elements are actually only retrieved when you call <code class="inline">setName</code> or <code class="inline">getGreeting</code>. Of course you know this, since you know how Protractor behaves, and can see the code of the page object. But you could have this information much closer to the test rather than elsewhere. When you have more complex page behaviour, with elements appearing and disappearing due to non-trial behaviour, being completely clear on when elements are being retrieved, it is very important to keep the tests maintainable, and making sure that they are doing what you think they're doing.</p>
+<p>Because of the behaviour of <code class="inline">ElementFinder</code>, the elements are actually only retrieved when you call <code class="inline">setName</code> or <code class="inline">getGreeting</code>. Of course you know this, since you know how Protractor behaves, and can see the code of the page object. But you could have this information much closer to the test rather than elsewhere. When you have more complex page behaviour, with elements appearing and disappearing due to non-trivial behaviour, in order to keep the tests maintainable, it is important to make sure that they are doing what you think they're doing.</p>
+
+<p>I think the behaviour of <code class="inline">ElementFinder</code> that attempts to retrieve the element from the page when the element is first interacted with is good for simple cases, but slightly too magical for testing more complex UIs. Hiding this behind your own layer makes this situation even worse.</p>
 
 <h3>Reason 2: They obscure state</h3>
 
-<p>By nature of being objects, they promote keeping an internal state, exposed by an interface. You might not be able to get away from having some state in your test: it's asynchronous and you might have to check something survives from one point in time to the next. However, you should be able to keep it all in the main body of the test, keeping only the state you need for that particular test.</p>
+<p>By nature of being objects, they promote keeping an internal state, exposed by an interface. You might not be able to get away from having some state in your tests: they last for some "real" period of time. However, you should be able to keep it all in the main body of the test, keeping only the state you need for that particular test.</p>
 
-<p>Conder the example above. As mentioned, the elements are actually found on the page when you call <code class="inline">setName</code> or <code class="inline">getGreeting</code>, and you are offered no way to "refind" an element, say if it is temporarily removed and a new one added to the DOM. Of course, you can create another page object, or add a method to do it, 
+<p>Consider the example above. As mentioned, the elements are actually found on the page when you call <code class="inline">setName</code> or <code class="inline">getGreeting</code>, but you are offered no way to "refind" an element, say if the application removes them and new ones are added to the DOM. Of course, you can create a new instance of that page object, or add a method to do it, 
 
 {{#highlight 'javascript'}}
 this.refindNameInput = function() {
@@ -53,9 +55,9 @@ this.refindNameInput = function() {
 
 <p>but doing this means that you are completely leaking how the page object handles state internally. Encapsulation has offered little but another layer of code between the test and what it's doing.</p>
 
-<h3>Reason 3: They hide what you're actually testing</h3>
+<h3>Reason 3: They obscure the interactions with the UI</h3>
 
-<p>Finally, <a href="https://github.com/angular/protractor/blob/7b371fcd9e47904dd6e3a226edc70292f08a2547/docs/page-objects.md">The page object example in the documentation<a> suggests wrapping the non-semantic UI actions such as typing...</a>
+<p><a href="https://github.com/angular/protractor/blob/7b371fcd9e47904dd6e3a226edc70292f08a2547/docs/page-objects.md">The page object example in the documentation<a> suggests wrapping the non-semantic UI actions such as typing in an input and getting text from an element...</a>
 
 {{#highlight 'javascript'}}
 nameInput.sendKeys(name);
@@ -63,7 +65,7 @@ nameInput.sendKeys(name);
 greeting.getText();
 {{/highlight}}
 
-<p>... in functions with semantic names.</p>
+<p>... with functions with semantic names.</p>
 
 {{#highlight 'javascript'}}
 this.setName = function(name) {
@@ -75,21 +77,31 @@ this.getGreeting = function() {
 };
 {{/highlight}}
 
-<p>The main problems is that it's needlessly hiding how the object is interacting with the elements on the page and where the object gets its data.</p>
+<p>The main problems is that it's needlessly hiding how the object is interacting with the elements on the page and where the object gets its data. This means it's less clear what the test is testing.</p>
 
 <p>As the application grows, and you have more elements and ways of interacting with them, combinations of key presses, mouse movements, and different and more complex ways of giving output, this can lead to your page objects exposing a lot of what you meant to hide in the first place.</p>
 
 <h3>Reason 4: You are spending time coding for a case of many E2E tests that should never happen</h3>
 
-<p>It is usually recommended to <a href="https://testing.googleblog.com/2015/04/just-say-no-to-more-end-to-end-tests.html"><em>not</em> have that many E2E tests</a>. Essentially if you have a very small amount of E2E tests for each part of your application, then spending time for some future "what if we do this 100s of times" cases is effort that has the primary effect of making it harder to reason about each test that you do have.</p>
+<p>It is usually recommended to <a href="https://testing.googleblog.com/2015/04/just-say-no-to-more-end-to-end-tests.html"><em>not</em> have that many E2E tests</a>. If you have a very small amount of E2E tests for each part of your application, then spending time for some future "what if we do this 100s of times" cases is effort expended that has the primary effect of making it harder to reason about each test that you do have.</p>
 
 <h3>Reason 5: They might not be the right abstraction for your cases</h3>
 
-<p>A "page", at least by name, may not be the right abstraction for finding or interacting with elements in an application. You might have a widget to test in a left menu panel, but it can also appear on the right, accessible from a different selector. Or it might appear on different pages. It might also behave slightly differently depending on which one it is. Or you might have different browser instances in play, and need to control different ones, having them all in-play at once.</p>
+<p>A "page", at least by name, may not be the right abstraction for finding or interacting with elements in an application. You might have a widget to test in a left menu panel, but it can also appear on the right, accessible from a different selector. Or it might appear at different times. It might also behave slightly differently depending on where it is or when it appears. Or you might even have different browser instances in play, say to test a login/registration flow, and need to control different ones, having them all in-play at once.</p>
 
-<p>Just like optimization, premature refactoring, also known as speculative generalization, can be bad. Instead, do Continous/<a href="http://martinfowler.com/bliki/OpportunisticRefactoring.html">opportunistic refactoring</a>. Until you have 3 tests or more, you might not really be able to see what is common to them, and you might get yourself stuck in multiple layers of asynchronous test code and related page objects that aren't particularly suited to your case.</p>
+<p>Just like optimization, premature refactoring, also known as speculative generalization, can be bad. Instead, I suggest doing continous/<a href="http://martinfowler.com/bliki/OpportunisticRefactoring.html">opportunistic refactoring</a>. Until you have 3 tests or more, you might not really be able to see what is common to them, and you might get yourself stuck in multiple layers of asynchronous test code and related page objects that aren't particularly suited to your case.</p>
 
 <p>Keep in mind: there might not even be a "right" abstraction for all your tests, and that's ok!</p>
+
+<p>Of course, not planning up front has its critisisms.</p>
+
+<blockquote>
+  <p>I find that weeks of coding and
+testing can save me hours of planning.</p>
+  <cite>Someone</cite>
+</blockquote>
+
+<p>However, I think using page objects just to have encapsulation and because others do it doesn't quite meet the definition of what I think is planning. At least good planning.</p>
 
 <h3>What to do instead of page objects?</h3>
 
@@ -101,7 +113,7 @@ this.getGreeting = function() {
   <li><i class="fa-li fa fa-caret-right"></i> Asserting something about element(s)</li>
 </ul>
 
-<p>If you have a few tests of a repeated non-trivial group of actions, like a login, or maybe a drag and drop action between one part of a page and another, then factor them about to functions that group them. I would really consider not factoring out much more than that.</p>
+<p>If you have a few tests of a repeated non-trivial group of actions, like a login, or maybe a drag and drop action between one part of a page and another, then factor them about to functions, not objects, that group them. I would really consider not factoring out much more than that.</p>
 
 <p>For example, consider the following test.</p>
 
