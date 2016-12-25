@@ -1,7 +1,6 @@
 /** @jsx Preact.h */
 
 var Preact = require('preact');
-var _ = require('lodash');
 
 // Polyfills and so set globals
 require('es6-promise').polyfill();
@@ -15,10 +14,12 @@ var SE = (function() {
   var base = 'http://api.stackexchange.com/2.1/';
 
   function toQueryString(obj) {
-    return _.map(obj,function(v,k){
-      return encodeURIComponent(k) + '=' + encodeURIComponent(v);
-    }).join('&');
-  };
+    var str = [];
+    for (var key in obj) {
+      str.push(encodeURIComponent(key) + '=' + encodeURIComponent(obj[key]));
+    }
+    return str.join('&');
+  }
 
   function getUser(userId, site, key) {
     var params = {
