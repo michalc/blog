@@ -17,7 +17,6 @@
   </style>
 </head>
 <body itemscope itemtype="http://schema.org/WebPage">
-  <link rel="stylesheet" href="//hello.myfonts.net/count/2d48a7">
   <header class="page-header" id="michal-charemza-author" itemprop="author" itemscope itemtype="http://schema.org/Person"><div class="page-header-inner">
     <div class="page-header-left"><div class="page-header-left-inner">
       <h1 itemprop="name"><a href="/">Michal Charemza</a></h1>
@@ -43,6 +42,23 @@
 
   ga('create', 'UA-38006161-1', 'auto');
   ga('send', 'pageview');
+  </script>
+
+  <noscript id="deferred-styles">
+    <link rel="stylesheet" href="//hello.myfonts.net/count/2d48a7">
+  </noscript>
+  <script>
+    var loadDeferredStyles = function() {
+      var addStylesNode = document.getElementById("deferred-styles");
+      var replacement = document.createElement("div");
+      replacement.innerHTML = addStylesNode.textContent;
+      document.body.appendChild(replacement)
+      addStylesNode.parentElement.removeChild(addStylesNode);
+    };
+    var raf = requestAnimationFrame || mozRequestAnimationFrame ||
+        webkitRequestAnimationFrame || msRequestAnimationFrame;
+    if (raf) raf(function() { window.setTimeout(loadDeferredStyles, 0); });
+    else window.addEventListener('load', loadDeferredStyles);
   </script>
 </body>
 </html>
