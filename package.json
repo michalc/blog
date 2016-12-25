@@ -28,7 +28,6 @@
     "gulp-util": "^3.0.7",
     "gulp-wrap": "^0.11.0",
     "into-stream": "^2.0.0",
-    "isomorphic-fetch": "^2.2.1",
     "merge-stream": "^1.0.0",
     "preact": "^7.1.0",
     "prismjs": "^1.6.0",

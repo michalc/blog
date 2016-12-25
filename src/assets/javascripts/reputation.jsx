@@ -2,15 +2,25 @@
 
 var Preact = require('preact');
 
-// Polyfills and so set globals
-require('isomorphic-fetch');
-
 var USER_ID = 1319998;
 var SITE = "stackoverflow.com";
 var KEY = "IuEWeQbgKqLACgi0FNMcOQ((";
 
 var SE = (function() {
   var base = 'http://api.stackexchange.com/2.1/';
+
+  function fetch(url) {
+    return new Promise((resolve, reject) => {
+      function reqListener() {
+        resolve(JSON.parse(oReq.responseText));
+      }
+
+      var oReq = new XMLHttpRequest();
+      oReq.addEventListener('load', reqListener);
+      oReq.open('GET', url);
+      oReq.send(); 
+    });
+  }
 
   function toQueryString(obj) {
     var str = [];
@@ -28,8 +38,6 @@ var SE = (function() {
     };
 
     return fetch(base + 'users/' + userId + '?' + toQueryString(params)).then(function(response) {
-      return response.json();
-    }).then(function(response) {
       return response.items[0];
     });
   };
@@ -54,7 +62,6 @@ var user = SE.getUser(USER_ID, SITE, KEY).then(function(user) {
 class ReputationBox extends Preact.Component {
   constructor(props) {
     super(props);
-    console.log('here');
     var cachedReputation = localStorage.getItem('user-' + USER_ID);
     this.state = {
       data: cachedReputation || ''
