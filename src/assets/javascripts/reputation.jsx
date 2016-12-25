@@ -3,7 +3,6 @@
 var Preact = require('preact');
 
 // Polyfills and so set globals
-require('es6-promise').polyfill();
 require('isomorphic-fetch');
 
 var USER_ID = 1319998;
