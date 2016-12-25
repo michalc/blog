@@ -9,6 +9,7 @@ env:
     - secure: "Befk9OSMDwfgs5JmoVAzotEuWlndATyZ7nTJBI8AwX7s8GWYBO8oiYPz3HAX1fKV4limqMXxLPjALpVDhLyvwSaYJlinzOp1VfXpLBjaG6fX7A6gLIJJN0xccJDZ43UnoF3q3tbAOjaO6VR6Qm4TeSuJJX0+uq9BOHwfkWesJLM="
 install:
   - for f in .modules/*.tgz; do tar -zxf "$f" -C node_modules/; done
+  - npm rebuild node-sass
 script:
   - ./node_modules/gulp/bin/gulp.js publish
 
