@@ -120,11 +120,13 @@ gulp.task('build', function() {
     .pipe(addBinaryAssetData())
     .pipe(handlebars())
     .pipe(postcss([
-      autoprefixer({browsers: ['last 2 versions']})
+      autoprefixer({browsers: ['last 2 versions', 'not ie <= 11']})
     ]))
     .pipe(cleancss());
 
-  var textAssets = mergeStream(scripts, styles)
+  var stylesPromise = streamToArray(styles);
+
+  var textAssets = mergeStream(scripts)
     .pipe(data(function(file) {
       return {
         originalRelative: file.relative
@@ -148,9 +150,12 @@ gulp.task('build', function() {
 
   function addAllAssetData() {
     return data(function(file) {
-      return allAssetFileNamePromise.then(function(assetFileNames) {
+      return Promise.all([allAssetFileNamePromise, stylesPromise]).then(function(results) {
+        var assetFileNames = results[0]
+        var styles = results[1][0]
         return {
-          assets: assetFileNames
+          assets: assetFileNames,
+          styles: results[1][0].contents.toString()
         };
       });
     });
@@ -244,6 +249,9 @@ gulp.task('build', function() {
          },
          highlight: function(language, options) {
            return new handlebars.Handlebars.SafeString('<div class="highlight"><pre><code>' + prism.highlight(options.fn(this), prism.languages[language]) + '</code></pre></div>');
+         },
+         safe: function(string) {
+          return new handlebars.Handlebars.SafeString(string)
          }
        }
      }));
