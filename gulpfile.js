@@ -14,7 +14,6 @@ gulp.task('build', function() {
   var postcss = require('gulp-postcss');
   var cleancss = require('gulp-clean-css');
   var autoprefixer = require('autoprefixer');
-  var uglify = require('gulp-uglify');
   var md5 = require('gulp-md5');
   var rename = require('gulp-rename');
   var wrap = require('gulp-wrap');
@@ -112,8 +111,7 @@ gulp.task('build', function() {
         done();
       }
     }))
-    .pipe(buffer())
-    .pipe(ifProduction(uglify));
+    .pipe(buffer());
 
   // Styles
   var styles = all
