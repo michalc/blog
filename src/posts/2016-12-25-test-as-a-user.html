@@ -1,0 +1,90 @@
+---
+layout: post
+title:  "E2E Tests: Test as a user would"
+subtitle: "Make your E2E tests less of a time-sink"
+date: 2016-12-25 10:00:00
+categories: angularjs e2e
+
+---
+
+<p>This post contains a few recommendations on how to write certain aspects Protractor E2E tests. Specifically how to depend less on the internals of the page. You can't entirely not depend on internals: they all depend some amount of HTML, and currently you have to choose and interact with the elements of the page <em>somehow</em>. However, some internals are better than others.</p>
+
+<h3>The point of E2E tests</h3>
+
+<p>First a quick recap on a/the purpose of E2E tests. They ensure that aspects of the application work as expected even if there are later changes: they protect against regressions as you're developing the application. Essentially they <em>should</em> fail if some aspect of a user-facing feature changes in an undesirable way.</p>
+ 
+<p>However, they <em>should not</em> fail if some internal of the pages changes that doesn't break a user-facing feature. This doesn't necessarily directly affect the primary purpose of the tests: they can still protect against regressions. However, failing E2E tests when there is no breakage of a user-facing feature can be a horrible time-sink. With a bit of thought, the risk of this can me minimised.<sup><a href="#footnote-1">1</a></sup></p>
+
+<p>To this end, there are a few features of Protractor that I think should <em>not</em> be used.</p>
+
+<blockquote>
+  <p>Your scientists were so preoccupied with whether or not they could, they didn’t stop to think if they should.</p>
+  <cite>Ian Malcom, Jurassic Park</cite>
+</blockquote>
+
+<h3>Don't depend on ng-repeat or ng-model: instead, select elements as a user would</h3>
+
+<p>The Protractor documentation suggests selecting HTML elements by <code class="inline">ng-repeat</code> or <code class="inline">ng-model</code> attribute contents. This means if someone comes along and does a bit of refactoring, or uses something other than <code class="inline">ng-repeat</code> or <code class="inline">ng-model</code>, the E2E tests will fail, even though the behaviour, from the users' points of view, is perfectly fine. I treat this similarly to the test depending on a variable name or process on the server. It seems quite silly for the test to be fragile with respect to that!</p>
+
+<p>Instead, consider using minimal CSS or XPath selectors to pick elements as close as possible to how a user would, that would survive internal refactorings. For example, the first <code class="inline">table</code> after a <code class="inline">h2</code> element with text content "Section 1".</p>
+
+{{#highlight 'javascript'}}
+table = element(by.xpath('//h2[text()="Section 1"]/following::table[1]'))
+{{/highlight}}
+
+<p>Or, if you have used a custom element for your UI widget directives, the first <code class="inline">&lt;my-widget&gt;&lt;/my-widget&gt;</code> in the first <code class="inline">&lt;nav&gt;&lt;/nav&gt;</code> of the page.<p>
+
+{{#highlight 'javascript'}}
+widget = element(by.xpath('//nav[1]//my-widget[1]'))
+{{/highlight}}
+
+<p>Consider how specific you want the selectors to be. If you have only one  <code class="inline">my-widget</code> in the page, you can be more minimal in the selector.</p>
+
+{{#highlight 'javascript'}}
+widget = element(by.xpath('//my-widget'))
+{{/highlight}}
+
+<p>This makes the test less fragile to moving the element around the page. If it's crucial to test where this is in the page, you could always have an explicit assertion for that, perhaps in a separate test.</p>
+
+<p>Another technique is to choose elements using ARIA roles.</p>
+
+{{#highlight 'javascript'}}
+dialog = element(by.css('[role="dialog"]'))
+{{/highlight}}
+
+<p>This has the handy benefit of gently pushing you to add accessiblity attributes.</p>
+
+<p>Another technique is selecting elements using <code class="inline">cssContainingText</code>, say to find <code class="inline">button</code> that also has the text "Go to stage 2".
+
+{{#highlight 'javascript'}}
+button = element(by.cssContainingText('button', 'Go to stage 2'))
+{{/highlight}}
+
+<p>And as a last, but perhaps still common, resort, using a plain class.</p>
+
+{{#highlight 'javascript'}}
+message = element(by.css('.message'))
+{{/highlight}}
+
+<p>If using classes I recommend considering that they are as semantic as possible. This isn't just to make the HTML "nice": it's so that the tests continue to pass as long as the element behaves as it should, independent of any changes or internal refactoring or renaming of non-sematic (with respect to the UI) elements on the page.</p>
+
+<p>I don't think it's a perfect solution: you might want to tweak the semantic names for custom elements and classes, and in such cases the tests would still fail, but I suspect it's better for a lot of cases that depend on <code class="inline">ng-repeat</code> or <code class="inline">ng-model</code>.</p>
+
+<h3>Don't wait for Angular: instead, wait for the interface as a user would</h3>
+
+<p>If you're using Protractor, consider setting set <code class="inline">browser.ignoreSynchronization = true</code> for all tests. Yes, really. The magic Protractor gives you for the simple cases just isn't worth it, because the cases of having some sort of polling, or non-Angular asynchronous code running, just makes you have multiple sorts of tests.</p>
+
+<p>Instead, wait for changes in the page elements to appear on the screen. You can do this explicitly in your first few tests, but then you might want to factor the waiting out once you are clear what you're waiting for and commonality between the cases is clear. Your tests will be less flakey to changes you might make in the application. Even, if you eventually decide to swap out Angular!</p>
+
+{{#highlight 'javascript'}}
+browser.ignoreSynchronization = true;
+browser.wait(function () {
+   return element(by.css('[role="dialog"]')).isPresent()
+});
+{{/highlight}}
+
+<p>Of course, if you're not using what Protractor builds on top of Selenium, then I would seriously consider just using plain Selenium, or a different framework like <a href="http://webdriver.io/">WebdriverIO</a>.</p>
+
+<hr>
+
+<p id="footnote-1"><sup>1</sup>  I don't actually have data on this, so my claim that it's "minimised" is based on my own feelings.</p> 
