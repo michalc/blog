@@ -30,9 +30,8 @@
     "isomorphic-fetch": "^2.2.1",
     "lodash": "^4.7.0",
     "merge-stream": "^1.0.0",
+    "preact": "^7.1.0",
     "prismjs": "^1.6.0",
-    "react": "^0.14.8",
-    "react-dom": "^0.14.8",
     "stream-to-array": "^2.2.0",
     "striptags": "^2.0.4",
     "vinyl-buffer": "^1.0.0"

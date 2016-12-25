@@ -1,5 +1,6 @@
-var React = require('react');
-var ReactDOM = require('react-dom');
+/** @jsx Preact.h */
+
+var Preact = require('preact');
 var _ = require('lodash');
 
 // Polyfills and so set globals
@@ -50,15 +51,14 @@ var user = SE.getUser(USER_ID, SITE, KEY).then(function(user) {
   localStorage.setItem('user-' + USER_ID, user.reputation);
 });
 
-var ReputationBox = React.createClass({
-  displayName: 'ReputationBox',
-  getInitialState: function() {
+class ReputationBox extends Preact.Component {
+  getInitialState() {
     var cachedReputation = localStorage.getItem('user-' + USER_ID);
     return {
       data: cachedReputation || ''
     };
-  },
-  componentDidMount: function() {
+  }
+  componentDidMount() {
     var self = this;
     user.then(function(user) {
       self.setState({
@@ -66,8 +66,8 @@ var ReputationBox = React.createClass({
       });
       localStorage.setItem('user-' + USER_ID, user.reputation);
     });
-  },
-  render: function() {
+  }
+  render() {
     if (!this.state.data) return false;
     return (
       <span className="reputation">
@@ -75,12 +75,11 @@ var ReputationBox = React.createClass({
       </span>
     );
   }
-});
-
+}
 
 document.addEventListener("DOMContentLoaded", function() {
-  ReactDOM.render(
-    React.createElement(ReputationBox, null),
+  Preact.render(
+    <ReputationBox />,
     document.getElementById('reputation')
   );
 });
