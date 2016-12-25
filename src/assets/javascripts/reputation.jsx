@@ -52,9 +52,11 @@ var user = SE.getUser(USER_ID, SITE, KEY).then(function(user) {
 });
 
 class ReputationBox extends Preact.Component {
-  getInitialState() {
+  constructor(props) {
+    super(props);
+    console.log('here');
     var cachedReputation = localStorage.getItem('user-' + USER_ID);
-    return {
+    this.state = {
       data: cachedReputation || ''
     };
   }
