@@ -13,7 +13,7 @@ categories: angularjs e2e
 
 <p>First a quick recap on a/the purpose of E2E tests. They ensure that aspects of the application work as expected even if there are later changes: they protect against regressions as you're developing the application. Essentially they <em>should</em> fail if some aspect of a user-facing feature changes in an undesirable way.</p>
  
-<p>However, they <em>should not</em> fail if some internal of the pages changes that doesn't break a user-facing feature. This doesn't necessarily directly affect the primary purpose of the tests: they can still protect against regressions. However, failing E2E tests when there is no breakage of a user-facing feature can be a horrible time-sink. With a bit of thought, the risk of this can me minimised.<sup><a href="#footnote-1">1</a></sup></p>
+<p>However, they <em>should not</em> fail if some internal of the pages changes that doesn't break a user-facing feature. This doesn't necessarily directly affect the primary purpose of the tests: they can still protect against regressions. However, failing E2E tests when there is no breakage of a user-facing feature can be a horrible time-sink. With a bit of thought, the risk of this can me minimised, or at least reduced.<sup><a href="#footnote-1">1</a></sup></p>
 
 <p>To this end, there are a few features of Protractor that I think should <em>not</em> be used.</p>
 
