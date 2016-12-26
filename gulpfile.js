@@ -42,9 +42,9 @@ gulp.task('build', function() {
   // Unfortunately can't keep the fonts in this repository for licensing reasons
   // so download them from charemza.name
   var remoteFonts = download([
-    'http://charemza.name/assets/fonts/proxima-nova/2D48A7_0_0_34e24b832896b3b5a289c2d02ab7c9b4.woff',
-    'http://charemza.name/assets/fonts/proxima-nova/2D48A7_1_0_e39fa5345ae906b2a574b514ff8d08bf.woff',
-    'http://charemza.name/assets/fonts/proxima-nova/2D48A7_2_0_10113b6534de659a310206bc172768cb.woff'
+    'http://charemza.name/assets/fonts/proxima-nova/2D48A7_0_0_60d35824cdd0ba6f9eefc34302b5cb47.woff',
+    'http://charemza.name/assets/fonts/proxima-nova/2D48A7_1_0_f325cb737abdf43c56775a5da7b42823.woff',
+    'http://charemza.name/assets/fonts/proxima-nova/2D48A7_2_0_daee6403b947a65a09541161726dd3ea.woff'
   ])
     .pipe(rename(function(path) {
       path.basename = path.basename.replace(/(.+)_.+$/, '$1');
