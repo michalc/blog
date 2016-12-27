@@ -28,6 +28,8 @@ gulp.task('build', function() {
   var browserify = require('browserify');
   var gutil = require('gulp-util');
   var babel = require('gulp-babel');
+  var uncss = require('uncss');
+  var parse5 = require('parse5');
 
   function isProduction() {
     return process.env.NODE_ENV === 'production';
@@ -106,7 +108,7 @@ gulp.task('build', function() {
       objectMode: true,
       transform: function(file, enc, done) {
         var bundle = browserify(intoStream(file.contents));
-        file.contents = bundle.bundle()
+        file.contents = bundle.bundle();
         this.push(file);
         done();
       }
@@ -254,7 +256,34 @@ gulp.task('build', function() {
           return new handlebars.Handlebars.SafeString(string)
          }
        }
-     }));
+     }))
+    .pipe(stream.Transform({
+      objectMode: true,
+      transform: function(file, enc, cb) {
+        var self = this;
+
+        // Remove unused styles from html only
+        if (file.path.match(/sitemap\.xml$/)) {
+          self.push(file);
+          cb();
+          return;
+        }
+        var document1 = parse5.parse(file.contents.toString());
+        var head = document1.childNodes[1].childNodes[0];
+        var styles = head.childNodes.filter((node) => {
+          return node.tagName == 'style'
+        });
+        var style = styles[0]
+        uncss([file.contents.toString()], {
+          raw: style.childNodes[0].value
+        }, function (error, output) {
+          style.childNodes[0].value = output;
+          file.contents = Buffer.from(parse5.serialize(document1), 'utf8');
+          self.push(file);
+          cb();
+        });
+      }
+    }));
   
   // Static
   var static = all
