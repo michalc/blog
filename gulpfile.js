@@ -275,7 +275,8 @@ gulp.task('build', function() {
         });
         var style = styles[0]
         uncss([file.contents.toString()], {
-          raw: style.childNodes[0].value
+          raw: style.childNodes[0].value,
+          ignore: ['.fa', '.fa-stack-overflow']
         }, function (error, output) {
           style.childNodes[0].value = output;
           file.contents = Buffer.from(parse5.serialize(document1), 'utf8');
