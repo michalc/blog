@@ -1,4 +1,4 @@
 {
   "plugins": ["transform-react-jsx"],
-  "presets": ["babili"]
+  "presets": ["es2015"]
 }

@@ -30,6 +30,7 @@ gulp.task('build', function() {
   var babel = require('gulp-babel');
   var uncss = require('uncss');
   var parse5 = require('parse5');
+  var uglify = require('gulp-uglify');
 
   function isProduction() {
     return process.env.NODE_ENV === 'production';
@@ -113,7 +114,8 @@ gulp.task('build', function() {
         done();
       }
     }))
-    .pipe(buffer());
+    .pipe(buffer())
+    .pipe(uglify());
 
   // Styles
   var styles = all
