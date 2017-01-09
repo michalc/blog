@@ -101,15 +101,15 @@ print c.colour()  #  "blue"
 
 <p>In spite of these, I judge this code to have problems: hidden inconsistency, hidden coupling, historical bias, poor separation of responsibilities, and poor abstraction.</p>
 
-<h3>Hidden Inconsistency</h3>
+<h3>Hidden inconsistency</h3>
 
 <p>When calling any method on an instance of the subclasses, some objects will call Base class code, and some not, depending on what is defined in the subclass. Each subclass now has unique properties and a unique data flow that must be reasoned about. This might be unavoidable, each case must in some way be different, but my suspicion is that that having this inconsistency "hidden" in the inheritance heirachy tree by nature of some methods being overridden and some not, means more time will need to be spent later when adding/changing behaviour.</p>
 
-<h3>Hidden Coupling</h3>
+<h3>Hidden coupling</h3>
 
 <p>Perhaps a problem with code re-use via inheriance in general, it's difficult to change code in the base class without affecting the subclasses. This is however especially true when each subclass uses a different subset of the base class methods. The ones that <em>do</em> use a Base methods are actually the ones that <em>don't</em> override them. Hence it's more accurate to term this <em>hidden</em> coupling.</p> 
 
-<h3>Historical Bias</h3>
+<h3>Historical bias</h3>
 
 <p>The code in the base class is most likely only there because it was written first. Very obvious and reasonable when you're writing it, but come to look at the code in 2 years, it's not immediately clear why the code is the way it is. Trying to untangle spaghetti is tricky, often trying to work out the reasons the original programmer wrote what they wrote in order to reduce the risk when changing it. Having the extra reason of "that's what I did first" is making the future's job harder.</p>
 
@@ -117,7 +117,7 @@ print c.colour()  #  "blue"
 
 <p>The code in the base class controls certain aspects of the application. Except in the cases where this is overridden. This suggests that responsibility has not been separated well.</p>
 
-<h3>Poor Abstraction</h3>
+<h3>Poor abstraction</h3>
 
 <p>Although I think it's often unhelpful to think in such terms, overriding Base methods results in the statement that an object "is a" Base becoming a bit meaningless, and therefore unhelpful. The "stuff the object does", as defined in the base class code, only holds for some of the instances of the subclasses.</p>
 
