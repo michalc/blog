@@ -130,6 +130,15 @@ print c.colour()  #  "blue"
 <p>They depend on the code in question, but they all involve moving the code out from the base class, so that each subclass <em>explicitly</em> states what it uses. For example the code could just be in pure functions not associated with any particular class...</p>
 
 {{#highlight 'python'}}
+def red():
+  ...
+
+def blue():
+  ...
+
+def medium():
+  ...
+
 class ClassA(object):
   def colour(self):
     return red()
@@ -148,6 +157,15 @@ class ClassB(object):
 <p>... or if they do need to be part of a class, they could be composed at import time... </p>
 
 {{#highlight 'python'}}
+def red():
+  ...
+
+def blue():
+  ...
+
+def medium():
+  ...
+
 class Base(object):
   def colour(self):
     return self._colour()
@@ -156,20 +174,29 @@ class Base(object):
     return self._size()
 
 class ClassA(Base):
-  _color = green()
-  _size = medium()
+  _color = red
+  _size = medium
 
 class ClassB(Base):
-  _color = red()
+  _color = green()
   _size = medium()
 {{/highlight}}
 
 <p>... or without any inheritance involved...</p>
 
 {{#highlight 'python'}}
+def red():
+  ...
+
+def blue():
+  ...
+
+def medium():
+  ...
+
 class ClassA(object):
-  red = Red()
-  medium = Medium()
+  red = red
+  medium = medium
 
   def colour(self):
     return self.red()
@@ -178,14 +205,14 @@ class ClassA(object):
     return self.medium()
 
 class ClassB(object):
-  blue = Blue()
-  medium = Medium()
+  blue = blue
+  medium = medium
 
   def colour(self):
-    return self.blue()
+    return self.blue
 
   def size(self):
-    return self.medium()
+    return self.medium
 {{/highlight}}
 
 <p>... or even with just a single class that is wired up at runtime.</p>
@@ -201,7 +228,17 @@ class Class(object):
 
   def size(self):
     return self._size()
+
+def red():
+  ...
+
+def blue():
+  ...
+
+a = Class(colour=red, size=blue)
 {{/highlight}}
+
+<p>The examples above all "wire up" functions to the classes/instances. However, you can use objects if you want or need to.</p>
 
 <h3>What about type safety?</h3>
 
