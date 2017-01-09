@@ -20,6 +20,10 @@ gulp.task('build', function() {
   var mergeStream = require('merge-stream');
   var path = require('path');
   var prism = require('prismjs');
+  require('prismjs/components/prism-clike');
+  require('prismjs/components/prism-c');
+  require('prismjs/components/prism-cpp');
+  require('prismjs/components/prism-java');
   require('prismjs/components/prism-python');
   var stream = require('stream');
   var streamToArray = require('stream-to-array');

@@ -1,0 +1,285 @@
+---
+layout: post
+title:  "Overriding methods is spaghetti in disguise"
+subtitle: "An argument for composition over inheritance"
+date: 2017-01-09 10:00:00
+categories: oop patterns
+
+---
+
+<p>A common pattern I have seen is having some default behaviour in a base class, that is sometimes overwritten in subclasses, and sometimes not.</p>
+
+{{#highlight 'python'}}
+class Base(object):
+  def colour(self):
+    return "red"
+
+class ClassA(Base):
+  pass
+
+class ClassB(Base):
+  def colour(self):
+    return "green"
+
+a = ClassA()
+print a.colour()  #  "red"
+
+b = ClassB()
+pring b.colour()  #  "green"
+{{/highlight}}
+
+<p>The usual reason for this is that the Base case was written first, and then new behaviour was needed that didn't quite match up with the original.</p>
+
+<h3>Why not do this?</h3>
+
+<p>The simple case above isn't too bad since it's, well, simple. A more complex case however, is when you have more subclasses, more methods calling each other, and each subclass overriding a different subset of the base  fgFdy'dftsswegr methods.</p>
+
+{{#highlight 'python'}}
+class Base(object):
+  def colour(self):
+    return "red"
+
+  def size(self):
+    return "medium"
+
+class ClassA(Base):
+  pass
+
+class ClassB(Base):
+  def colour(self):
+    return "green"
+
+class ClassC(Base):
+  def size(self):
+    return "small"
+
+a = ClassA()
+print a.colour()  #  "red"
+print a.size()    #  "medium"
+
+b = ClassB()
+print b.colour()  #  "green"
+print b.size()    #  "medium"
+
+c = ClassC()
+print c.colour()  #  "red"
+print c.size()    #  "small"
+{{/highlight}}
+
+<p>Or, a similar pattern, but utilizing the fact that <a href="http://inspirated.com/2009/05/03/all-methods-in-python-are-effectively-virtual">all methods in Python are effectively virtual</a>.<p>
+
+{{#highlight 'python'}}
+class Base(object):
+  def colour(self):
+    return self._colour()
+
+  def _colour(self):
+    return "red"
+
+class ClassA(Base):
+
+class ClassB(Base):
+  def colour(self):
+    return "green"
+
+class ClassC(Base):
+  def _colour(self):
+    return "blue"
+
+a = ClassA()
+print a.colour()  #  "red"
+
+b = ClassB()
+print b.colour()  #  "green"
+
+c = ClassC()
+print c.colour()  #  "blue"
+{{/highlight}}
+
+<p>At first glance, the code doesn't look like traditional spaghetti: there are no if statements, no booleans being passed around, no optional arguments, and no global variables. It all <em>looks</em> quite clean.</p>
+
+<p>In spite of these, I judge this code to have problems: hidden inconsistency, hidden coupling, historical bias, poor separation of responsibilities, and poor abstraction.</p>
+
+<h3>Hidden Inconsistency</h3>
+
+<p>When calling any method on an instance of the subclasses, some objects will call Base class code, and some not, depending on what is defined in the subclass. Each subclass now has unique properties and a unique data flow that must be reasoned about. This might be unavoidable, each case must in some way be different, but my suspicion is that that having this inconsistency "hidden" in the inheritance heirachy tree by nature of some methods being overridden and some not, means more time will need to be spent later when adding/changing behaviour.</p>
+
+<h3>Hidden Coupling</h3>
+
+<p>Perhaps a problem with code re-use via inheriance in general, it's difficult to change code in the base class without affecting the subclasses. This is however especially true when each subclass uses a different subset of the base class methods. The ones that do are actually the ones that <em>don't</em> override the methods. Hence it's more accurate to term this <em>hidden</em> coupling.</p> 
+
+<h3>Historical Bias</h3>
+
+<p>The code in the base class is most likely only there because it was written first. Very obvious and reasonable when you're writing it, but come to look at the code in 2 years, it's not immediatly obvious why the code is the way it is. Trying to untangle spaghetti is tricky, often trying to work out the reasons the original programmer wrote what they wrote in order to reduce the risk when changing it. Having the extra reason of "that's what I did first" is making the future's job harder.</p>
+
+<h3>Poor separation of reponsibilities</h3>
+
+<p>The code in the base class controls certain aspects of the application. Except in the cases where this is overridden. This suggests that responsibility has not been separated well.</p>
+
+<h3>Poor Abstraction</h3>
+
+<p>Although I think it's often unhelpful to think in such terms, it results in the statement that an object "is a" Base becoming a bit meaningless, and therefore unhelpful. The "stuff the object does", as defined in the base class code, only holds for some of the instances of the subclasses.</p>
+
+<h3>Should I put in an intermediate class?</h3>
+
+<p>It's tempting to try to model the problem using more "is a" relationships and break the tree down further to factor out common behaviour. My suspicion is that you're just making things less clear and harder to change later, because you have increased the number of layers in the system and the contracts between them.</p>
+
+<h3>So what <em>are</em> the alternatives?</h3>
+
+<p>They depend on the code in question, but they all involve moving the code out from the base class, so that each subclass <em>explicitly</em> states what it uses. For example the code could just be in pure functions not associated with any particular class...</p>
+
+{{#highlight 'python'}}
+class ClassA(object):
+  def colour(self):
+    return red()
+
+  def size(self):
+    return medium()
+
+class ClassB(object):
+  def colour(self):
+    return blue()
+
+  def size(self):
+    return medium()
+{{/highlight}}
+
+<p>... or if they do need to be part of a class, they could be composed at import time... </p>
+
+{{#highlight 'python'}}
+class Base(object):
+  def colour(self):
+    return self._colour()
+
+  def size(self):
+    return self._size()
+
+class ClassA(Base):
+  _color = green()
+  _size = medium()
+
+class ClassB(Base):
+  _color = red()
+  _size = medium()
+{{/highlight}}
+
+<p>... or without any inheritance involved...</p>
+
+{{#highlight 'python'}}
+class ClassA(object):
+  red = Red()
+  medium = Medium()
+
+  def colour(self):
+    return self.red()
+
+  def size(self):
+    return self.medium()
+
+class ClassB(object):
+  blue = Blue()
+  medium = Medium()
+
+  def colour(self):
+    return self.blue()
+
+  def size(self):
+    return self.medium()
+{{/highlight}}
+
+<p>... or even with just a single class that is wired up at runtime.</p>
+
+{{#highlight 'python'}}
+class Class(object):
+  def __init__(self, colour, size):
+    self._colour = colour
+    self._size = size
+
+  def colour(self):
+    return self._colour()
+
+  def size(self):
+    return self._size()
+{{/highlight}}
+
+<h3>What about type safety?</h3>
+
+<p>On thing that some of the alternatives above have lost is type information, even though they deliberately share the same public API.</p>
+
+<p>In Python, you might not need to want to worry this too much. However, you might want/need a stricter type system, for example for
+
+<ul class="fa-ul">
+  <li><i class="fa-li fa fa-caret-right"></i> type hints to check before runtime, say using mypy;</li>
+  <li><i class="fa-li fa fa-caret-right"></i> checking types at runtime using <code class="inline">isinstance</code> or similar;</li>
+  <li><i class="fa-li fa fa-caret-right"></i> run time protection against forgetting to implement a required method.</li>
+</ul>
+
+<p>If so, you have an option: deriving from one or multiple abstract base classes.</p>
+
+{{#highlight 'python'}}
+from abc import ABCMeta, abstractmethod
+
+class Colour(object):
+  __metaclass__ = ABCMeta
+
+  @abstractmethod
+  def colour(self):
+    pass
+
+class Size(object):
+  __metaclass__ = ABCMeta
+
+  @abstractmethod
+  def size(self):
+    pass
+
+class Class(Colour, Size):
+  # Any of the options above
+{{/highlight}}
+
+<p>C++ has something similar: you can define a class with only pure virtual functions.</p>
+
+{{#highlight 'cpp'}}
+class Colour {
+public:
+  virtual void colour() = 0;
+};
+
+class Size {
+public:
+  virtual void size() = 0;
+};
+
+class Class : public Colour, public Size {
+public:
+  void colour() {
+    ...
+  }
+  void size() {
+    ...
+  }
+}
+{{/highlight}}
+
+<p>Java, although often encouraging of code reuse using inheritance, has quite nicely got pure abstract base classes built right into the language as interfaces.</p>
+
+{{#highlight 'java'}}
+interface Colour {
+  public void colour();
+}
+
+interface Size {
+  public void size();
+}
+
+public class Class implements Colour, Size {
+  public void colour() {
+    ...
+  }
+  public void size() {
+    ...
+  }
+}
+{{/highlight}}
+
+<p>That's it!</p>
