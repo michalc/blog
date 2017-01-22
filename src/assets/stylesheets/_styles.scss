@@ -123,14 +123,32 @@ sub {
   margin: 0;
 }
 
+.endorsements {
+  @media (min-width: $breakpoint-small) {
+    margin-right: 15px;
+  }
+}
+
 .reputation {
   display: none;
   @media (min-width: $breakpoint-small) {
     display: block;
-    margin-right: 10px;
+    height: 24px;
+    text-align: right;
   }
   @media (min-width: $breakpoint-medium) {
-     margin-right: 15px;
+    font-size: 12px;
+  }
+}
+
+.certification {
+  display: none;
+  @media (min-width: $breakpoint-small) {
+    display: none;
+  }
+  @media (min-width: $breakpoint-medium) {
+    display: block;
+    margin-bottom: 5px;
   }
 }
 
