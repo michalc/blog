@@ -343,7 +343,7 @@ gulp.task('publish', ['build'], function() {
   }
 
   // Cache 1 week
-  var binaryResources = gulp.src(['**/*.ico', '**/*.woff', '**/*.jpeg', '**/*.png', '**/*.pdf'], {cwd: BUILD_DIR})
+  var binaryResources = gulp.src(['**/*.ico', '**/*.woff', '**/*.jpeg', '**/*.png', '**/*.svg', '**/*.pdf'], {cwd: BUILD_DIR})
     .pipe(publish({
       'Cache-Control': 'max-age=' + 60 * 60 * 24 * 7 + ', no-transform, public'
     }));
