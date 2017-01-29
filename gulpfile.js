@@ -300,19 +300,17 @@ gulp.task('build', function() {
     .pipe(gulp.dest('build'))
 });
 
-gulp.task('publish', ['build'], function() {
+gulp.task('publish', [/*'build' */], function() {
+  var S3 = require('aws-sdk/clients/s3');
   var Promise = require('bluebird');
   var concurrent = require('concurrent-transform');
-  var awspublish = require('gulp-awspublish');
   var mergeStream = require('merge-stream');
   var stream = require('stream');
+  var gutil = require('gulp-util');
+  var streamToArray = require('stream-to-array');
+  var mime = require('mime');
 
-  function streamToPromise(stream) {
-    return new Promise(function(resolve, reject) {
-        stream.on('end', resolve);
-        stream.on('error', reject);
-    });
-  }
+  var BUCKET = 'charemza.name';
 
   function waitFor(promise) {
     return stream.Transform({
@@ -323,46 +321,68 @@ gulp.task('publish', ['build'], function() {
           self.push(file);
           cb();
         }, function(err) {
+          console.log('waiting error');
           cb(new Error(err));
         });
       }
     });
   }
 
-  var publisher = awspublish.create({
-    region: 'eu-west-1',
-    params: {
-      Bucket: 'charemza.name'
+  var s3 = new S3();
+
+  var existingKeys = s3.listObjectsV2({
+    Bucket: BUCKET
+  }).promise().then(function(res) {
+    if (res.IsTruncated) {
+        // Doesn't support > 1000, but we really don't need to for now
+      return Promise.reject('Not all files found')
     }
+    return res.Contents.map(function(item) {
+      return item.Key;
+    });
   });
 
-  // All files are forced since gulp-awspublish doesn't
-  // sync if there are just http header changes
   function publish(headers) {
-    return concurrent(publisher.publish(headers, {force: true}), 8);
+    var publishStream = new stream.Transform({
+      objectMode: true,
+      transform: function(file, enc, cb) {
+        var self = this;
+        var type = mime.lookup(file.relative)
+        gutil.log('Uploading', file.relative, 'as', type);
+        s3.putObject({
+          Bucket: BUCKET,
+          Key: file.relative,
+          Body: file.contents,
+          ContentType: type,
+          Tagging: '' /* In case the object already exists, definitely don't want tags */
+        }).promise().then(function() {
+          gutil.log('Uploaded', file.relative);
+          self.push(file);
+          cb();
+        }, function(err) {
+          console.log("ERROR")
+          cb(new Error(err));
+        });
+      }
+    });
+    return concurrent(publishStream, 16);
   }
 
   // Cache 1 week
-  var binaryResources = gulp.src(['**/*.ico', '**/*.woff', '**/*.jpeg', '**/*.png', '**/*.svg', '**/*.pdf'], {cwd: BUILD_DIR})
+  var resources = gulp.src(['**/*.ico', '**/*.woff', '**/*.jpeg', '**/*.png', '**/*.svg', '**/*.pdf', 'assets/**/*.js', 'assets/**/*.css'], {cwd: BUILD_DIR, base: BUILD_DIR})
+    .pipe(waitFor(existingKeys))
     .pipe(publish({
       'Cache-Control': 'max-age=' + 60 * 60 * 24 * 7 + ', no-transform, public'
     }));
-  var binaryResourcesDone = streamToPromise(binaryResources);
-
-  // Cache 1 week
-  var textResources = gulp.src(['**/*.js', '**/*.css'], {cwd: BUILD_DIR})
-    .pipe(publish({
-      'Cache-Control': 'max-age=' + 60 * 60 * 24 * 7 + ', no-transform, public'
-    }));
-  var textResourcesDone = streamToPromise(textResources);
+  var resourcesDone = streamToArray(resources);
 
   // Cache 5 mins
   var blog = gulp.src('blog/**/*.html', {cwd: BUILD_DIR, base: BUILD_DIR})
-    .pipe(waitFor(Promise.all([binaryResourcesDone, textResourcesDone])))
+    .pipe(waitFor(resourcesDone))
     .pipe(publish({
       'Cache-Control': 'max-age=' + 60 * 5 + ', no-transform, public'
     }));
-  var blogDone = streamToPromise(blog);
+  var blogDone = streamToArray(blog);
 
   // Cache 5 mins
   var index = gulp.src('index.html', {cwd: BUILD_DIR})
@@ -370,7 +390,7 @@ gulp.task('publish', ['build'], function() {
     .pipe(publish({
       'Cache-Control': 'max-age=' + 60 * 5 + ', no-transform, public'
     }));
-  var indexDone = streamToPromise(index);
+  var indexDone = streamToArray(index);
 
   // Cache 5 mins
   var meta = gulp.src(['robots.txt', 'sitemap.xml'], {cwd: BUILD_DIR})
@@ -378,10 +398,76 @@ gulp.task('publish', ['build'], function() {
     .pipe(publish({
       'Cache-Control': 'max-age=' + 60 * 5 + ', no-transform, public'
     }));
+  var metaDone = streamToArray(meta);
 
-  return mergeStream(binaryResources, textResources, blog, index, meta)
-    .pipe(publisher.sync())
-    .pipe(awspublish.reporter());
+  const flatten = arr => arr.reduce((a, b) => a.concat(Array.isArray(b) ? flatten(b) : b), []);
+
+  var keysToDelete = Promise.all([metaDone, indexDone, blogDone, resourcesDone]).then(function(results) {
+    return flatten(results).map(function(file) {
+      return file.relative;
+    });
+  }).then((allKeys) => {
+    return Promise.all([allKeys, existingKeys])
+  }).then((keys) => {
+    var allKeys = keys[0];
+    var existingKeys = keys[1];
+    var toDelete = existingKeys.filter(x => allKeys.indexOf(x) == -1);
+    return toDelete;
+  });
+
+  function toStream(promise) {
+    var position = 0;
+    return stream.Readable({
+      objectMode: true,
+      read: function(chunk) {
+        var self = this;
+        promise.then(function(array) {
+          self.push(position < array.length ? array[position] : null)
+          position++;
+        });
+      }
+    });
+  }
+
+  function setTagging() {
+    return new stream.Transform({
+      objectMode: true,
+      transform: function(key, enc, cb) {
+        var self = this;
+        return s3.getObjectTagging({
+         Bucket: BUCKET,
+         Key: key,
+        }).promise().then(results => {
+          var existingToDeleteTag = results.TagSet.find((tag) => {
+            return tag.Value === 'to-delete';
+          });
+
+          if (existingToDeleteTag) {
+            self.push(key);
+            cb()
+            return;
+          }
+          // Doing a copy to itself to adjust creation time
+          // so objects with the tag aren't deleted immediatly
+          gutil.log('Setting to-delete', key);
+          return s3.copyObject({
+            Bucket: BUCKET,
+            Key: key,
+            CopySource: BUCKET + '/' + key,
+            MetadataDirective: 'REPLACE',
+            Tagging: 'status=to-delete',
+            TaggingDirective: 'REPLACE'
+          }).promise().then(() => {
+            self.push(key);
+            cb();
+          });
+        })
+      }
+    });
+  }
+  
+  return toStream(keysToDelete)
+    .pipe(concurrent(setTagging(), 16));
 });
 
 gulp.task('default', ['build']);
