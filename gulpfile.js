@@ -342,12 +342,18 @@ gulp.task('publish', ['build'], function() {
     });
   });
 
+  function getMime(path) {
+    var mimeType = mime.lookup(path);
+    var charset = mime.charsets.lookup(mimeType);
+    return charset ? mimeType + '; charset=' + charset.toLowerCase() : mimeType;
+  }
+
   function publish(headers) {
     var publishStream = new stream.Transform({
       objectMode: true,
       transform: function(file, enc, cb) {
         var self = this;
-        var type = mime.lookup(file.relative)
+        var type = getMime(file.relative)
         gutil.log('Uploading', file.relative, 'as', type);
         s3.putObject({
           Bucket: BUCKET,
