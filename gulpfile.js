@@ -300,7 +300,7 @@ gulp.task('build', function() {
     .pipe(gulp.dest('build'))
 });
 
-gulp.task('publish', [/*'build' */], function() {
+gulp.task('publish', ['build'], function() {
   var S3 = require('aws-sdk/clients/s3');
   var Promise = require('bluebird');
   var concurrent = require('concurrent-transform');
