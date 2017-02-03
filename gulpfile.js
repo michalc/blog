@@ -348,7 +348,7 @@ gulp.task('publish', ['build'], function() {
     return charset ? mimeType + '; charset=' + charset.toLowerCase() : mimeType;
   }
 
-  function publish(headers) {
+  function publish(cacheControl) {
     var publishStream = new stream.Transform({
       objectMode: true,
       transform: function(file, enc, cb) {
@@ -360,6 +360,7 @@ gulp.task('publish', ['build'], function() {
           Key: file.relative,
           Body: file.contents,
           ContentType: type,
+          CacheControl: cacheControl,
           Tagging: '' /* In case the object already exists, definitely don't want tags */
         }).promise().then(function() {
           gutil.log('Uploaded', file.relative);
@@ -377,33 +378,33 @@ gulp.task('publish', ['build'], function() {
   // Cache 1 week
   var resources = gulp.src(['**/*.ico', '**/*.woff', '**/*.jpeg', '**/*.png', '**/*.svg', '**/*.pdf', 'assets/**/*.js', 'assets/**/*.css'], {cwd: BUILD_DIR, base: BUILD_DIR})
     .pipe(waitFor(existingKeys))
-    .pipe(publish({
-      'Cache-Control': 'max-age=' + 60 * 60 * 24 * 7 + ', no-transform, public'
-    }));
+    .pipe(publish(
+      'max-age=' + 60 * 60 * 24 * 7 + ', no-transform, public'
+    ));
   var resourcesDone = streamToArray(resources);
 
   // Cache 5 mins
   var blog = gulp.src('blog/**/*.html', {cwd: BUILD_DIR, base: BUILD_DIR})
     .pipe(waitFor(resourcesDone))
-    .pipe(publish({
-      'Cache-Control': 'max-age=' + 60 * 5 + ', no-transform, public'
-    }));
+    .pipe(publish(
+      'max-age=' + 60 * 5 + ', no-transform, public'
+    ));
   var blogDone = streamToArray(blog);
 
   // Cache 5 mins
   var index = gulp.src('index.html', {cwd: BUILD_DIR})
     .pipe(waitFor(blogDone))
-    .pipe(publish({
-      'Cache-Control': 'max-age=' + 60 * 5 + ', no-transform, public'
-    }));
+    .pipe(publish(
+      'max-age=' + 60 * 5 + ', no-transform, public'
+    ));
   var indexDone = streamToArray(index);
 
   // Cache 5 mins
   var meta = gulp.src(['robots.txt', 'sitemap.xml'], {cwd: BUILD_DIR})
     .pipe(waitFor(indexDone))
-    .pipe(publish({
-      'Cache-Control': 'max-age=' + 60 * 5 + ', no-transform, public'
-    }));
+    .pipe(publish(
+      'max-age=' + 60 * 5 + ', no-transform, public'
+    ));
   var metaDone = streamToArray(meta);
 
   const flatten = arr => arr.reduce((a, b) => a.concat(Array.isArray(b) ? flatten(b) : b), []);
