@@ -49,7 +49,7 @@ categories: devops aws
 
 <p>Following the above strategy means that once a resource is obsolete, it will remain in the bucket until some time after the deployment, when S3 will automatically delete it. If you update the site again, and the same resource becomes un-obsolete and re-published, removal of the tag means S3 won't delete it.</p>
 
-<p>That's it! A low-infrastructure mechanism of supporting non atomic deployments.</p>
+<p>That's it! A low-infrastructure mechanism of cleaning up after non atomic deployments.</p>
 
 <blockquote>
   <p>The best infrastructure is the one that doesn't exist</p>
