@@ -1,0 +1,59 @@
+---
+layout: post
+title:  "Non atomic deployments"
+subtitle: "Cron-free deferred delete of obsolete static resources"
+date: 2017-02-06 10:00:00
+categories: devops aws
+
+---
+
+<p>When designing a deployment strategy for your web application or site, keep in mind that browsers do not request a site atomically. They ask for the HTML, and then, some time later, ask for the resources such as scripts and stylesheets. If a deployment is fully atomic, as in only one version of a site is accessible at any given time, this time period can introduce a race condition:</p>
+
+<ul class="fa-ul">
+  <li><i class="fa-li fa fa-caret-right"></i> A build/deployment is started.</li>
+  <li><i class="fa-li fa fa-caret-right"></i> A browser requests a HTML page, and the server supplies it.</li>
+  <li><i class="fa-li fa fa-caret-right"></i> A deployment is completed. Old versions of static resources such as stylesheets and scripts are no longer accessible.</li>
+  <li><i class="fa-li fa fa-caret-right"></i> The browser requests the static resources from the original HTML. The browser either gets 404s or scripts or stylesheets that don't match the CSS, resulting in broken site.</li>
+</ul>
+
+<p>There are a number of ways of avoiding this.</p>
+
+<ul class="fa-ul">
+  <li><i class="fa-li fa fa-caret-right"></i> Inlining everything in the HTML. Not a crazy idea for extremely small sites, but once you get fairly heavyweight scripts or images, this makes time to view the page quite high.<li>
+  <li><i class="fa-li fa fa-caret-right"></i> Use versioned or hashed file names for resources, and don't make versions from previous deployments inaccessible until some time after the deployment.</li>
+</ul>
+
+<p>The second way is the method used for this site, with file names with the hash of the file contents in to avoid having to store version numbers anywhere. The way originally setup for cache busting, but it has this wonderful benefit of supporting multiple versions of assets at the same time.</p>
+
+<h3>Cleaning up</h3>
+
+<p>A problem is eventually cleaning up the old versions of files. However, because online storage is so cheap, it can often be a viable option to just never clean up the obsolete resources. If you're spending an extra £O.O1 per month, my suspicion is that as long as the files don't contain anything sensitive or have a restrictive license, it's just not worth the time to setup, and maintain, anything to do it. An argument against this however, is that lots of dead files can make it harder to debug issues.</p>
+
+<p>Also up until recently, I didn't know/couldn't think of a way to delay deletion of such files without too much infrastructure, such as a server running cron, Jenkins, or scheduled Lambda function. This would have to be tied to the build system so it knows what to delete. This can all get a bit complex, especially when there must be some mechanism to abort the delete in case you go back to a previous version with the same hashed filename. All a bit much to setup / maintain / monitor just to delete a few files.</p>
+
+<p>However, if you serve static assets from an S3 bucket, there are two features that make this really easy that require very little additional infrastructure.</p>
+
+<ul class="fa-ul">
+  <li><i class="fa-li fa fa-caret-right"></i> Object tagging. You can individually tag each object with a user-defined tag.</li>
+  <li><i class="fa-li fa fa-caret-right"></i> Lifecycle management. You can setup rules that delete all object that have a tag, some specified time after they were last modified.</li>
+</ul>
+
+<p>Using these, you can do the following.</p>
+
+<ul class="fa-ul">
+  <li><i class="fa-li fa fa-caret-right"></i> Setup a lifecycle configuration rule that deletes objects in the bucket that have a certain tag, a certain amount of time after they were last modified.</li>
+  <li><i class="fa-li fa fa-caret-right"></i> Before each the deployment, fetch a list of all current objects in the bucket.</li>
+  <li><i class="fa-li fa fa-caret-right"></i> When deploying the static resources, make sure each has a versioned / hashed file name, and make sure to clear any tag that would have resulted in its deletion.</li>
+  <li><i class="fa-li fa fa-caret-right"></i> For all existing resources that weren't overridden and that didn't already have the tag, copy the resources to themselves, adding the tag. The copy, while a bit hacky, is the only way I can see of updating the last modified time. This avoids objects being deleted sooner than the minimum time after they become unreferenced that you feel is appropriate.</li>
+</ul>
+
+<p>Following the above strategy means that once a resource is obsolete, it will remain in the bucket until some time after the deployment, when S3 will automatically delete it. If you update the site again, and the same resource becomes un-obsolete and re-published, removal of the tag means S3 won't delete it.</p>
+
+<p>That's it! A low-infrastructure mechanism of supporting non atomic deployments.</p>
+
+<blockquote>
+  <p>The best infrastructure is the one that doesn't exist</p>
+  <cite>Jeff Nunn</cite>
+</blockquote>
+
+
