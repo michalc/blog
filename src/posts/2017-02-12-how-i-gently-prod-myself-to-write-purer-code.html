@@ -1,0 +1,195 @@
+---
+layout: post
+title:  "Avoid stateful variables"
+subtitle: "How I gently prod myself to write purer code"
+date: 2017-02-12 10:00:00
+categories: programming pure 
+
+---
+
+<p>Coming from an imperative programming background, or working in an imperative code base, it can be tricky to write purer code. However, there is one guideline I try to follow that gently prods me in the "right" direction.</p>
+
+<blockquote>
+  <p>Avoid stateful variables</p>
+</blockquote>
+
+<p>Following this guideline leads to a number of things that I think makes the code "better".</p>
+
+<h3>Stateful variables</h3>
+
+<p>What I mean by stateful variable is a variable whose value changes once set. This include simple re-assignment,</p>
+
+{{#highlight 'python'}}
+a = f()
+a = g(a)
+{{/highlight}}
+
+<p>but it also includes calls that change the internal state of an object after it has been created.</p>
+
+{{#highlight 'python'}}
+a = MyClass()
+a.setFoo('bar')
+{{/highlight}}
+
+<p>Both of these mean there is a state that changes over time in the code. It might be short-lived, just in a single function, but it can still make the code harder to reason about. There is no, easily determined, single expression that can replace a stateful variable wherever it is used. You have to think about the entire history of the variable, and what caused it to change. Using a more technical term, stateful variables cannot be used in a referentially transparent way.</p>
+
+<p>Once I have identified a stateful variable in code I am about to write or change, I consider alternatives.</p>
+
+<h3>Alternative 1: Declare more stateless variables</h3>
+
+<p>A way to avoid state<em>ful</em> variables is to declare more state<em>less</em> variables. These are variables that don't change once set. For example,</p>
+
+{{#highlight 'python'}}
+a = f()
+a = g(a)
+{{/highlight}}
+
+<p>could become as below.</p>
+
+{{#highlight 'python'}}
+a = f()
+b = g(a)
+{{/highlight}}
+
+<p>This might be a bit more complex if you have branching involved.</p>
+
+{{#highlight 'python'}}
+a = f()
+if test():
+  a = g(a)
+{{/highlight}}
+
+<p>This above could become as below.</p>
+
+{{#highlight 'python'}}
+a = f()
+b = g(a) if test() else a
+{{/highlight}}
+
+<p>Or, if you can change <code class="inline">g</code>, it might make sense for it to handle a boolean,</p>
+
+{{#highlight 'python'}}
+a = f()
+b = g(a, test())
+{{/highlight}}
+
+<p>or even for it to call a function that returns a boolean.</p>
+
+{{#highlight 'python'}}
+a = f()
+b = g(a, test)
+{{/highlight}}
+
+<h3>Alternative 2: Declare fewer variables by inlining</h3>
+
+<p>A simple technique is just to not use as many variables. The code</p>
+
+{{#highlight 'python'}}
+a = f()
+a = g(a)
+{{/highlight}}
+
+<p>could just be as below.</p>
+
+{{#highlight 'python'}}
+a = g(f())
+{{/highlight}}
+
+<p>A more horrible example is if you have a stateful variable that depends on another stateful variable.</p>
+
+{{#highlight 'python'}}
+condition = condition_1()
+if condition and condition_2():
+  condition = condition_3() 
+a = f()
+if condition:
+  a = g(a)
+{{/highlight}}
+
+<p>This abomination is equivalent to the below, assuming all functions have no side-effects.</p>
+
+{{#highlight 'python'}}
+if (condition_1() and not condition_2()) or (condition_1() and condition_2() and condition_3())
+  a = g(f())
+else:
+  a = f()
+{{/highlight}}
+
+<p>Yes, there is a little bit of duplication. but I wouldn't fear this, especially for such a tiny amount of duplication. It's case-dependent, but it may well be worth seeing exactly the cases certain code is run, and this might mean a little bit of duplication.</p>
+
+<blockquote>
+  <p>duplication is far cheaper than the wrong abstraction</p>
+  <cite>Sandi Metz</cite>
+</blockquote>
+
+<h3>Alternative 3: Create objects as needed rather than changing them</h3>
+
+{{#highlight 'python'}}
+a = MyClass()
+if test():
+  a.setFoo('mary')
+{{/highlight}}
+
+{{#highlight 'python'}}
+a = MyClass(foo='mary' if test() else None)
+{{/highlight}}
+
+<p>This code might not be strictly equivalent, but I would put in the effort to make sure MyClass works with <code class="inline">foo</code> being <code class="inline">None</code>.</p>
+
+<hr>
+
+<p>As a sidebar, the <code class="inline">None</code> case above makes <code class="inline">foo</code> look look it might be an optional argument, which isn't great, for the reasons outlined in the post about <a href="/blog/posts/programming/smells/say-no-to-more-optional-arguments/">optional arguments</a>. Ideally, you would be able to factor out the code from <code class="inline">MyClass</code> so that it doesn't need to treat <code class="inline">None</code> as a special ase.</p>
+
+<h3>Alternative 4: Use higher order functions</h3>
+
+<p>In some cases you have a "pipeline" where a value is repeatedly modified for various reasons. For example a list of filters that are each applied conditionally.</p>
+
+{{#highlight 'python'}}
+a = f()
+
+if condition_1():
+  a = filter_1(a)
+
+if condition_2():
+  a = filter_3(a)
+
+if condition_3():
+  a = filter_3(a)
+
+if condition_4():
+  a = filter_4(a)
+
+filtered = a
+{{/highlight}}
+
+<p>In this case, you can construct a structure of functions, and run them using a reduce.</p> 
+
+{{#highlight 'python'}}
+a = f()
+
+def conditional_filter(condition_filter, value):
+  return condition_filter['filter'](value) if condition_filter['condition']() else value
+
+condition_filters = [
+  {'condition': condition_1, 'filter': filter_1, },
+  {'condition': condition_2, 'filter': filter_2, },
+  {'condition': condition_3, 'filter': filter_3, },
+  {'condition': condition_4, 'filter': filter_4, },
+]
+
+filtered = reduce(conditional_filter, condition_filters, a)
+{{/highlight}}
+
+<h3>Going overboard</h3>
+
+<p>I don't follow the above alternatives in all cases. There are times when making stateless code would be less clear, would be too much of a project, or would make the code too rigid.</p>
+
+<p>For example, in the case of Alternative 4 above, there are reasons why this final pure code is <em>not</em> better than the original. It's remove some state, and added the ability that it's really easy to make the list of conditions and filters dynamic, but at the cost of making it harder to do something different/hacky in the middle of the filtering process. Say, save a file or make an API request. This would of course make the code slightly horrible, but in a real-world situation with time constraints and other priorities, this might be the best option.</p>
+
+<p>Also, you should consider who else will be working on this code, and their familiarity with working with higher order functions like reduce. Of course, this <em>should</em> be covered in programming 101, but for me at least, it really wasn't.</p>
+
+<p>In cases where a stateful variable is to be used, I usually try to make sure its lifetime is as limited as possible, make it so it is modified in consitent ways, and it is modified for consistent reasons.</p>
+
+<blockquote>
+  <p>As everything, it's a trade-off.</p>
+</blockquote>
