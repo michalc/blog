@@ -1,0 +1,48 @@
+---
+layout: post
+title:  "Long files are not the enemy"
+subtitle: "Spend your time wisely: moving code about may be counterproductive"
+date: 2017-04-02 10:00:00
+categories: programming refactoring 
+
+---
+
+<p>I have seen multiple developers leap to the conclusion that long files of source code are automatically bad, leading them to separate the code into separate files. This post suggests that this view is too simplistic, and other things should be considered before moving code about.</p>
+
+<h3>So why do developers think long files are bad?</h3>
+
+<p>My suspicion is that upon seeing a long file, there is often an assumption that it's a <em>moving part</em>. Any working with it means you have to reason about it as a whole, this whole is too big to reason about, and therefore you should split it up to make it possible to reason about each of them separately. So firstly...</p>
+
+<h3>A file is not necessarily a moving part</h3>
+
+<p>I don't have a strict definition of what a code <em>moving part</em> is, but roughly it's something that you have to reason about as a whole, and that interacts with other code or the outside world via some interface. Examples include
+
+<ul class="fa-ul">
+  <li><i class="fa-li fa fa-caret-right"></i> pure function,</li>
+  <li><i class="fa-li fa fa-caret-right"></i> group of functions that call each other or commun icate via some external state,</li>
+  <li><i class="fa-li fa fa-caret-right"></i> script that is run in response to a web request,</li>
+  <li><i class="fa-li fa fa-caret-right"></i> class,</li>
+  <li><i class="fa-li fa fa-caret-right"></i> Angular directive or a React component.</li>
+</ul>
+
+<p>You can have one of these in a file, multiple in a file, or even one spread across multiple files.</p>
+
+<h3>If there's a problem, you're just moving it about...</h3>
+
+<p>Consider a 1000 line file that has 40 functions in it. These functions might not call each other, read or change state, and they don't have any side effects beyond those they advertise, such as touching a database. Each of these functions I would class as a moving part, and each of these function might have problems. In another file, these problems would be exactly the same.</p>
+
+<h3>... and maybe making it even worse</h3>
+
+<p>Consider if those 40 functions each change and read state, call each other in a complex web of booleans and optional arguments, none of them having a clearly separate purpose, and the behaviour of any part of the code is very brittle with respect to changes in other parts. This makes the 40 functions into a single moving part, and splitting these functions, as-is, into separate files actually spreads this moving part about. I suspect it is likely that this makes it harder, and not easier, to reason about.</p>
+
+<h3>... and makes it harder to see its history</h3>
+
+<p>Once you have moved code about, it makes finding the history of it just that little bit harder. If there <em>are</em> problems with the code, the history of the lines may help work out why things are the way they are, and so guide you in the choices you make when making further changes. It's actually with the worst code that the version control history is the most valuable.</p>
+
+<h3>Final semi-stolen quote</h3>
+
+<p>To steal/adapt <a href="https://blog.komand.com/microservices-please-dont">Sean Kelly</a>'s point on microservices...</p>
+
+<blockquote>
+  <p>You don’t need to introduce another file as an excuse to write better code.</p>
+</blockquote>
