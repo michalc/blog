@@ -7,7 +7,7 @@ categories: programming refactoring
 
 ---
 
-<p>I have seen multiple developers leap to the conclusion that long files of source code are automatically bad, leading them to separate the code into separate files. This post suggests that this view is too simplistic, and other things should be considered before moving code about.</p>
+<p>I have seen multiple developers leap to the conclusion that long files of source code are automatically bad, leading them to separate the code, virtually as-is, into separate files. This post suggests that this view is too simplistic, and other things should be considered before moving code about.</p>
 
 <h3>So why do developers think long files are bad?</h3>
 
@@ -19,9 +19,9 @@ categories: programming refactoring
 
 <ul class="fa-ul">
   <li><i class="fa-li fa fa-caret-right"></i> pure function,</li>
-  <li><i class="fa-li fa fa-caret-right"></i> group of functions that call each other or commun icate via some external state,</li>
+  <li><i class="fa-li fa fa-caret-right"></i> group of functions that call each other or communicate via some state,</li>
   <li><i class="fa-li fa fa-caret-right"></i> script that is run in response to a web request,</li>
-  <li><i class="fa-li fa fa-caret-right"></i> class,</li>
+  <li><i class="fa-li fa fa-caret-right"></i> class, especially if its instances maintain an internal state,</li>
   <li><i class="fa-li fa fa-caret-right"></i> Angular directive or a React component.</li>
 </ul>
 
@@ -33,11 +33,19 @@ categories: programming refactoring
 
 <h3>... and maybe making it even worse</h3>
 
-<p>Consider if those 40 functions each change and read state, call each other in a complex web of booleans and optional arguments, none of them having a clearly separate purpose, and the behaviour of any part of the code is very brittle with respect to changes in other parts. This makes the 40 functions into a single moving part, and splitting these functions, as-is, into separate files actually spreads this moving part about. I suspect it is likely that this makes it harder, and not easier, to reason about.</p>
+<p>Consider if those 40 functions each change and read state, call each other in a complex web of booleans and optional arguments, none of them having a clearly separate purpose, and the behaviour of any part of the code is very brittle with respect to changes in other parts. This makes the 40 functions into a single moving part, and splitting these functions, as they are, into separate files actually spreads this moving part about. I suspect it is likely that this makes it harder, and not easier, to reason about.</p>
 
 <h3>... and makes it harder to see its history</h3>
 
 <p>Once you have moved code about, it makes finding the history of it just that little bit harder. If there <em>are</em> problems with the code, the history of the lines may help work out why things are the way they are, and so guide you in the choices you make when making further changes. It's actually with the worst code that the version control history is the most valuable.</p>
+
+<h3>So what <em>is</em> the enemy?</h3>
+
+<p>Smells/rot in the moving parts themselves. Maybe each moving part has too much responsibility, blurry responsibility, or acheives its goal(s) using too much state or crazy overcomplicated logic. Any one of the tens/hundreds of possible problems code might have that aren't that it happens to be near another moving part in the same file.</p>
+
+<h3>What <em>should</em> I do about it?</h3>
+
+<p>Refactor as you would, but keep in mind that moving code as-is, especially bad code, has consquences that might not all be positive.</p>
 
 <h3>Final semi-stolen quote</h3>
 
