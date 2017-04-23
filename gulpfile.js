@@ -23,6 +23,7 @@ gulp.task('build', function() {
   require('prismjs/components/prism-clike');
   require('prismjs/components/prism-c');
   require('prismjs/components/prism-cpp');
+  require('prismjs/components/prism-haskell');
   require('prismjs/components/prism-java');
   require('prismjs/components/prism-python');
   var stream = require('stream');
