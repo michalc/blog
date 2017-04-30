@@ -5,9 +5,13 @@
   {{#if title}}
   <title>{{ title }} - {{ site.name }}</title>
   {{else}}
-  <title>{{ site.name }} - Full stack software engineer</title>
+  <title>{{ site.name }}</title>
   {{/if}}
-  <meta name="description" content="{{ page.subtitle }}">
+  {{#if title}}
+  <meta name="description" content="{{ subtitle }}">
+  {{else}}
+  <meta name="description" content="Full stack software engineer">
+  {{/if}}
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <link rel="shortcut icon" href="{{ lookup assets 'assets/images/favicon.ico' }}">
   <style>
