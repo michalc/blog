@@ -26,7 +26,7 @@ categories: haskell monad
 
 <p>The "once you are familiar with any given instance of <code class="inline">&gt;&gt;=</code>" hints at the horror. The <code class="inline">&gt;&gt;=</code> and <code class="inline">return</code> functions are (terribly?) overloaded. Each of the monads use the same notation, but they can all do radically different things. To know what any <code class="inline">&gt;&gt;=</code> actually does, you have to infer its type from the surrounding code. Similarly a do-block's behaviour depends radially on the definition of <code class="inline">&gt;&gt;=</code>: and it might be even worse, because <code class="inline">&gt;&gt;=</code> isn't even present in the code.</p>
 
-<p>Taking and modifying some examples from <a href="http://dev.stephendiehl.com/hask/#readert">What I Wish I Knew When Learning Haskell</a>, we can example use of of the Maybe monad,
+<p>Taking and modifying some examples from <a href="http://dev.stephendiehl.com/hask/#readert">What I Wish I Knew When Learning Haskell</a>, we can see a use of the Maybe monad,
 
 {{#highlight 'haskell'}}
 main :: IO ()
@@ -39,7 +39,7 @@ example = do
   return $ a + b
 {{/highlight}}
 
-<p>And an example of using Reader monad.</p>
+<p>and an example of the Reader monad.</p>
 
 {{#highlight 'haskell'}}
 import Control.Monad.Reader
@@ -73,9 +73,9 @@ return = Just
 return a = Reader $ \_ -> a
 {{/highlight}}
 
-<p>Because of the different implementations of <code class="inline">&gt;&gt;=</code>, line breaks in the do notations restult in different code. Hence how monads are sometimes described as <em>programmable semicolons</em>.</p>
+<p>Similarly, because of the different implementations of <code class="inline">&gt;&gt;=</code>, line breaks in the do-notations result in different code. Hence how monads are sometimes described as <em>programmable semicolons</em>.</p>
 
-<p>There is a <em>lot</em> of non-explicit behaviour going on. In code reviews, I often use the term "magical" if there is non-explicit behaviour, and I usually suggest it is to be avoided. Yes, they are likely to abide by the monad laws, and certainly do in these examples, but I'm unsure if this is enough to understand what's going on.</p>
+<p>There is a <em>lot</em> of non-explicit behaviour going on. In code reviews, I often use the term "magical" if there is non-explicit behaviour, and I usually suggest it is to be avoided. Yes, <code class="inline">&gt;&gt;=</code> and <code class="inline">return</code> are likely to abide by the monad laws, and they certainly do in these examples, but I'm unsure if this is enough to understand what's going on.</p>
 
 <p>As a parallel, Mike Acton, in his talk on <a href="https://www.youtube.com/watch?v=rX0ItVEVjHc">data-oriented design</a>, suggests only using C++ operator overloading that is "super obvious", such as adding vectors. Uncle Bob also teaches us to be more explicit.</p>
 
