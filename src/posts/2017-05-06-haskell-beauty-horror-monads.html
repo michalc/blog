@@ -1,0 +1,87 @@
+---
+layout: post
+title:  "The beauty and the horror of Haskell monads"
+subtitle: "They are wonderful, but terrible"
+date: 2017-05-06 10:00:00
+categories: haskell monad 
+
+---
+
+<p>This post assumes some understanding and famiarity of Haskell monads.</p>
+
+<h3>The beauty</h3>
+
+<p>There are a number of requirements in programs</p>
+
+<ul class="fa-ul">
+  <li><i class="fa-li fa fa-caret-right"></i> Combining IO actions, making the result of each available to later ones: <em>IO monad</em></li>
+  <li><i class="fa-li fa fa-caret-right"></i> Building up, or reading from, a peusdo-mutable state or configuration: <em>Reader, Writer, and State monads</em></li>
+  <li><i class="fa-li fa fa-caret-right"></i> Running a sequence of functions where the later are skipped if the previous doesn't return a meaningful result: <em>Maybe monad</em></li>
+  <li><i class="fa-li fa fa-caret-right"></i> Running a function over all possible combined values of a number of lists: <em>List monad</em></li>
+</ul>
+
+<p>The beautiful is that problems that at face value are completely different actually share a common structure. They can be decomposed into their domain-specific components, and <code class="inline">&gt;&gt;=</code> (bind) and <code class="inline">return</code>, where, although different for all of the above examples, adhere to certain laws. Once you are familiar with any given implementation of <code class="inline">&gt;&gt;=</code> and <code class="inline">return</code>, then it's really quite amazing how much can be achieved, and communicated, with just a few lines of code.</p>
+
+<h3>The horror</h3>
+
+<p>The "once you are familiar with any given instance of <code class="inline">&gt;&gt;=</code>" hints at the horror. The <code class="inline">&gt;&gt;=</code> and <code class="inline">return</code> functions are (terribly?) overloaded. Each of the monads use the same notation, but they can all do radically different things. To know what any <code class="inline">&gt;&gt;=</code> actually does, you have to infer its type from the surrounding code. Similarly a do-block's behaviour depends radially on the definition of <code class="inline">&gt;&gt;=</code>: and it might be even worse, because <code class="inline">&gt;&gt;=</code> isn't even present in the code.</p>
+
+<p>Taking and modifying some examples from <a href="http://dev.stephendiehl.com/hask/#readert">What I Wish I Knew When Learning Haskell</a>, we can example use of of the Maybe monad,
+
+{{#highlight 'haskell'}}
+main :: IO ()
+main = putStrLn . show $ example
+
+example :: Maybe Int
+example = do
+  a <- Just 3
+  b <- Nothing
+  return $ a + b
+{{/highlight}}
+
+<p>And an example of using Reader monad.</p>
+
+{{#highlight 'haskell'}}
+import Control.Monad.Reader
+
+data MyContext = MyContext
+  { foo :: String
+  , bar :: Int
+  } deriving (Show)
+
+main :: IO ()
+main = putStrLn . show $ runReader computation $ MyContext "hello" 1
+
+computation :: Reader MyContext (Maybe String)
+computation = do
+  n <- asks bar
+  x <- asks foo
+  if n > 0
+    then return (Just x)
+    else return Nothing
+{{/highlight}}
+
+<p>The monadic values <code class="inline">example</code> and <code class="inline">compution</code> definitions have similarities: do notation, <-, and return. However, these similarities are misleading. Take for example <code class="inline">return</code> from the Maybe monad. Its definition is</p>
+
+{{#highlight 'haskell'}}
+return = Just
+{{/highlight}}
+
+<p>while the Reader monad's definition is</p>
+
+{{#highlight 'haskell'}}
+return a = Reader $ \_ -> a
+{{/highlight}}
+
+<p>Because of the different implementations of <code class="inline">&gt;&gt;=</code>, line breaks in the do notations restult in different code. Hence how monads are sometimes described as <em>programmable semicolons</em>.</p>
+
+<p>There is a <em>lot</em> of non-explicit behaviour going on. In code reviews, I often use the term "magical" if there is non-explicit behaviour, and I usually suggest it is to be avoided. Yes, they are likely to abide by the monad laws, and certainly do in these examples, but I'm unsure if this is enough to understand what's going on.</p>
+
+<p>As a parallel, Mike Acton, in his talk on <a href="https://www.youtube.com/watch?v=rX0ItVEVjHc">data-oriented design</a>, suggests only using C++ operator overloading that is "super obvious", such as adding vectors. Uncle Bob also teaches us to be more explicit.</p>
+
+<blockquote>
+  <p>The name of a variable, function, or class, should answer all the big questions. It should tell you why it exists, what it does, and how it is used.</p>
+  <cite>Robert C. Martin</cite>
+</blockquote>
+
+<p>There are reasonable arguments that monads in Haskell, by overloading <code class="inline">&gt;&gt;=</code> and <code class="inline">return</code>, break these guidlines. Of course, perhaps I will feel differently once I have been working with Haskell for longer. We will see!</p>
