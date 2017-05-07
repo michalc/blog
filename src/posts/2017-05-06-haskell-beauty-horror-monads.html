@@ -24,7 +24,7 @@ categories: haskell monad
 
 <h3>The horror</h3>
 
-<p>The "once you are familiar with any given instance of <code class="inline">&gt;&gt;=</code>" hints at the horror. The <code class="inline">&gt;&gt;=</code> and <code class="inline">return</code> functions are (terribly?) overloaded. Each of the monads use the same notation, but they can all do radically different things. To know what any <code class="inline">&gt;&gt;=</code> actually does, you have to infer its type from the surrounding code. Similarly a do-block's behaviour depends radially on the definition of <code class="inline">&gt;&gt;=</code>: and it might be even worse, because <code class="inline">&gt;&gt;=</code> isn't even present in the code.</p>
+<p>The "once you are familiar with any given instance of <code class="inline">&gt;&gt;=</code>" hints at the horror. The <code class="inline">&gt;&gt;=</code> and <code class="inline">return</code> functions are (terribly?) overloaded. Each of the monads use the same notation, but they can all do radically different things. To know what any <code class="inline">&gt;&gt;=</code> actually does, you have to infer its type from the surrounding code, and look to its definition. Similarly a do-block's behaviour depends radially on the definition of <code class="inline">&gt;&gt;=</code>: and it might be even worse, because <code class="inline">&gt;&gt;=</code> isn't even present in the code.</p>
 
 <p>Taking and modifying some examples from <a href="http://dev.stephendiehl.com/hask/#readert">What I Wish I Knew When Learning Haskell</a>, we can see a use of the Maybe monad,
 
