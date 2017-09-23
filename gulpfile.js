@@ -246,7 +246,7 @@ gulp.task('build', function() {
     .pipe(handlebars({
        site: {
          name: 'Michal Charemza',
-         url: 'http://charemza.name/'
+         url: 'https://charemza.name/'
        }
      }, {
        helpers: {
