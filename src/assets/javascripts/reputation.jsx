@@ -7,7 +7,7 @@ var SITE = "stackoverflow.com";
 var KEY = "IuEWeQbgKqLACgi0FNMcOQ((";
 
 var SE = (function() {
-  var base = 'http://api.stackexchange.com/2.1/';
+  var base = 'https://api.stackexchange.com/2.1/';
 
   function fetch(url) {
     return new Promise((resolve, reject) => {
