@@ -81,6 +81,10 @@ categories: methodologies testing
 
 <p>Working out what a "likely" feature is partially an art, and benefits from experience and domain knowledge. This is a reason for developers to be quite close to client contact, be involved in design decisions or at least have as much contextual information as possible before starting to code. Often they are very business-logic related: adding or "tweaking" what data is allowed as input, stored, given as outputs, or associated UX changes to allow these. They are rarely low-level or infrastructure changes: changing database, data transfer formats, or code framework.</p>
 
+<h3>What would a developer do if the test fails?</h3>
+
+<p>If the answer is that the test is likely to be changed, then the test either asserts on extremely trivial behaviour, or it asserts on too much, such as a snapshot of an entire DOM. Instead consider a "targed high level test".</p>
+
 <h3>Are my tests helping me achieve my aims?</h3>
 
 <p>If they don't, write different tests. Potentially, you might have to restructure the production code as well.</p>
