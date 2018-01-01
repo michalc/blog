@@ -1,0 +1,87 @@
+---
+layout: post
+title:  "Questions to ask yourself when writing tests"
+subtitle: "Talk to yourself to make sure your tests help you achieve your aims"
+date: 2018-01-01 20:00:00
+categories: methodologies testing  
+
+---
+
+<h3>Am I confident the feature I wrote today works because of the tests and not because I loaded up the application?</h3>
+
+<p>If no, consider instead writing higher level tests that each test more of the code.</p>
+
+<h3>I've tested a number of cases manually. Are these cases covered by tests?</h3>
+
+<p>If no, write tests covering these cases. This may be some combination of higher and lower level tests. Don't worry if some code is tested multiple times. Often, testing glue code is worth the cost of this re-testing.</p>
+
+<h3>What would the tests have looked like if I wrote them before I wrote the code?</h3>
+
+<p>It's not always possible to envisage what the tests should be before writing the code: some tasks require a bit of exploratory work. However, if you're writing tests after the fact, considering what you <em>could</em> have written beforehand may help writing better tests, since it may push you towards testing behaviour rather than implementation details.</p>
+
+<h3>If there were no tests in the codebase at all, which ones would I write now to test my changes?</h3>
+
+<p>It's easy to be affected by what's in the codebase already, especially if it was written by you. Try to avoid this bias by imagining a clean slate, and what a "perfect" test would be. There may be contraints so you can't acheive this: often time or language constraints, but you might be able to do  something better than what there is already.</p>
+
+<h3>Are the boundaries of the code under test, themselves tested?</h3>
+
+<p>Each boundary indroduces an assumption, which introduces risk, since it might be false. Consider higher level tests that each test more of the code.</p>
+
+<h3>Have I just made something public in order to test it?</h3>
+
+<p>If yes, consider instead writing higher level tests that each each test more of the code.</p>
+
+<h3>Am I testing something trivial?</h3>
+
+<p>If yes, consider instead writing higher level tests that each each test more of the code.</p>
+
+<h3>Have I just mocked something that is fast and deterministic?</h3>
+
+<p>If yes, consider not mocking it. Mocking introduces assumptions, which introduce risk. Code may be tested multiple times at multiple levels, but having fewer assumptions is often worth this cost.</p>
+
+<h3>For every part of my code change, if I break the code, will a test fail?</h3>
+
+<p>100% code coverage is not enough for this, since that does not ensure components work together. To avoid a high number of low-level tests, consider instead writing fewer higher level tests.</p>
+
+<h3>Am I avoiding testing something because it's hard to test?</h3>
+
+<p>If it's hard to test automatically, it is likely be hard to reason about or test manually. Thefore the risk is higher, and it's actually <em>more</em> important to test such things.</p>
+
+<h3>Is the None/null case tested?</h3>
+
+<p>Often it's better to design the production code so there is no None/null case. However, if there is one, it should be tested.</p>
+
+<h3>Are boundaries of the problem domain tested?</h3>
+
+<p>The most common of these are off-by-one errors, so often good to check each side of a numerical boundary. Yes, some code will be re-tested, but the increase of confidence is worth the cost.</p>
+
+<h3>What is QA about to do? Can I add automated tests for that?</h3>
+
+<p>If you're about to hand over to QA with a list of things to test, consider writing automated tests for them.</p>
+
+<h3>Have I just copied and pasted the code of the function into the test?</h3>
+
+<p>If yes, then the test doesn't have much value. Consider instead a higher level test that asserts on more code.</p>
+
+<h3>What situations would cause the test to fail?</h3>
+
+<p>If the only realistic answer is that the developer deliberately made a change to some code and the behaviour of the software continues to be correct, then the test is likely testing implementation details. Consider writing a higher level test, covering more code.</p>
+
+
+<h3>If I refactor implementation details, would the tests pass?</h3>
+
+<p>If no, consider instead writing higher level tests that each test more of the code.</p>
+
+<p>Defining "implemenation detail" is partially an art. However glue code that just passes data about, that doesn't actually do the data processing that a feature requires, can often be usefully classed as an implementation detail.</p>
+
+<h3>Can I add likely features with the tests still passing?</h3>
+
+<p>If no, the tests are likely to assert on too much. For example, "snapshot" tests that assert on the entire state of the DOM, or maybe an entire PDF.</p>
+
+<p>Better are "targeted high level tests". For example, instead of asserting on the entire state of the UI, just test certain parts of it, such as what is displayed in a drop down after a click on some element. [This is not an E2E test: remote services can still be mocked.]</p>
+
+<p>Working out what "likely" feature is partially an art, and benefits from experience and domain knowledge. This is a reason for developers to be quite close to client contact, be involved in design decisions or at least have as much contextual information as possible before starting to code. Often they are very business-logic related: adding or "tweaking" what data is allowed as input, stored, given as outputs, or associated UX changes to allow these. They are rarely low-level or infrastructure changes: changing database, data transfer formats, or code framework.</p>
+
+<h3>Are my tests helping me achieve my aims?</h3>
+
+<p>If they don't, write different tests. Potentially, you might have to restructure the production code as well.</p>
