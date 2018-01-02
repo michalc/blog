@@ -4,13 +4,17 @@
   <meta http-equiv="Content-Type" content="text/html;charset=utf-8" />
   {{#if title}}
   <title>{{ title }} - {{ site.name }}</title>
+  <meta property="og:title" content="{{ title }}">
   {{else}}
   <title>{{ site.name }}</title>
+  <meta property="og:title" content="{{ site.name }}">
   {{/if}}
   {{#if title}}
   <meta name="description" content="{{ subtitle }}">
+  <meta property="og:description" content="{{ subtitle }}">
   {{else}}
   <meta name="description" content="Full stack software engineer">
+  <meta property="og:description" content="Full stack software engineer">
   {{/if}}
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <link rel="shortcut icon" href="{{ lookup assets 'assets/images/favicon.ico' }}">
