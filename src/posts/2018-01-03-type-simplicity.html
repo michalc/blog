@@ -1,0 +1,188 @@
+---
+layout: post
+title:  "Type-simplicity"
+subtitle: "If you can't have type-safety, have the next best thing"
+date: 2018-01-03 20:00:00
+categories: software-engineering type-safety  
+
+---
+
+<p>There is a "feature" of type safe language: it is often an effort to use <a href="https://en.wikipedia.org/wiki/Union_type">union types</a>. This has the consequence that the developer is given a little push to avoid such types, and consider alternatives.</p>
+
+<p>In this post I argue that the simpler, non-union, types and corresponding code are often easier to reason about, and less likely to have bugs. Therefore, even in a in a type-unsafe environment, you should give <em>yourself</em> this push for simpler types.<p>
+
+<h3>What are union types?</h3>
+
+<p>They are types that have two (or more) cases. For example, in Haskell, you have to be explicit, via a bit of effort, as to "which" type is used. A basic situation is using <code class="inline">Either</code>, which allows a <code class="inline">Left</code> type and a <code class="inline">Right</code> type:</p>
+
+{{#highlight 'haskell'}}
+a = if condition then Left 3 else right "three"
+{{/highlight}}
+
+<p>In this case, <code class="inline">a</code> would have the type <code class="inline">Either Int String</code>. [This is slightly inaccurate due to typeclasses, but this isn't relevant here.]</p>
+
+<p>When in an type-unsafe environment, variables don't have types, just the data they refer to does. However, it is often useful to mentally note down the all the types of variable's data and construct "what the type of the variable would be" if the environment had the concept of variables having types.</p>
+
+<p>For example, in Python, you can write:</p>
+
+{{#highlight 'python'}}
+if condition:
+  a = 3
+else:
+  a = "three"
+{{/highlight}}
+
+<p>where the type of <code class="inline">a</code> would be <code class="inline">Union[int,string]</code>, using Python's type annotation syntax. The similar Javascript code,</p>
+
+{{#highlight 'javascript'}}
+if (condition) {
+  a = 3;
+} else {
+  a = "three";
+}
+{{/highlight}}
+
+<p>would result in the type of <code class="inline">a</code> being the union type <code class="inline">number | string</code>, using Flow's type annotation syntax.</p>
+
+<p>A more complex, but more realistic example, would be an object with differerent keys:</p>
+
+{{#highlight 'javascript'}}
+obj = {}
+if (condition_1) {
+  obj.key_1 = "value_1";
+}
+if (condition_2) {
+  obj.key_2 = "value_3";
+}
+if (condition_3) {
+  obj.key_2 = "value_3";
+}
+{{/highlight}}
+
+<p>Slightly shockingly, this is a union of 8 types:</p>
+
+{{#highlight 'javascript'}}
+{}
+| {key_1: string}
+| {key_1: string, key_2: string}
+| {key_1: string, key_2: string, key_3: string}
+| {key_1: string, key_3: string}
+| {key_2: string}
+| {key_2: string, key_3: string}
+| {key_3: string}
+{{/highlight}}
+
+<p>[You can write a similar type more concisely in Flow. The types are written out here to make clear all the different cases.]</p>
+
+<h3>Special mention: Maybe/Optional/None/null</h3>
+
+<p>These are a common union type that crops up in code. In Haskell again you have to be explicit adding a <code class="inline">Just</code> to wrap a value:</p>
+
+{{#highlight 'haskell'}}
+a = if condition then Just 3 else Nothing
+{{/highlight}}
+
+<p>However in Python you can just set the values as desired,</p>
+
+{{#highlight 'python'}}
+a = None
+if condition:
+  a = 3
+{{/highlight}}
+
+<p>where the type would be <code class="inline">Union[int, None]</code> or more concisely <code class="inline">Optional[int]</code>. Similarly you write in Javascript:</p>
+
+{{#highlight 'javascript'}}
+a = null;
+if (condition) {
+  a = 3;
+}
+{{/highlight}}
+
+<p>where the Flow type annotation would be <code class="inline">?number</code>.</p>
+
+<h3>Special mention: optional arguments with default of None</h3>
+
+<p>It is common to use optional arguments to function that have a default of None:</p>
+
+{{#highlight 'python'}}
+def my_func(a=None):
+  ...
+{{/highlight}}
+
+<p>You should be conscious of the fact that, unless <code class="inline">None</code> is the <em>only</em> value ever passed, the arguments will be of a union type.</p>
+
+<h3>Special mention: variable only sometimes defined</h3>
+
+<p>In imperitive languages, it's often possible to only sometimes define a variable. For example <code class="inline">the_filter</code> is only sometimes defined below.</p>
+
+{{#highlight 'python'}}
+if condition:
+  the_filter = filter_function
+{{/highlight}}
+
+<p>In Python, it would causes a runtime error if you try to access the variable when it's not defined. However, it's useful to keep in mind that there are 2 cases, so the type of the variable can be usefully classed as a union, of the defined and not defined cases.</p>
+
+<h3>Why should they often be avoided?</h3>
+
+<p>Union types should be avoided because there are alternatives that are often better.</p>
+
+<h3>What are the alternatives, and why are they often better?</h3>
+
+<p>Better alternatives are found on a case-by-case basis: there is no silver bullet. However, there are 2 common alternatives: refactoring to use a single simple type, or multiple simple types with separate code paths.</p>
+
+<h4>Single simple type</h4>
+
+<p>Often, types are simple in an initial version of the code. They are then transformed into union types when adding a feature, where the original case should behave as before. Wonderfully, it is often possible to refactor the old case to be a special case of the new.</p>
+
+<p>For example, if you're adding a feature where an existing list is filtered by a filter based on some conditions, you may have written:</p>
+
+{{#highlight 'python'}}
+selected_filter = None
+if condition_1:
+  selected_filter = filter_function_1
+elif condition_2:
+  selected_filter = filter_function_2
+
+if selected_filter is not None:
+  data_filtered = filter(data, selected_filter)
+else:
+  data_filtered = data
+{{/highlight}}
+
+<p>The type of selected_filter would be <code class="inline">Union[function, None]</code>. You can rewrite this to always set a filter, using a constant function for the original case:</p>
+
+{{#highlight 'python'}}
+selected_filter = \
+  filter_function_1 if condition_1 else \
+  filter_function_2 if condition_2 else \
+  lambda x: True
+
+data_filtered = filter(data, selected_filter)
+{{/highlight}}
+
+<p>In this version, the type of <code class="inline">selected_filter</code> would just be <code class="inline">function</code>. There are fewer cases in the code, all things being equal, this makes the code easier to reason about.</p>
+
+<p>Also, the difference in what code is run between cases is extremely small: every single case will call the `filter` function. Therefore tests written <em>before</em> the filtering feature was added would still call <code class="inline">filter</code>. If the tests pass, this is evidence that the <em>new</em> behaviour will work just as expected in all cases.</p>
+
+<p>Further still, calling <code class="inline">filter</code> creates a new list. If there is code mutating lists somewhere, it is crucial to make sure the correct list is being mutated. <em>Always</em> creating a new list rather than <em>sometimes</em> creating a new list helps to avoid subtle bugs relating to this. Tests can't cover every combination of cases, but we can maximise their value by making sure differences between the cases they do test is minimal.</p>
+
+<p>[There are arguments against using the ternary operator, especially the Python ternary operator due to the order of arguments. However it does lend itself to making sure that variables are always defined, and I find the above layout for the nested case fairly easy to parse to understand the different cases and values.]</p>
+
+<h4>Multiple simple types with separate code paths</h4>
+
+<p>In some cases the behavior of the cases of the types are quite different, but for historical reasons are munged together. Maybe with extra runtime checks for something already known up the call stack / by the client.</p>
+
+<p>For example, a "Send email" button may have been written first, and a "Save draft" feature added later. The "Safe draft" button POSTs similar, but not the same, data to the original endpoint on a server. This is often done in the name of DRY, and to avoid touching existing code as much as possible. However, sending email and saving draft are now tightly coupled together and hard to reason about, so making changes are likely to be slow or introduce bugs.</p>
+
+<p>Better would be to have a separate endpoint for drafts. Two data types would be in-play, an "email to send" type, and "email to save" type, and the server wouldn't need to dynamically determine which: it's known by the which endpoint the data was POSTed to. The two cases are separate from the point of hitting the buttons: each endpoint would only contain code relevant to that case, without duplicated runtime tests for things already known. Therefore each should be easier to reason about and easier to make futher changes to. There may be some duplication on the server, but this can be minimised by factoring out common code from the two endpoint handlers if desired.</p>
+
+<h3>Related questions to ask yourself when coding</h3>
+
+<h4>How can I make the type of this variable simpler?</h4>
+
+<p>The overall code may be easier to reason about and safer if you do.</p>
+
+<h4>What would the code have looked like if I wrote the features in the another order?</h4>
+
+<p>If the answer is that the code would have a <em>different</em> structure, there is a reasonable chance that the code can have a <em>better</em> code structure. Specifically, any union types used may not be necessary, and the code would be better if it was restructured with simpler types.</p>
