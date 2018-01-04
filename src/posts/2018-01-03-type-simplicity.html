@@ -16,7 +16,7 @@ categories: software-engineering type-safety
 <p>They are types that have two (or more) cases. For example, in Haskell, you have to be explicit, via a bit of effort, as to "which" type is used. A basic situation is using <code class="inline">Either</code>, which allows a <code class="inline">Left</code> type and a <code class="inline">Right</code> type:</p>
 
 {{#highlight 'haskell'}}
-a = if condition then Left 3 else right "three"
+a = if condition then Left 3 else Right "three"
 {{/highlight}}
 
 <p>In this case, <code class="inline">a</code> would have the type <code class="inline">Either Int String</code>. [This is slightly inaccurate due to typeclasses, but this isn't relevant here.]</p>
