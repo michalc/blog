@@ -127,11 +127,9 @@ if condition:
 
 <p>Union types should be avoided because there are alternatives that are often better.</p>
 
-<h3>What are the alternatives, and why are they often better?</h3>
-
 <p>Better alternatives are found on a case-by-case basis: there is no silver bullet. However, there are 2 common alternatives: refactoring to use a single simple type, or multiple simple types with separate code paths.</p>
 
-<h4>Single simple type</h4>
+<h3>Alternative: Single simple type</h3>
 
 <p>Often, types are simple in an initial version of the code. They are then transformed into union types when adding a feature, where the original case should behave as before. Wonderfully, it is often possible to refactor the old case to be a special case of the new.</p>
 
@@ -169,7 +167,7 @@ data_filtered = filter(data, selected_filter)
 
 <p>[There are arguments against using the ternary operator, especially the Python ternary operator due to the order of arguments. However it does lend itself to making sure that variables are always defined, and I find the above layout for the nested case fairly easy to parse to understand the different cases and values.]</p>
 
-<h4>Multiple simple types with separate code paths</h4>
+<h3>Alternative: Multiple simple types with separate code paths</h3>
 
 <p>In some cases the behavior of the cases of the types are quite different, but for historical reasons are munged together. Maybe with extra runtime checks for something already known up the call stack / by the client.</p>
 
