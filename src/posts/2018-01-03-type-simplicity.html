@@ -161,7 +161,7 @@ data_filtered = filter(data, selected_filter)
 
 <p>In this version, the type of <code class="inline">selected_filter</code> would just be <code class="inline">function</code>. There are fewer cases in the code, all things being equal, this makes the code easier to reason about.</p>
 
-<p>Also, the difference in what code is run between cases is extremely small: every single case will call the `filter` function. Therefore tests written <em>before</em> the filtering feature was added would still call <code class="inline">filter</code>. If the tests pass, this is evidence that the <em>new</em> behaviour will work just as expected in all cases.</p>
+<p>Also, the difference in what code is run between cases is extremely small: every single case will call the <code class="inline">filter</code> function. Therefore tests written <em>before</em> the filtering feature was added would still call <code class="inline">filter</code>. If the tests pass, this is evidence that the <em>new</em> behaviour will work just as expected in all cases.</p>
 
 <p>Further still, calling <code class="inline">filter</code> creates a new list. If there is code mutating lists somewhere, it is crucial to make sure the correct list is being mutated. <em>Always</em> creating a new list rather than <em>sometimes</em> creating a new list helps to avoid subtle bugs relating to this. Tests can't cover every combination of cases, but we can maximise their value by making sure differences between the cases they do test is minimal.</p>
 
