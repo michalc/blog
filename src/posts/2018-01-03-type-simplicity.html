@@ -149,7 +149,7 @@ else:
   data_filtered = data
 {{/highlight}}
 
-<p>The type of selected_filter would be <code class="inline">Union[function, None]</code>. You can rewrite this to always set a filter, using a constant function for the original case:</p>
+<p>The type of <code class="inline">selected_filter</code> would be <code class="inline">Union[function, None]</code>. You can rewrite this to always set a filter, using a constant function for the original case:</p>
 
 {{#highlight 'python'}}
 selected_filter = \
