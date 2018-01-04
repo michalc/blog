@@ -35,6 +35,7 @@ else:
 <p>where the type of <code class="inline">a</code> would be <code class="inline">Union[int,string]</code> (using Python's type annotation syntax). The similar Javascript code:</p>
 
 {{#highlight 'javascript'}}
+var a;
 if (condition) {
   a = 3;
 } else {
@@ -47,7 +48,7 @@ if (condition) {
 <p>A more complex, but more realistic example, would be an object with differerent keys:</p>
 
 {{#highlight 'javascript'}}
-obj = {}
+var obj = {}
 if (condition_1) {
   obj.key_1 = "value_1";
 }
@@ -93,7 +94,7 @@ if condition:
 <p>where the type would be <code class="inline">Union[int, None]</code> or more concisely <code class="inline">Optional[int]</code>. Similarly you write in Javascript:</p>
 
 {{#highlight 'javascript'}}
-a = null;
+var a = null;
 if (condition) {
   a = 3;
 }
