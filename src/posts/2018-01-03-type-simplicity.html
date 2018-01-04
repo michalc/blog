@@ -170,7 +170,7 @@ data_filtered = filter(data, selected_filter)
 
 <h3>Alternative: Multiple simple types with separate code paths</h3>
 
-<p>In some cases the behavior of the cases of the types are quite different, but for historical reasons are munged together. Maybe with extra runtime checks for something already known up the call stack / by the client.</p>
+<p>In some cases the behavior of the cases of the types are quite different, but for historical reasons are munged together. When processing the type, there could be runtime checks for something already known up the call stack / by the client. An alternative would be to split the code at the earlier point, using different types, with two entirely different code paths for the different types.</p>
 
 <p>For example, a "Send email" button may have been written first, and a "Save draft" feature added later. The "Safe draft" button POSTs similar, but not the same, data to the original endpoint on a server. This is often done in the name of DRY, and to avoid touching existing code as much as possible. However, sending email and saving draft are now tightly coupled together and hard to reason about, so making changes are likely to be slow or introduce bugs.</p>
 
