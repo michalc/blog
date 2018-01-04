@@ -269,6 +269,9 @@ p, ul, nav {
     margin-top: $standard-spacing;
     margin-bottom: $standard-spacing/2;
   }
+  h4 {
+    font-weight: $bold;
+  }
   margin-bottom: $standard-spacing;
 }
 .post-date {
