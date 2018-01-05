@@ -16,6 +16,9 @@
   <meta name="description" content="Full stack software engineer">
   <meta property="og:description" content="Full stack software engineer">
   {{/if}}
+  {{#if image}}
+  <meta property="og:image" content="{{ lookup assets image }}">
+  {{/if}}
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <link rel="shortcut icon" href="{{ lookup assets 'assets/images/favicon.ico' }}">
   <style>
