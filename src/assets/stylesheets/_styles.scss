@@ -275,6 +275,11 @@ p, ul, nav {
   margin-bottom: $standard-spacing;
 }
 .post-date {
+  margin-bottom: 0;
+}
+.post-date,
+.post-extra {
+  line-height: 1.5;
   font-size: 80%;
 }
 
