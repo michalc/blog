@@ -129,7 +129,7 @@ sub {
   }
 }
 
-.reputation {
+.links {
   display: none;
   @media (min-width: $breakpoint-small) {
     display: block;
@@ -138,6 +138,16 @@ sub {
   }
   @media (min-width: $breakpoint-medium) {
     font-size: 12px;
+  }
+}
+
+.linkedin,
+.twitter {
+  opacity: 0.9;
+  position: relative;
+  top: 1px;
+  &:hover {
+    opacity: 1;
   }
 }
 
