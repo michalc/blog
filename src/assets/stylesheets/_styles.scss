@@ -293,6 +293,14 @@ p, ul, nav {
   font-size: 80%;
 }
 
+/* Links */
+.with-inner-link {
+  text-decoration: none;
+}
+.inner-link {
+  text-decoration: underline;
+}
+
 /* Comments */
 .comments {
   @include standard-border();
