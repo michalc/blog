@@ -1,0 +1,54 @@
+---
+layout: post
+title:  "Programming design choices in the face of changing requirements"
+subtitle: "The best gift you can give to the future is code that makes its current behaviour clear"
+date: 2018-02-25 20:00:00
+categories: software-engineering agile 
+---
+
+<p>In an Agile environment, you are likely keeping in mind the following 3 <a href="https://www.agilealliance.org/agile101/12-principles-behind-the-agile-manifesto/">Agile principles</a> when working.</p>
+
+<blockquote>
+  <p>Our highest priority is to satisfy the customer through early and continuous delivery of valuable software.</p>
+</blockquote>
+
+<blockquote>
+  <p>Deliver working software frequently, from a couple of weeks to a couple of months, with a preference to the shorter timescale.</p>
+</blockquote>
+
+<blockquote>
+  <p>Working software is the primary measure of progress.</p>
+</blockquote>
+
+<p>So if asked to make a feature, say Feature A, you split the work up into smaller, working, and deliverable pieces. Keeping also in mind the simplicity principle,</p>
+
+<blockquote>
+  <p>Simplicity--the art of maximizing the amount of work not done--is essential.</p>
+</blockquote>
+
+<p>you decide to split the work so you do the simple but useful things first:</p>
+
+<ul class="fa-ul">
+  <li><i class="fa-li fa fa-caret-right"></i> Feature A<sub>1</sub>: some useful subset of final feature set that is simple and quick to code up</li>
+  <li><i class="fa-li fa fa-caret-right"></i> Feature A<sub>2</sub>: an extension of A<sub>1</sub> delivering all the required behaviour and complexity</li>
+</ul>
+
+<p>After you've done Feature A<sub>1</sub>, keeping in mind the Agile principle</p>
+
+<blockquote>
+  <p>Business people and developers must work together daily throughout the project.</p>
+</blockquote>
+
+<p>you release and demonstrate the functionality. Then comes the feedback</p>
+
+<blockquote><p>This is great! We can really see how this solves our problems. Feature A<sub>1</sub> acheives 90% of what we need. The last 10% from Feature A<sub>2</sub> is quite low priority now. Can we make a start on Feature B?</p></blockquote>
+
+<p>Fortunately, when coding up Feature A<sub>1</sub>, you also kept in mind to</p>
+
+<blockquote><p>Welcome changing requirements.</p></blockquote>
+
+<p>so you didn't make a start on the complexity for Feature A<sub>2</sub> because you suspected the requirements would change after Feature A<sub>1</sub> was seen by the business people. You also kept in mind</p>
+
+<blockquote><p>Continuous attention to technical excellence and good design enhances agility.</p></blockquote>
+
+<p>so you didn't make Feature A<sub>1</sub> in any way a hack: it is safe, tested, what it does and why it does it is extremely clear, and there isn't any unnecessary code. You have spent no time working on something that isn't useful, and you could not have given the developer of the next feature a better gift.</p>
