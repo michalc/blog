@@ -129,9 +129,8 @@ if condition:
 
 <h3>When and why should they be avoided?</h3>
 
-<p>Union types should be avoided if there are alternatives that are better in some way.</p>
-
-<p>Better alternatives are found on a case-by-case basis: there is no one-size-fits-all approach that I know of. However, there are 2 common alternatives: refactoring to use a single simple type, or multiple simple types with separate code paths.</p>
+<p>"Avoided" is perhaps too strong. However, since they result in a number of different cases the code has to deal with, choosing an alternative that reduces the amount of code that has to deal with multiple
+  cases may result in code that is easier to reason about, and even improve effectiveness of tests and manual QA.</p>
 
 <h3>Alternative: Single simple type</h3>
 
