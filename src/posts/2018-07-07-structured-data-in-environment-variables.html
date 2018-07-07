@@ -6,9 +6,9 @@ date: 2018-07-07 12:30:00
 categories: software-engineering devops
 
 ---
-<p>I recently wrote a small python application that had to be configurable so it can run differently in different environments. In this case, environment variables were used to do this.</p>
+<p>I recently wrote a small python application that had to be configurable so it can run differently in different environments. As is often done, I used environment variables for this.</p>
 
-<p>However, for various reasons beyond the scope of this post, I could do with the variables containing <em>structured</em> data: lists, dictionaries, and even lists of dictionaries. So when the application runs, it should be able to extract data from the environment and get something that looks like:</p>
+<p>However, for various reasons beyond the scope of this post, it was helpful to have <em>structured</em> data stored in the environment: lists, dictionaries, and even lists of dictionaries. So when the application runs, it should be able to extract this and get something that looks like:</p>
 
 {{#highlight 'python'}}
 config = {
