@@ -32,9 +32,8 @@ config = {
 <p>So I came up with a simple format where each setting is in its own variable, but its <en>name</em> defines where it is in the structure. Specifically each name is</p>
 
 <ul class="fa-ul">
-  <li><i class="fa-li fa fa-caret-right"></i> a double-underscore separated list of keys;</li>
-  <li><i class="fa-li fa fa-caret-right"></i> where the double-underscore is a path separator into a hierarchy of lists and dictionaries;</li>
-  <li><i class="fa-li fa fa-caret-right"></i> and where each level is a dictionary unless all of its keys parse as integers.</li>
+  <li><i class="fa-li fa fa-caret-right"></i> a double-underscore separated list of path components;</li>
+  <li><i class="fa-li fa fa-caret-right"></i> and where each level of components defines a dictionary unless all of them parse as integers.</li>
 </ul>
 
 <p>For example, the above config could be defined in bash by:</p>
