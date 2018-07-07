@@ -1,0 +1,68 @@
+---
+layout: post
+title:  "Structured data in environment variables"
+subtitle: "A straightforward way to have nested dictionaries and lists in environment variables"
+date: 2018-08-06 12:30:00
+categories: software-engineering devops
+
+---
+<p>I recently wrote a small python application that had to be configurable so it can run differently in different environments. In this case, environment variables were used to do this.</p>
+
+<p>However, for various reasons beyond the scope of this post, I could do with the variables containing <em>structured</em> data: lists, dictionaries, and even lists of dictionaries. So when the application runs, it should be able to extract data from the environment and get something that looks like:</p>
+
+{{#highlight 'python'}}
+config = {
+    "FOO": [{
+        "BAR": "setting-1",
+        "BAZ": "setting-2",
+    }, {
+        "BAR": "setting-3",
+        "QUE": "setting-4",
+    }],
+    "FIZZ": [
+      "setting-5",
+      "setting-6",
+    ],
+    "BILL": "setting-7"
+}
+{{/highlight}}
+
+<p>This could be done by encoding such a structure into a single string, perhaps using JSON, throwing it into a single environment variable, and decoding it in the application. However, this would be fairly painful to edit and difficult to debug in many situations.</p>
+
+<p>So I came up with a simple format where each setting is in its own variable, but its <en>name</em> defines where it is in the structure. Specifically each name is</p>
+
+<ul class="fa-ul">
+  <li><i class="fa-li fa fa-caret-right"></i> a double-underscore separated list of keys;</li>
+  <li><i class="fa-li fa fa-caret-right"></i> where the double-underscore is a path separator into a hierarchy of lists and dictionaries;</li>
+  <li><i class="fa-li fa fa-caret-right"></i> and where each level is a dictionary unless all of its keys parse as integers.</li>
+</ul>
+
+<p>For example, the above config could be defined in bash by:</p>
+
+{{#highlight}}
+export FOO__1__BAR=setting-1
+export FOO__2__BAR=setting-2
+export BAR__1__BAR=setting-3
+export BAR__2__BAR=setting-4
+export FIZZ__1=setting-5
+export FIZZ__2=setting-6
+export BILL=setting-7
+{{/highlight}}
+
+<p>and to convert this list of environment variables to nested Python dictionaries and lists, you can use <a href="https://gist.github.com/michalc/59efee4bde412d137367d44049df8924">normalise_environment.py</a>:</p>
+
+{{#highlight 'python'}}
+import os
+
+config = normalise_environment(os.environ)
+{{/highlight}}
+
+<p>This way of incorporating structure into environment variables has some nice properties.</p>
+
+<ul class="fa-ul">
+  <li><i class="fa-li fa fa-caret-right"></i> The double underscore is likely to not cause issues because underscores are used in environment variables frequently.</li>
+
+  <li><i class="fa-li fa fa-caret-right"></i> No (extra) escaping needed. You can set them easily on the command line, any old bash script, Travis, CircleCI, CloudFoundry, ECS task defintions. No extra software needed.</li>
+
+  <li><i class="fa-li fa fa-caret-right"></i> If you don't currently use any double underscores in environment variable names, you can put your entire environment through <a href="https://gist.github.com/michalc/59efee4bde412d137367d44049df8924">normalise_environment.py</a>, and it will be unchanged. This helps in moving existing config to a more structured form in small steps.</li>
+</ul>
