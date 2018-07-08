@@ -9,6 +9,7 @@
     <p class="post-subtitle" itemprop="alternativeHeadline">{{ subtitle }}</p>
     <p class="post-date"><time itemprop="datePublished" datetime="{{ isodate date }}">{{ nicedate date }}</time></p>
     <meta itemprop="image" content="{{ site.url }}{{ lookup assets 'assets/images/michal-charemza.jpeg' }}">
+    <meta itemprop="publisher" itemref="michal-charemza-author">
     {{#if extra}}
     <p class="post-extra">{{ safe extra }}</p>
     {{/if}}
