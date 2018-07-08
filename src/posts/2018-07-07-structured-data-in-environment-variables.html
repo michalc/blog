@@ -68,3 +68,7 @@ config = normalise_environment(os.environ)
 
   <li><i class="fa-li fa fa-caret-right"></i> Although the function <a href="https://gist.github.com/michalc/59efee4bde412d137367d44049df8924">normalise_environment.py</a> is helpful in Python, it's by no means necessary. Any code that can read environment variables can access their contents, without extra steps or dependencies involved.</li>
 </ul>
+
+<h3>What to call this</h3>
+
+<p>I'm not sure how best to refer to this technique (it's almost so trivial calling it a "technique" is a bit much...). It's not quite <em>flattened</em> since the structure is preserved. Storing the variables <em>denormalised</em> is the best I have, since it can be argued that the location of each variable in the structure is denormalised.</p>
