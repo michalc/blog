@@ -5,9 +5,10 @@ subtitle: A few of my thoughts on a few web-related issues.
 <p>A few of my thoughts on a few web-related issues. Feel free to contact me at <a href="mailto:michal@charemza.name">michal@charemza.name</a> or post a comment.</p>
 <div itemscope itemtype="http://schema.org/Blog">
   {{#each posts as |post i| }}
-  <section class="post-summary" itemprop="blogPost" itemscope itemtype="http://schema.org/BlogPosting" itemref="michal-charemza-author" itemref="michal-charemza-image">
+  <section class="post-summary" itemprop="blogPost" itemscope itemtype="http://schema.org/BlogPosting" itemref="michal-charemza-author">
     <a href="{{ post.url }}" >
       <meta itemprop="url" content="{{ ../site.url }}{{ post.url }}">
+      <meta itemprop="image" content="{{ lookup assets 'assets/images/michal-charemza.jpeg' }}">
       <header>
         <i class="fa fa-angle-right"></i>
         <h2 itemprop="headline">{{ post.title }}</h2>
