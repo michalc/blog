@@ -60,7 +60,9 @@ config = normalise_environment(os.environ)
 <ul class="fa-ul">
   <li><i class="fa-li fa fa-caret-right"></i> The double underscore is likely to not cause issues because underscores are used in environment variables frequently.</li>
 
-  <li><i class="fa-li fa fa-caret-right"></i> No (extra) escaping needed. You can set them easily on the command line, any old bash script, Travis, CircleCI, CloudFoundry, ECS task defintions. No extra software needed.</li>
+  <li><i class="fa-li fa fa-caret-right"></i> No (extra) escaping needed. You can set them easily on the command line, any old bash script, Travis, CircleCI, CloudFoundry, ECS task defintions.</li>
+
+  <li><i class="fa-li fa fa-caret-right"></i> You can then <em>read</em> them really easily, which is good for debugging.</li>
 
   <li><i class="fa-li fa fa-caret-right"></i> If you don't currently use any double underscores in environment variable names, you can put your entire environment through <a href="https://gist.github.com/michalc/59efee4bde412d137367d44049df8924">normalise_environment.py</a>, and it will be unchanged. This helps in moving existing config to a more structured form in small steps.</li>
 </ul>
