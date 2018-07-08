@@ -65,4 +65,6 @@ config = normalise_environment(os.environ)
   <li><i class="fa-li fa fa-caret-right"></i> You can then <em>read</em> them really easily, which is good for debugging.</li>
 
   <li><i class="fa-li fa fa-caret-right"></i> If you don't currently use any double underscores in environment variable names, you can put your entire environment through <a href="https://gist.github.com/michalc/59efee4bde412d137367d44049df8924">normalise_environment.py</a>, and it will be unchanged. This helps in moving existing config to a more structured form in small steps.</li>
+
+  <li><i class="fa-li fa fa-caret-right"></i> Although the function <a href="https://gist.github.com/michalc/59efee4bde412d137367d44049df8924">normalise_environment.py</a> is helpful in Python, it's by no means necessary. Any code that can read environment variables can access their contents, without extra steps or dependencies involved.</li>
 </ul>
