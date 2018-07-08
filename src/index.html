@@ -14,9 +14,6 @@ subtitle: A few of my thoughts on a few web-related issues.
         <p class="post-subtitle" itemprop="alternativeHeadline">{{ post.subtitle }} </p>
         <p class="post-date"><time datetime="{{ isodate post.date }}" itemprop="datePublished">{{ nicedate post.date }}</time></p>
       </header>
-      <div itemprop="about">
-        {{ post.summary }}
-      </div>
     </a>
   </section>
   {{/each}}
