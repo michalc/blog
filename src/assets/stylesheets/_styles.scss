@@ -134,6 +134,11 @@ footer {
   padding-bottom: $smaller-spacing;
 }
 
+.footer-logo {
+  height: 15px;
+  width: auto;
+}
+
 .endorsements {
   @media (min-width: $breakpoint-small) {
     margin-right: 15px;
