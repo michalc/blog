@@ -3,18 +3,15 @@ subtitle: A few of my thoughts on a few web-related issues.
 ---
 
 <p>A few of my thoughts on a few web-related issues. Feel free to contact me at <a href="mailto:michal@charemza.name">michal@charemza.name</a> or post a comment.</p>
-<div itemscope itemtype="http://schema.org/Blog">
+<div>
   {{#each posts as |post i| }}
-  <section class="post-summary" itemprop="blogPost" itemscope itemtype="http://schema.org/BlogPosting" itemref="michal-charemza-author">
+  <section class="post-summary">
     <a href="{{ post.url }}" >
-      <meta itemprop="url" content="{{ ../site.url }}{{ post.url }}">
-      <meta itemprop="image" content="{{ site.url-no-slash }}{{ lookup assets 'assets/images/michal-charemza.jpeg' }}">
-      <meta itemprop="publisher" itemscope itemtype="http://schema.org/Person" itemref="michal-charemza-author">
       <header>
         <i class="fa fa-angle-right"></i>
-        <h2 itemprop="headline">{{ post.title }}</h2>
-        <p class="post-subtitle" itemprop="alternativeHeadline">{{ post.subtitle }} </p>
-        <p class="post-date"><time datetime="{{ isodate post.date }}" itemprop="datePublished">{{ nicedate post.date }}</time></p>
+        <h2>{{ post.title }}</h2>
+        <p class="post-subtitle">{{ post.subtitle }} </p>
+        <p class="post-date"><time datetime="{{ isodate post.date }}">{{ nicedate post.date }}</time></p>
       </header>
     </a>
   </section>
