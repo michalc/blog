@@ -11,6 +11,7 @@
     {{#if extra}}
     <p class="post-extra">{{ safe extra }}</p>
     {{/if}}
+    <link itemprop="mainEntityOfPage" href="{{ site.url }}{{ url }}">
   </header>
   <div itemprop="articleBody">
     <%= contents %>
