@@ -130,7 +130,7 @@ footer {
 
 footer {
   @include light-border();
-  padding-top: $smaller-spacing;
+  padding-top: 5px;
   padding-bottom: $smaller-spacing;
 }
 
