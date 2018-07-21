@@ -38,6 +38,10 @@ $breakpoint-medium: 500px;
   border-top: 2px solid $main-color;
 }
 
+@mixin light-border() {
+  border-top: 2px solid #e7e9ee;
+}
+
 /* Box Sizing */
 * {
   box-sizing: border-box;
@@ -92,7 +96,8 @@ sub {
 }
 
 .page-header-inner,
-.page-content-inner {
+.page-content-inner,
+footer {
   max-width: 700px;
   margin: 0 auto;
 }
@@ -121,6 +126,12 @@ sub {
 
 .page-header-p {
   margin: 0;
+}
+
+footer {
+  @include light-border();
+  padding-top: $smaller-spacing;
+  padding-bottom: $smaller-spacing;
 }
 
 .endorsements {
@@ -186,6 +197,10 @@ sub {
 
 .page-content {
   padding: $standard-spacing;
+}
+
+footer {
+  font-size: 14px;
 }
 
 /* Common Spacing */
