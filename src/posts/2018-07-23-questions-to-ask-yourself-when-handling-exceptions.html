@@ -11,7 +11,9 @@ categories: patterns error-handling
 
 <p>If there is no combination of input that you can determine that can cause the exception, then if <em>somehow</em> it does get thrown, your assumptions on how the program behaves have been violated. Consider letting the error bubbling up, and defering to a general error handler. In a web context, returning a 500 would be a typical example of how a general error handler would behave. Wonderfully, this is the default behaviour for many web frameworks.</p>
 
-<p>In some situations, you may even determine that exiting is safest. For example a web-based application may try to access configuration on load, and raise an exception if it can't, which would often be the default behaviour [depending on language and how the code is expecting the configuration]. In a blue-green deployment pipeline, it's <em>desirable</em> for the application to exist on load like this, since the deployment to fail, and the existing deployment will remain live.</p>
+<h3>Is exiting safest?</h3>
+
+<p>In some situations, you may even determine that exiting is safest. For example a web-based application may try to access configuration on load, and raise an exception if it can't, which would often be the default behaviour [depending on language and how the code is expecting the configuration], which if unhandled, would cause the program to exit. In a blue-green deployment pipeline, it's <em>desirable</em> for the application to exist on load like this, since the deployment to fail, and the existing deployment will remain live.</p>
 
 <h3>Am I avoiding a 500?</h3>
 
