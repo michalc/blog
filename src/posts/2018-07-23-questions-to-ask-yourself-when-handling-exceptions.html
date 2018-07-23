@@ -7,9 +7,9 @@ categories: patterns error-handling
 
 ---
 
-<h3>If the exception is thrown, have my assumptions on how the program behaves been violated?</h3>
+<h3>Can I think of any combination of input where the exception can be thrown?</h3>
 
-<p>If yes, marching forwards may not be the safest thing to do. Consider letting the error bubbling up, and the program exiting. Wonderfully, this is often default behaviour, which needs to be dealt with anyway.</p>
+<p>If there is no combination of input that you can determine that can cause the exception, then if <em>somehow</em> it does get thrown, your assumptions on how the program behaves have been violated. Consider letting the error bubbling up, and the program exiting. Wonderfully, this is often default behaviour, which needs to be dealt with anyway.</p>
 
 <p>Of course, exiting may not be the best thing to do in your case. However, defering to a top-level general error handler may be appropriate. In a web context, returning a 500 would be a typical example of how this would be handled. Wonderfully, this is the default behaviour for many web servers.</p>
 
@@ -24,10 +24,6 @@ categories: patterns error-handling
 <p>In some cases, it may be appropriate to iteratively refactor surrounding code to make it easier to reason about.</p>
 
 <p>[This is also an argument for type safety as well, since often it's easier to be sure on ranges of inputs. However, it's not possible or realistic in many situations.]</p>
-
-<h3>Can I think of any combination of input where the exception can be thrown?</h3>
-
-<p>If there is no combination of input that can cause the exception that you can determine, then if <em>somehow</em> it does get thrown, your assumptions on how the program behaves have been violated. Bubbling up to a general handler may be the most appropriate way to handle this.</p>
 
 <h3>To test the handler have I had to mock an implementation detail?</h3>
 
