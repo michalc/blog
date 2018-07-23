@@ -56,7 +56,7 @@ categories: patterns error-handling
 
 <h3>I'm handling low-level exceptions by raising higher level/custom exceptions. Am I sure hiding the real cause is helpful?</h3>
 
-<p>It's often tempting to provide a "pure" level of abstraction by hiding everything the code is actually doing. However, consider what someone will need to do to investiagte this exception. If they would need to look into the lower-level cause, you have just make extra work for them unnecessarily.</p>
+<p>It's often tempting to provide a "pure" level of abstraction by hiding everything the code is actually doing. However, consider what someone will need to do to investiagte this exception. If they would need to look into the lower-level cause, you have just made extra work for them unnecessarily.</p>
 
 <p>As a guideline, if a layer of abstraction helps you reason about <em>today's</em> behaviour, feel free to add it. If it doesn't, or if you can only see how it's helpful in some future version or use of the system, be <em>very</em> cautious.</p>
 
