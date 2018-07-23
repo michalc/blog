@@ -1,0 +1,84 @@
+---
+layout: post
+title:  "Questions to ask yourself when handling exceptions"
+subtitle: "Safety is not always marching forwards"
+date: 2018-07-23 23:00:00
+categories: patterns error-handling  
+
+---
+
+<h3>Have my assumptions on how the program behaves been violated?</h3>
+
+<p>If yes, marching forwards may not be the safest thing to do. Consider letting the error bubbling up, and the program exiting. Wonderfully, this is often default behaviour, which needs to be dealt with anyway.</p>
+
+<p>Of course, exiting may not be the best thing to do in your case. However, defering to a top-level general error handler may be appropriate. In a web context, returning a 500 would be a typical example of how this would be handled. Wonderfully, this is the default behaviour for many web servers.</p>
+
+<h3>Am I avoiding a 500?</h3>
+
+<p>500s can be helpful. If it's best to abort because your assumptions have been violated, 500s often get to the front of the queue in front of getting addressed. You're also not wasting your client's time, since the problem is on the server, not with the client as the 4XXs suggest.</p>
+
+<h3>Am I handling this exception this because I don’t known the range of inputs to this bit of code?</h3>
+
+<p>Find out what the range is. If it's hard to work out, you have just made it even harder to understand what bit of code runs under what conditions. This isn’t a "code for the future" argument, it’s making sure you know what the code does right now, for today’s behaviour [although this would also help many futures].</p>
+
+<p>In some cases, it may be appropriate to iteratively refactor surrounding code to make it easier to reason about.</p>
+
+<p>[This is also an argument for type safety as well, since often it's easier to be sure on ranges of inputs. However, it's not possible or realistic in many situations.]</p>
+
+<h3>Can I think of any combination of input where the exception can be thrown?</h3>
+
+<p>If there is no combination of input that can cause the exception that you can determine, then if <em>somehow</em> it does get thrown, your assumptions on how the program behaves have been violated. Bubbling up to a general handler may be the most appropriate way to handle this.</p>
+
+<h3>To test the handler have I had to mock an implementation detail?</h3>
+
+<p>It might not be possible for the exception to be thrown in production based on input. Consider not handling the exception where it can be thrown, but letting it bubble up to a general handler.</p>
+
+<h3>Does testing the handler feel unnecessary?</h3>
+
+<p>You may already suspect the handler itself is unecessary. Consider removing the handler, and letting the exception bubble up to a general handler.</p>
+
+<p>[Listening to instincts can be risky, but one that pushes you to have <em>less</em> or <em>simpler</em> code, I think is worthwhile to examine]</p>
+
+<h3>Am I subtly introducing features?</h3>
+
+<p>If you're catching an exception and then marching forward with a default, you have just added a feature. Make sure this is what you want: there is often a long term cost of this. Is there really a need for this feature? How have you decided the default? Often the default is chosen as the original behaviour before the change: is the best option for the current range of behaviour of the code?</p>
+
+<p>Defaults may be [currently] dead code, or they may be introduce complexity. If you <em>do</em> want defaults, be careful of littering them throughout your code: it's hard to reason about their behaviour now, and hard to change later. Better is to have a specific <em>normalization</em> phase, where the input is converted to some standard form. After this, assume the data is correct, and defer to a general error handler if it isn't.</p>
+
+<h3>Can the case the exception handler is designed to handle, be handled earlier?</h3>
+
+<p>If the exception <em>can</em> happen though some combination of input, it might be better to refactor the code so the error case can't happen in the bowels of your algorithm/processing, but instead happens earlier. A rough order of preference of when it's good to deal with such things:</p>
+
+<ul class="fa-ul">
+  <li><i class="fa-li fa fa-caret-right"></i> Compilation</li>
+  <li><i class="fa-li fa fa-caret-right"></i> Tests</li>
+  <li><i class="fa-li fa fa-caret-right"></i> Start of the run of the program</li>
+  <li><i class="fa-li fa fa-caret-right"></i> Input validation</li>
+  <li><i class="fa-li fa fa-caret-right"></i> Input normalization</li>
+  <li><i class="fa-li fa fa-caret-right"></i> Input processing</li>
+</ul>
+
+<h3>I'm handling low-level exceptions by raising higher level/custom exceptions. Am I sure hiding the real cause is helpful?</h3>
+
+<p>It's often tempting to provide a "pure" level of abstraction by hiding everything the code is actually doing. However, consider what someone will need to do to investiagte this exception. If they would need to look into the lower-level cause, you have just make extra work for them unnecessarily.</p>
+
+<p>As a guideline, if a layer of abstraction helps you reason about <em>today's</em> behaviour, feel free to add it. If it doesn't, or if you can only see how it's helpful in some future version or use of the system, be <em>very</em> cautious.</p>
+
+<h3>Am I increasing the risk of security holes?</h3>
+
+<p>One of the most important aspects of secure code is your understanding of what it's doing. If your assumptions on how it behaves are violated, this is evidence that the code is not as secure as you thought. Be <em>very</em> sure how you would like to handle this.</p>
+
+<p>Keep security in mind if you are deciding to add features, which you may be doing by handling exceptions. You are increasing complexity, which makes it harder to understand the code, and again, <em>less</em> secure.</p>
+
+<h3>Am I lowering the chance of a negative consequence, by increasing the chance of a worse consequence?</h3>
+
+<p>Exceptions are often handled for "safety", under the assumption that letting it bubble up is "unsafe". It's often not so trivial as this: you have to reason about each case and determine what is safest in that situation. There is no perfect or always-applicable way of doing this, but the below list is in decreasing order of "safety" for many situations.</p>
+
+<ul class="fa-ul">
+  <li><i class="fa-li fa fa-caret-right"></i> Not having a feature</li>
+  <li><i class="fa-li fa fa-caret-right"></i> A feature is broken by aborting</li>
+  <li><i class="fa-li fa fa-caret-right"></i> A feature is broken by appearing to work, but it does something unexpected</li>
+  <li><i class="fa-li fa fa-caret-right"></i> Leaking data</li>
+</ul>
+
+<p>Be <em>very</em> that you're not decreasing the chance of something higher on the list at the cost of increasing the risk of items further down this list. A data leak can have extremely long term consequences, and "I didn't understand the code, but I was avoiding breaking a feature for one of our customers" will <em>not</em> fly at the subsequent public inquiry. I'm not even kidding.</p>
