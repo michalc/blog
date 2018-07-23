@@ -13,7 +13,7 @@ categories: patterns error-handling
 
 <h3>Is exiting safest?</h3>
 
-<p>In some situations, you may even determine that exiting is safest. For example a web-based application may try to access configuration on load, and raise an exception if it can't, which would often be the default behaviour [depending on language and how the code is expecting the configuration], which if unhandled, would cause the program to exit. In a blue-green deployment pipeline, it's <em>desirable</em> for the application to exist on load like this, since the deployment to fail, and the existing deployment will remain live.</p>
+<p>In some situations, you may even determine that exiting is safest. For example a web-based application may try to access configuration on load, and raise an exception if it can't, which would often be the default behaviour [depending on language and how the code is expecting the configuration], which if unhandled, would cause the program to exit. In a blue-green deployment pipeline, it's <em>desirable</em> for the application to exit on load if misconfigured, since then the deployment will fail, and the existing deployment will remain live.</p>
 
 <h3>Am I avoiding a 500?</h3>
 
