@@ -39,7 +39,7 @@ categories: patterns error-handling
 
 <p>If you're catching an exception and then marching forward with a default, you have just added a feature. Make sure this is what you want: there is often a long term cost of this. Is there really a need for this feature? How have you decided the default? Often the default is chosen as the original behaviour before the change: is the best option for the current range of behaviour of the code?</p>
 
-<p>Defaults may be [currently] dead code, or they may be introduce complexity. If you <em>do</em> want defaults, be careful of littering them throughout your code: it's hard to reason about their behaviour now, and hard to change later. Better is to have a specific <em>normalization</em> phase, where the input is converted to some standard form. After this, assume the data is correct, and defer to a general error handler if it isn't.</p>
+<p>Defaults may be [currently] dead code, or they may be introduce complexity. If you <em>do</em> want defaults, be careful of littering them throughout your code: this makes it hard to reason about their behaviour now, and hard to change later. Better is to have a specific <em>normalization</em> phase, where the input is converted to some standard form. After this, assume the data is correct, and defer to a general error handler if it isn't.</p>
 
 <h3>Can the case the exception handler is designed to handle, be handled earlier?</h3>
 
