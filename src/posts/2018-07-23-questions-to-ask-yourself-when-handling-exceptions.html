@@ -43,9 +43,9 @@ categories: patterns error-handling
 
 <p>Defaults may be [currently] dead code, or they may be introduce complexity. If you <em>do</em> want defaults, be careful of littering them throughout your code: this makes it hard to reason about their behaviour now, and hard to change later. Better is to have a specific <em>normalization</em> phase, where the input is converted to some standard form. After this, assume the data is correct, and defer to a general error handler if it isn't.</p>
 
-<h3>Am I making a library to be used in lots of situations, but really have just one case?</h3>
+<h3>Am I writing exception handlers for a general library that is used on one case?</h3>
 
-<p>If yes, <a href="https://xkcd.com/974/">you may be wasting time now and increasing complexity in the long run</a>. It may be better to just handle the case you need to handle.</p>
+<p>If yes, <a href="https://xkcd.com/974/">you may be wasting time</a>. It may be better to just handle the case you need to handle.</p>
 
 <h3>Can the case the exception handler is designed to handle, be handled earlier?</h3>
 
