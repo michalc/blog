@@ -79,7 +79,7 @@ categories: aws python
 
 <p>The AWS APIs are not completely consistent with each other. Some use JSON, some XML, some are more REST-ful than others, some have their actions specified in a query string, or some in a HTTP header. However, the documentation appears thorough for each API, and the APIs are quite good in terms of HTTP status codes, which means often you don't care about exactly what's returned. other than the status code.</p>
 
-<p>The actual name of the service, passed in as the servie parameter to <code class="inline">service</code> to <code class="inline">aws_sig_v4_headers</code> used seems to also be a bit of an educated guess. For the cases I've tried it seems to match the hostname used in the <a href="https://docs.aws.amazon.com/general/latest/gr/rande.html">AWS API endpoints</a>. For example, for a call to the Elasticsearch endpoint of <code class="inline">es.us-east-1.amazonaws.com</code>, then the service would be <code class="inline">es</code>.</p>
+<p>The actual name of the service, passed in as the <code class="inline">service</code> parameter to  to <code class="inline">aws_sig_v4_headers</code>, seems to require an educated guess. For the cases I've tried it seems to match the hostname used in the <a href="https://docs.aws.amazon.com/general/latest/gr/rande.html">AWS API endpoints</a>. For example, for a call to the Elasticsearch endpoint of <code class="inline">es.us-east-1.amazonaws.com</code>, then the service would be <code class="inline">es</code>.</p>
 
 <h3>When <em>should</em> I use Boto 3?</h3>
 
