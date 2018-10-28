@@ -54,7 +54,8 @@ html {
 }
 
 html, body {
-  padding: 0
+  padding: 0;
+  -webkit-text-size-adjust: none;
 }
 
 /* Main Fonts */
@@ -372,8 +373,4 @@ iframe {
   width: 100%;
   min-height: 300px;
   margin-bottom: $standard-spacing;
-}
-
-.gist {
-  font-size: inherit;
 }
