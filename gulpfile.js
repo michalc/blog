@@ -287,7 +287,7 @@ gulp.task('build', function() {
         uncssContents = file.contents.toString().replace(uncss_ignore_regex, '')
         uncss([uncssContents], {
           raw: style.childNodes[0].value,
-          ignore: ['.fa', '.fa-stack-overflow']
+          ignore: ['.fa', '.fa-stack-overflow', '.gist']
         }, function (error, output) {
           style.childNodes[0].value = output;
           file.contents = Buffer.from(parse5.serialize(document1), 'utf8');
