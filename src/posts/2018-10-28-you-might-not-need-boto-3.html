@@ -1,0 +1,118 @@
+---
+layout: post
+title:  "You might not need Boto 3"
+subtitle: "To call AWS APIs all you need are the right headers"
+date: 2018-10-28 11:15:00
+categories: aws python
+
+---
+
+<p>It is not a requirement to <a href="https://github.com/boto/boto3">Boto 3</a> in order to communicate with AWS from Python: you can make requests using any HTTP client, as long as you can work out the correct headers. Here's a function that does just that [with some <a href="#design-descisions-and-limitations">caveats</a>].</p>
+
+<!-- UNCSS_IGNORE_START -->
+<script src="https://gist.github.com/michalc/ccb87856363a895fd1fadf52ab4cdcec.js"></script>
+<!-- UNCSS_IGNORE_STOP -->
+
+<p>For example to PUT some data to S3 using aiohttp, assuming session is created by something like session = aiohttp.TCPConnector(resolver=aiohttp.AsyncResolver())</p>
+
+<!-- UNCSS_IGNORE_START -->
+<script src="https://gist.github.com/michalc/1effe17a56f870a50148c764f242083b.js"></script>
+<!-- UNCSS_IGNORE_STOP -->
+
+<h3>Why use this, and not Boto 3?</h3>
+
+<h4>Your application is event-loop based</h4>
+
+<p>This was my original reason for writing this: Boto 3 blocks the event loop. You can patch it or wrap it, and there are libraries that do this, but that's <em>even more</em> code in your application, when you could have less.</p>
+
+<h4>You can use the HTTP client you're already using in the rest of your project</h4>
+
+<p>You may prefer that all your outgoing requests to go through the same function / library as the rest of the application. Say, for consistent logging, proxy configuration, or things like enforcing a global limit on outgoing connections.</p>
+
+<h4>Free to boost performance: disk space, memory, and speed</h4>
+
+<p>An install of Boto 3, with botocore, takes up at least an extra 35mb [and more depending on what other dependencies you already have]. If you're already using a HTTP library, then the function above adds 2.5kb [although yes, there could be more code at the call sites].</p>
+
+<p>Or, you want to tease out as much performance as possible, in terms of speed or memory usage. You might not need to parse the entire JSON or XML from results if you don’t need to: you are free to be as performant (/hacky) as you like by using regex or just string matching against results; or you can use a faster JSON or XML parser; or you would like the option of doing these things in the future without lots of changes to your application or test code.</p>
+
+<h4>You don’t want to wait for fixes or features to make it into Boto 3</h4>
+
+<p>Boto 3 is not perfect [as no project is of course!], but also the developers don't have the same priorities as you. A project having to wait for an upstream library update, where you have no influence over or knowledge of when the update will happen, is often not good place to be for a project.</p>
+
+<p>For example, AFAIK <a href="https://docs.aws.amazon.com/AmazonS3/latest/API/sigv4-streaming.html">aws-chunked uploads to S3</a> are <a href="https://github.com/boto/botocore/pull/996">not yet supported by Boto 3</a>. [To be fair however, I suspect it's often of limited use, because you need to know the content length ahead of time, unlike standard HTTP chunked transfers.]</p>
+
+<p>Another example is being able to change how/when the SHA-256 hash of the payload is calculated. The <a href="https://docs.python.org/3/library/hashlib.html#hash-algorithms">hash can be computed incrementally</a>, and not all at once just before upload. In a recent project I changed the signing function and surrounding code in order to be able to hash the payload as data comes into the application.</p>
+
+<h4>You want limit the bug surface area</h4>
+
+<p>If something isn't working, is it your code, Boto 3, botocore, or AWS? You might want to limit the scope of investigations.</p>
+
+<h4>You want it to to be possible to understand what the application is doing</h4>
+
+<p>You might have security requirements that code in your application must be reviewed. Doing this for every version of Boto 3 you need may not be a great option.</p>
+
+<h4>You want the power to change the higher-level interface</h4>
+
+<p>Boto 3 presents a higher-level interface to AWS that might not quite match up with the rest of your application. For example, how Boto 3 uses generators, exceptions, or even naming, may not be how the rest of your application is structured, and you may judge that consistency in your codebase to be valuable.</p>
+
+<h4>You would like to directly apply the documentation from AWS</h4>
+
+<p>The AWS documentation has a lot of examples: at least one on every action I've looked it. I've not seen this in Boto 3's documentation.</p>
+
+<h4>You don't want another layer of abstraction</h4>
+
+<p>Abstraction layers are often not free in terms of performace, ability to reason about behaviour, bugs introduced, or ability to change as your requirements change. [This is admittedly a succinct way of presenting several of the above points]</p>
+
+<h4>You have a mocking/testing setup with other HTTP requests, and don’t want to include another one</h4>
+
+<p><a href="https://github.com/spulec/moto">Moto</a> is great, but this is <em>yet another</em> dependency, and obviously is only mocking Boto, and so only mocking calls to AWS. You may want to be completely free as to where you put the boundaries of your test, and a consistent approach when dealing with boundaries in tests is valuable. Also, using Moto also means you're <em>even more</em> coupled to Boto 3.</p>
+
+<h3>You use temporary security credentials, and want greater control over state</h3>
+
+<p>They are typically cached for some period of time, and you might want to manage state, especially state relating to security, very particularly. Or you might not even want to cache the temporary security credentials at all. [Note: I'm not sure if there will be some rate limiting issues here if you hit endpoints to retrieve the temporary credentials too frequently]</p>
+
+<h3>Is this battle tested?</h3>
+
+<p>No, but I have used it [or at least very similar code] in a few projects: communicating with S3, ECS, Elasticsearch, and IAM.</p>
+
+<h3>Any gotchas?</h3>
+
+<p>The AWS APIs are not completely consistent with each other. Some use JSON, some XML, some are more REST-ful than others, some have their actions specified in a query string, or some in a HTTP header. However, the documentation appears thorough for each API, and the APIs are quite good in terms of HTTP status codes, which means often you don't care about exactly what's returned. other than the status code.</p>
+
+<p>The actual name of the service, passed in as the servie parameter to <code class="inline">service</code> to <code class="inline">aws_sig_v4_headers</code> used seems to also be a bit of an educated guess. For the cases I've tried it seems to match the hostname used in the <a href="https://docs.aws.amazon.com/general/latest/gr/rande.html">AWS API endpoints</a>. For example, for a call to the Elasticsearch endpoint of <code class="inline">es.us-east-1.amazonaws.com</code>, then the service would be <code class="inline">es</code>.</p>
+
+<h3>When <em>should</em> I use Boto 3?</h3>
+
+<p>If you decide that the part of it that you're using really does add value <em>on top</em> of the AWS API, and that value is worth not having the upsides listed above.</p>
+
+<h3>Should this be factored out to a shared library?</h3>
+
+<p>Maybe. However, I have opted to not do this for my cases so far, to ensure each is a flexible as possible with only the complexity it needs. For example, this approach has allowed me change the code in a single project, which required incremental hashing of payload, without affecting others.</p>
+
+<h3 id="design-descisions-and-limitations">Design descisions and limitations</h3>
+
+<p>It's a API exposing a single function, but still had some thought. This was designed for my use cases: you may have others, and so may need a different function [or functions].</p>
+
+<ul class="fa-ul">
+
+    <li><i class="fa-li fa fa-caret-right"></i> Dictionaries of string -> string are used for the headers and queries, This is concise, flexible in terms of manipulation I require in constructing API requests, all the HTTP libraries I've worked with support this, and no extra dependencies are needed. However, this means that duplicate header and query keys are <em>not</em> supported. However, I don't have a use case for duplicate header or query keys.</li>
+
+    <li><i class="fa-li fa fa-caret-right"></i> Payload must be passed in as b-string/bytes instance in all cases, including the empty b-string for GET requests without a body. There are no assumptions made on what HTTP methods can have payloads, and no automagical conversion, for flexibility.</li>
+
+    <li><i class="fa-li fa fa-caret-right"></i> The <code class="inline">x-amz-content-sha256</code> header is only needed for S3 [from what I can tell], but doesn't seem to matter if you send it anyway to other APIs [also from what I can tell]. The hash of the payload is required to be calculated anyway, it's <em>sent</em> anyway as part of the Authorization header, and for my cases, this bit of extra work and bytes sent is an acceptable trade off for having a simpler and consistent signing process for different AWS APIs. If the day ever comes where this trade off is not acceptable, I have the power to change this.</li>
+
+    <li><i class="fa-li fa fa-caret-right"></i> There is no automagical conversion of region + service to host name [or vice-versa]. Instead, there is explicitness, flexibility, and less dynamic behaviour in order to make things easier to reason about.</li>
+
+    <li><i class="fa-li fa fa-caret-right"></i> The path is not normalised in terms of removing duplicate slashes. For requests to S3, this shouldn't be done anyway, and for other APIs I'm happy to just put the requirement of constructing normalised strings up the call stack in my code: I was doing this anyway so this is no extra work.</li>
+
+    <li><i class="fa-li fa fa-caret-right"></i> Requests to non-S3 APIs that have characters that need URL-encoding in the path apparently won't work: they should be <a href="https://docs.aws.amazon.com/general/latest/gr/sigv4-create-canonical-request.html">URL-encoded twice</a>, and this function encodes them once. To use this function in such cases, you would need to encode the path before it being passed to this function, or use a different function. I've not needed to handle this case, so the function above doesn't handle it.</li>
+
+    <li><i class="fa-li fa fa-caret-right"></i> There are a lot of arguments to the function. I considered alternatives, such as wrapping some up in data structures, or putting the onus on the caller to put together parts of the signature, but this made things more, rather than less, complex. Hiding complexity often gives you nothing but more complexity.</li>
+
+    <li><i class="fa-li fa fa-caret-right"></i> Internally, there are some functions defined that are technically unnecessary since they are called once. I felt it was more important to show the flow of data, and what calculations depend on what previous calculations, in order to be able to tweak it if necessary. You can of course change it to not have these if you prefer.</li>
+
+    <li><i class="fa-li fa fa-caret-right"></i> It uses Python 3.6's f-strings, and so does not support earlier versions of Python. I have no use case for earlier versions of Python.</li>
+
+    <li><i class="fa-li fa fa-caret-right"></i> The function is not pure: calls <code class="inline">datetime.datetime.utcnow()</code>. You could easily separate it into a pure function that takes in the current time if you prefer. I didn't have a use case for this, so I didn't do it. For testing, I'm happy with tests that use <a href="https://github.com/spulec/freezegun">FreezeGun</a>. However, with that exception, all the expressions inside the function are referentially transparent. [I would refer to this as an application of <a href="https://charemza.name/blog/posts/programming/pure/pragmatic-purity/">pragmatic purity</a>.</li>
+
+</ul>

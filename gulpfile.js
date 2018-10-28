@@ -241,6 +241,8 @@ gulp.task('build', function() {
       })
     }));
 
+  // Some things can break uncss
+  var uncss_ignore_regex = /<!-- UNCSS_IGNORE_START -->(?:.|\n)*?<!-- UNCSS_IGNORE_STOP -->/gm;
   var html = mergeStream(sitemap, index, posts)
     .pipe(addAllAssetData())
     .pipe(handlebars({
@@ -282,7 +284,8 @@ gulp.task('build', function() {
           return node.tagName == 'style'
         });
         var style = styles[0]
-        uncss([file.contents.toString()], {
+        uncssContents = file.contents.toString().replace(uncss_ignore_regex, '')
+        uncss([uncssContents], {
           raw: style.childNodes[0].value,
           ignore: ['.fa', '.fa-stack-overflow']
         }, function (error, output) {
