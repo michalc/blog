@@ -67,7 +67,7 @@ categories: aws python
 
 <p><a href="https://github.com/spulec/moto">Moto</a> is great, but this is <em>yet another</em> dependency, and obviously is only mocking Boto, and so only mocking calls to AWS. You may want to be completely free as to where you put the boundaries of your test, and a consistent approach when dealing with boundaries in tests is valuable. Also, using Moto also means you're <em>even more</em> coupled to Boto 3.</p>
 
-<h3>You use temporary security credentials, and want greater control over state</h3>
+<h4>You use temporary security credentials, and want greater control over state</h4>
 
 <p>They are typically cached for some period of time, and you might want to manage state, especially state relating to security, very particularly. Or you might not even want to cache the temporary security credentials at all. [Note: I'm not sure if there will be some rate limiting issues here if you hit endpoints to retrieve the temporary credentials too frequently]</p>
 
