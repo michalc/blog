@@ -113,6 +113,6 @@ categories: aws python
 
     <li><i class="fa-li fa fa-caret-right"></i> It uses Python 3.6's f-strings, and so does not support earlier versions of Python. I have no use case for earlier versions of Python.</li>
 
-    <li><i class="fa-li fa fa-caret-right"></i> The function is not pure: calls <code class="inline">datetime.datetime.utcnow()</code>. You could easily separate it into a pure function that takes in the current time if you prefer. I didn't have a use case for this, so I didn't do it. For testing, I'm happy with tests that use <a href="https://github.com/spulec/freezegun">FreezeGun</a>. However, with that exception, all the expressions inside the function are referentially transparent. [I would refer to this as an application of <a href="https://charemza.name/blog/posts/programming/pure/pragmatic-purity/">pragmatic purity</a>.</li>
+    <li><i class="fa-li fa fa-caret-right"></i> The function is not pure: calls <code class="inline">datetime.datetime.utcnow()</code>. You could easily separate it into a pure function that takes in the current time if you prefer. I didn't have a use case for this, so I didn't do it. For testing, I'm happy with tests that use <a href="https://github.com/spulec/freezegun">FreezeGun</a>. However, with that exception, all the expressions inside the function are referentially transparent. [I would refer to this as an application of <a href="https://charemza.name/blog/posts/programming/pure/pragmatic-purity/">pragmatic purity</a>].</li>
 
 </ul>
