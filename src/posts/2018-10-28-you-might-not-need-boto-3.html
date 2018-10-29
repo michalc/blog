@@ -41,7 +41,7 @@ categories: aws python
 
 <p>For example, AFAIK <a href="https://docs.aws.amazon.com/AmazonS3/latest/API/sigv4-streaming.html">aws-chunked uploads to S3</a> are <a href="https://github.com/boto/botocore/pull/996">not yet supported by Boto 3</a>. [To be fair however, I suspect it's often of limited use, because you need to know the content length ahead of time, unlike standard HTTP chunked transfers.]</p>
 
-<p>Another example is being able to change how/when the SHA-256 hash of the payload is calculated. The <a href="https://docs.python.org/3/library/hashlib.html#hash-algorithms">hash can be computed incrementally</a>, and not all at once just before upload. In a recent project I changed the signing function and surrounding code in order to be able to hash the payload as data comes into the application.</p>
+<p>Another example is being able to change how/when the SHA-256 hash of the payload is calculated. The <a href="https://docs.python.org/3/library/hashlib.html#hash-algorithms">hash can be computed incrementally</a>, and not all at once just before upload. In a recent project I changed the signing function and surrounding code in order to be able to hash the payload as data comes into the application. AFAIK, this isn't possible with Boto 3.</p>
 
 <h4>You want limit the bug surface area</h4>
 
