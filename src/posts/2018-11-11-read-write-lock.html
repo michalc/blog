@@ -18,7 +18,7 @@ categories: python asyncio
 
 <h3>Exclusive lock</h3>
 
-<p>There are different sorts of lock, but a typical example is an <em>exclusive</em> lock. Only one task can acquire this lock, all others must wait. Using an exclusive lock is a way to prevent corruption when reading from/writing to a file.</p>
+<p>There are different sorts of lock, but a typical example is an <em>exclusive</em> lock. Only one task can acquire this lock, all others must wait. Using an exclusive lock is a way to prevent corruption when multiple tasks are reading from/writing to a file.</p>
 
 <p>Python's standard library comes with an <a href="https://docs.python.org/3/library/asyncio-sync.html#asyncio.Lock">exclusive lock</a>. This can be used, for example:</p>
 
