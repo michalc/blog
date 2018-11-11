@@ -1,0 +1,125 @@
+---
+layout: post
+title:  "Python asyncio read/write lock"
+subtitle: "Using asynccontextmanager to create a read/write lock"
+date: 2018-11-11 14:50:00
+categories: python asyncio
+
+---
+
+<p>In this post, I present an <a href="#implementation">implementation of an asyncio read/write lock</a> [also known as a shared/exclusive lock].</p>
+
+
+<h3>What is a lock?</h3>
+
+<p>When you have concurrent tasks, there may be parts of the code that have to be protected from being run by multiple tasks concurrently. A typical example is reading from or writing to a file. If a reading task reads the file half-way through a writing task, the reader may get a corrupt file: seeing some of the file before the write, and some of the file after.</p>
+
+<p>A way to prevent this is to use what's called a <em>lock</em>. Just before such code that needs to be protected, each task attempts to <em>acquire</em> the lock, and just after the code, it <em>releases</em> the lock so other task can acquire it. If a task cannot acquire the lock, it will wait until it can. [There are other possiblities if a task can't acquire the lock, but for simplicity, we just assume it waits.]</p>
+
+<h3>Exclusive lock</h3>
+
+<p>There are different sorts of lock, but a typical example is an <em>exclusive</em> lock. Only one task can acquire this lock, all others must wait. Using an exclusive lock is a way to prevent corruption when reading from/writing from a file.</p>
+
+<p>Python's standard library comes with an <a href="https://docs.python.org/3/library/asyncio-sync.html#asyncio.Lock">exclusive lock</a>. The can be used, for example:</p>
+
+{{#highlight 'python'}}
+import asyncio
+lock = asyncio.Lock()
+
+# ...
+async def locked():
+    # ...
+    async with lock:
+       # only one task can be here at any given time
+{{/highlight}}
+
+<p>Note that a lock in this context isn't really analogous to a lock on a door. An exclusive lock is better compared to a talking stick or a talking spoon, in that only the person who has acquired the talking stick can talk, others must wait until they acquire it. For other sorts of locks, it's a bit more complex and the analogy can break down.</p>
+
+
+<h3>Read/write lock</h3>
+
+<p>Using an exclusive lock is often enough to prevent corruption, but it may block tasks that would otherwise be safe to proceed. For example, concurrent readers on a file is often safe, and only if there is a writer should other tasks be blocked. To allow this, we use a different sort of lock: a <em>read/write</em> lock.</p>
+
+<p>A read/write lock is made of of two parts: a <em>read lock</em> and a <em>write lock</em>. The read lock can be acquired by multiple tasks concurrently, but only as long as no task holds the write lock; and a write lock can only be acquired if no tasks hold the read lock <em>and</em> no task holds the write lock.</p>
+
+<p>This can be summarised in the following table, showing what parts of the lock can be held concurrently by two tasks, Task A and Task B.</p>
+
+<table class="table">
+  <colgroup>
+    <col></col>
+    <col></col>
+    <col></col>
+  </colgroup>
+  <thead>
+    <tr>
+      <th><div class="top-right">B</div><div class="bottom-left">A</div></th>
+      <th>Read</th>
+      <th>Write</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <th>Read</th>
+      <td>✔</td>
+      <td>✘</td>
+    </tr>
+    <tr>
+      <th>Write</th>
+      <td>✘</td>
+      <td>✘</td>
+    </tr>
+  </tbody>
+</table>
+
+<p>Note that this table isn't quite enough to completely define how the lock behaves. When there are multiple tasks waiting to acquire the lock, some algorithm must be implemented to decide which tasks can be acquired. The implementation presented here allows tasks to proceed in a first-come-first served order.</p>
+
+<p>Note also that the pattern defined in the table isn't anything to do with reading or writing, hence this sort of lock is often called a shared/exclusive lock. However, it is so often used in the context of reading and writing, it is convenient and typical to call this a read/write lock [or similar].</p>
+
+
+<h3>Read/write lock: usage</h3>
+
+<p>The usage is very similar to the built-in exclusive lock, except that the lock object has two methods, <code class="inline">read</code> and <code class="inline">write</code>, that must be called to return the appropriate context managers.</p>
+
+{{#highlight 'python'}}
+from asyncio_read_write_lock import ReadWriteLock
+
+lock = ReadWriteLock()
+
+# ...
+async def read():
+    # ...
+    async with lock.read():
+       # multiple tasks can be here, but only if there are no writers
+
+# ...
+async def write():
+    # ...
+    async with lock.write():
+       # only one task can be here at any given time, and only if no readers
+{{/highlight}}
+
+
+<h3 id="implementation">Read/write lock: comparison with aiorwlock.</h3>
+
+<p>There is already a read/write lock available for asyncio at <a href="https://github.com/aio-libs/aiorwlock">aiorwlock</a>. There are differences, which may be important for your use-case.</p>
+
+<ul class="fa-ul">
+  <li><i class="fa-li fa fa-caret-right"></i> This implementation has no support for Python versions less than 3.7, while aiorwlock appears to support earlier versions. This lack of support is a feature: it allows for simpler code.</li>
+
+  <li><i class="fa-li fa fa-caret-right"></i> Python 3.7's <a href="https://docs.python.org/3/library/contextlib.html#contextlib.asynccontextmanager">contextlib.asynccontextmanager</a> is used internally. It allows for very concise creation of an asyncio context manager, without sacrificing flexibility or ability to handle errors.</li>
+
+  <li><i class="fa-li fa fa-caret-right"></i> This implementation has no support for acquiring a lock already held by the current task: attempting to do so would result in a a deadlock. My use cases do not require this, and in fact my instinct is to try to make sure that my use cases do not require this: this makes the code of the lock more complex, and I suspect in a lot of cases using this feature makes client code more difficult to reason about.</li>
+
+  <li><i class="fa-li fa fa-caret-right"></i> It appears that the algorithm aiorwlock uses to acquire a lock is <a href="https://github.com/aio-libs/aiorwlock/blob/f47f427174e4b23abccba73126d7eaaf9a605f9b/aiorwlock/__init__.py#L117">O(n) with respect to the number of tasks already holding a lock</a>. This implementation is O(1) with respect to tasks holding a lock. Of course, this fact alone does not mean that this implementation is better or faster in practical terms.</li>
+
+  <li><i class="fa-li fa fa-caret-right"></i> Locks are acquired on a first-come-first-served basis, compared to aiorwlock giving preference to waiting writers, which can starve the readers if the write lock is continually requested. Which of these is more appropriate depends on your use case, but my instinct is that unless you are sure there will will never be enough writers to starve the readers for any meaningful length of time, it's better to avoid such a bias.</li>
+</ul>
+
+
+<h3 id="implementation">Read/write lock: implementation</h3>
+
+<p>The implementation is below.</p>
+
+<!-- UNCSS_IGNORE_START -->
+<script src="https://gist.github.com/michalc/ab9bd571cfab09216c0316f2302a76b0.js"></script>
+<!-- UNCSS_IGNORE_STOP -->

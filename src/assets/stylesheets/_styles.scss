@@ -210,7 +210,7 @@ footer {
 }
 
 /* Common Spacing */
-p, ul, nav {
+p, ul, nav, table {
 	margin-bottom: $smaller-spacing;
   &:last-child {
     margin-bottom: 0;
@@ -373,4 +373,53 @@ iframe {
   width: 100%;
   min-height: 300px;
   margin-bottom: $standard-spacing;
+}
+
+/* .table class to not interfere with embedded gists */
+
+.table thead th:first-child {
+  background: linear-gradient(to top right,#ffffff 48.5%,#efefef 48.5%,#efefef 51.5%,#ffffff 51.5%);
+}
+
+.bottom-left,
+.top-right {
+  line-height: 1;
+}
+
+.bottom-left {
+  text-align: left;
+}
+
+.top-right {
+  text-align: right;
+}
+
+.table th,
+.table td {
+  text-align: left;
+  padding: 5px 10px;
+  vertical-align: middle;
+}
+
+.table tbody th {
+  padding-left: 15px;
+}
+
+/* Using tr & col so corners between cells look appropriate: the
+   red marking the headers should always overlap the gray */
+
+.table thead tr {
+  border-bottom: 2px solid #950000;
+}
+
+.table tbody tr:not(:last-child) {
+  border-bottom: 2px solid #efefef;
+}
+
+.table th:first-child {
+  border-right: 2px solid #950000;
+}
+
+.table col:not(:last-child) {
+  border-right: 2px solid #efefef;
 }
