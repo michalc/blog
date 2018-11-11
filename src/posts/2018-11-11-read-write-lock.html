@@ -42,7 +42,7 @@ async def locked():
 
 <p>A read/write lock is made of of two parts: a <em>read lock</em> and a <em>write lock</em>. The read lock can be acquired by multiple tasks concurrently, but only as long as no task holds the write lock; and a write lock can only be acquired if no tasks hold the read lock <em>and</em> no task holds the write lock.</p>
 
-<p>This can be summarised in the following table, showing what parts of the lock can be held concurrently by two tasks, Task A and Task B.</p>
+<p>This can be summarised in the following table, showing what parts of the lock can be held concurrently by two tasks, A and B.</p>
 
 <table class="table">
   <colgroup>
@@ -60,13 +60,13 @@ async def locked():
   <tbody>
     <tr>
       <th>Read</th>
-      <td>✔</td>
-      <td>✘</td>
+      <td>✓</td>
+      <td>✗</td>
     </tr>
     <tr>
       <th>Write</th>
-      <td>✘</td>
-      <td>✘</td>
+      <td>✗</td>
+      <td>✗</td>
     </tr>
   </tbody>
 </table>
