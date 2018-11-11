@@ -71,9 +71,9 @@ async def locked():
   </tbody>
 </table>
 
-<p>Note that this table isn't quite enough to completely define how the lock behaves. When there are multiple tasks waiting to acquire the lock, some algorithm must be implemented to decide which tasks can be acquired. The implementation presented here allows tasks to proceed in a first-come-first-served order.</p>
+<p>Note that this table isn't quite enough to completely define how the lock behaves. When there are multiple tasks waiting to acquire the lock, some algorithm must be implemented to decide which tasks can be acquired. The implementation presented here allows tasks to proceed in a first-come-first-served order: a queue of tasks waiting to acquire the locks is maintained.</p>
 
-<p>Note also that the pattern defined in the table isn't limited to reading or writing, hence this sort of lock is often called a shared/exclusive lock. However, it is so often used in the context of reading and writing, it is convenient and typical to call this a read/write lock [or similar].</p>
+<p>Note also that this type of lock isn't limited to reading or writing, hence this sort of lock is often called a shared/exclusive lock. However, it is so often used in the context of reading and writing, it is convenient and typical to call this a read/write lock [or similar].</p>
 
 
 <h3>Read/write lock: usage</h3>
