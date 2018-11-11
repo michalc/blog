@@ -108,7 +108,7 @@ async def write():
 
   <li><i class="fa-li fa fa-caret-right"></i> Python 3.7's <a href="https://docs.python.org/3/library/contextlib.html#contextlib.asynccontextmanager">contextlib.asynccontextmanager</a> is used internally. It allows for very concise creation of an asyncio context manager, without sacrificing flexibility or ability to handle errors.</li>
 
-  <li><i class="fa-li fa fa-caret-right"></i> This implementation has no support for acquiring a lock already held by the current task: attempting to do so would result in a deadlock. My use cases do not require this, and my instinct is to try to write client code that does not require this. This would make the code of the lock more complex, and I suspect in a lot of cases using this would make client code more difficult to reason about.</li>
+  <li><i class="fa-li fa fa-caret-right"></i> This implementation has no support for acquiring a write lock already held by the current task: attempting to do so would result in a deadlock. My use cases do not require this, and my instinct is to try to write client code so that this is not required. This would make the code of the lock more complex, and I suspect in a lot of cases using this would make client code more difficult to reason about.</li>
 
   <li><i class="fa-li fa fa-caret-right"></i> It appears that the algorithm aiorwlock uses to acquire a lock is <a href="https://github.com/aio-libs/aiorwlock/blob/f47f427174e4b23abccba73126d7eaaf9a605f9b/aiorwlock/__init__.py#L117">O(n) with respect to the number of tasks already holding a lock</a>. This implementation is O(1) with respect to tasks holding a lock. Of course, this fact alone does not mean that this implementation is better or faster in practical terms.</li>
 
