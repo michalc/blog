@@ -12,7 +12,7 @@ categories: python asyncio
 
 <h3>What is a lock?</h3>
 
-<p>When you have concurrent tasks, there may be parts of the code that have to be protected from being run by multiple tasks concurrently. A typical example is reading from or writing to a file. If a reading task reads the file half-way through a writing task, the reader may get a corrupt file: seeing some of the file before the write, and some of the file after.</p>
+<p>When you have concurrent tasks, there may be parts of the code that have to be protected from being run by multiple tasks concurrently. A typical example is non-atomic reading from a file, concurrent with non-atomic writing to that same file. If a reading task reads the file half-way through a writing task, the reader may get a corrupt file: seeing some of the file before the write, and some of the file after.</p>
 
 <p>A way to prevent this is to use what's called a <em>lock</em>. Just before such code that needs to be protected, each task attempts to <em>acquire</em> the lock, and just after the code, it <em>releases</em> the lock so other task can acquire it. If a task cannot acquire the lock, it will wait until it can. [There are other possibilities if a task can't acquire the lock, but for simplicity, we just assume it waits.]</p>
 
