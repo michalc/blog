@@ -599,8 +599,8 @@ class PathLock():
         ]
 
     @contextlib.asynccontextmanager
-    async def __call__(self, paths):
-        writable_paths = set(paths)
+    async def lock(self, read, write):
+        writable_paths = set(read).union(set(write))
         writable_locks = self._with_locks(writable_paths, lambda lock: lock.write())
 
         ancestor_paths = _flatten(path.parents for path in paths)
@@ -672,7 +672,7 @@ class PathLock():
 
 <ol>
   <li>acquire a \(R^A(p)\) lock for all ancestors of \(p\), in order starting from \(/\),</li>
-  <li>acquire a \(R(p)\) lock on \(p)</li>
+  <li>acquire a \(R(p)\) lock on \(p\)</li>
 </ol>
 
 <p>and for writing to a pseudo-folder at \(p\)</p>
