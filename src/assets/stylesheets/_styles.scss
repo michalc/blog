@@ -210,7 +210,7 @@ footer {
 }
 
 /* Common Spacing */
-p, ul, nav, table {
+p, ul, nav, table, dl, ol {
 	margin-bottom: $smaller-spacing;
   &:last-child {
     margin-bottom: 0;
@@ -434,4 +434,86 @@ iframe {
 
 .red {
   color: #950000
+}
+
+.background-grey {
+  background: #efefef;
+  opacity: 0.3;
+}
+
+dt {
+  position: relative;
+  margin-left: 20px;
+  font-style: italic;
+}
+dd {
+  margin-left: 22px;
+}
+
+ol {
+  counter-reset: my-counter;
+}
+ol > li {
+  position: relative;
+}
+ol > li:before {
+  content: counter(my-counter) ".";
+  width: 20px;
+  display: inline-block;
+  position: absolute;
+  left: -20px;
+  counter-increment: my-counter;
+}
+ol > li {
+  margin-left: 20px;
+}
+
+.folder-item-children {
+  border-left: 2px solid #950000;
+  margin-left: 40px;
+}
+.folder-item-children-read {
+  border-left: 2px dashed #950000;
+}
+.folder-item-children-write {
+  border-left: 2px dotted #950000;
+}
+
+
+.folder-item-label {
+  position: relative;
+  margin-left: 5px;
+  padding-top: 5px;
+}
+.folder-item-label:before {
+  content: "";
+  width: 42px;
+  display: block;
+  position: absolute;
+  bottom: 0;
+  left: -5px;
+  border-bottom: 2px solid #950000;
+}
+.folder-item-label-read:before {
+  border-bottom: 2px dashed #950000;
+}
+.folder-item-label-write:before {
+  border-bottom: 2px dotted #950000;
+}
+
+.folder-item-children {
+  position: relative;
+}
+.folder-item:last-child > .folder-item-children:before {
+  content: "";
+  position: absolute;
+  display: block;
+  left: -44px;
+  top: 0;
+  height: 100%;
+  border-left: 2px solid white;
+}
+
+.folder-item-spacer {
+  margin-top: 10px;
 }

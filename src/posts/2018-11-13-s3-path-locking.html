@@ -1,0 +1,707 @@
+---
+layout: post
+title:  "S3 path/pseudo-folder locking"
+subtitle: "Efficient concurrent access when using S3 as a filesystem"
+date: 2018-11-13 14:50:00
+categories: python asyncio
+
+---
+
+<script src='https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.5/MathJax.js?config=TeX-MML-AM_CHTML' async></script>
+
+<p>AWS S3 is a key/value store, with operations that only operate on a single key at a time. There is no native concept of a folder: the closest thing is a group of keys with the same prefix. These facts mean that in applications that treat S3 as a filesystem, operations on such <em>pseudo</em>-folders, such as a renames or copies, are not atomic: if performed by different users at the same time, corruption of the key structure can occur. Here, I present a method to mitigate the chance of this based on locking.</p>
+
+<p>Some familiarity with S3 is assumed, especially the <a href="https://docs.aws.amazon.com/AmazonS3/latest/API/RESTObjectPUT.html">PUT</a>/<a href="https://docs.aws.amazon.com/AmazonS3/latest/API/RESTObjectGET.html">GET</a>/<a href="https://docs.aws.amazon.com/AmazonS3/latest/API/RESTObjectDELETE.html">DELETE</a> APIs for objects.</p>
+
+<blockquote>
+  <p style="text-align: center"><strong style="font-weight: bold;"">This post is not finished: expect lots of typos and little sense</strong></p>
+</blockquote>
+
+<h3>Pseudo-folders, paths, and key prefixes</h3>
+
+<p>We describe pseudo-folders through an example. Consider 4 objects stored in an S3 bucket, with slashes in their keys. Other than the fact that they are in the same bucket, there is no structure.</p>
+
+<ul class="folder-root">
+    <li class="folder-item">
+        <div class="folder-item-label"></div>
+        <ul class="folder-item-children">
+            <li class="folder-item">
+                <div class="folder-item-label">\( a/b/c \)</div>
+            </li>
+                <li class="folder-item">
+                <div class="folder-item-label">\( a/b/d \)</div>
+            </li>
+                <li class="folder-item">
+                <div class="folder-item-label">\( e/f/g \)</div>
+            </li>
+                <li class="folder-item">
+                <div class="folder-item-label">\( e/f/h \)</div>
+            </li>
+        </ul>
+    </li>
+</ul>
+
+<p>However, since these keys have slashes, and they have common prefixes, we can seem them as though they are part of a hierarchy of paths, below the root path \(/\), where the lowest branches in the hierarchy map to the objects in the bucket.</p>
+
+<ul class="folder-root">
+    <li class="folder-item">
+        <div class="folder-item-label">\(/\)</div>
+        <ul class="folder-item-children">
+            <li>
+                <div class="folder-item-label">\(/a\)</div>
+                <ul class="folder-item-children">
+                    <li class="folder-item">
+                        <div class="folder-item-label">\(/a/b\)</div>
+                        <ul class="folder-item-children">
+                            <li class="folder-item">
+                                <div class="folder-item-label">\(/a/b/c → a/b/c\)</div>
+                            </li>
+                            <li class="folder-item">
+                                <div class="folder-item-label">\(/a/b/d → a/b/d\)</div>
+                            </li>
+                        </ul>
+                    </li>
+                </ul>
+            </li>
+            <li class="folder-item">
+                <div class="folder-item-label">\(/e\)</div>
+                <ul class="folder-item-children">
+                    <li class="folder-item">
+                        <div class="folder-item-label">\(/e/f\)</div>
+                        <ul class="folder-item-children">
+                            <li class="folder-item">
+                                <div class="folder-item-label">\(/e/f/g → e/f/g\)</div>
+                            </li>
+                            <li class="folder-item">
+                                <div class="folder-item-label">\(/e/f/h → e/f/h\)</div>
+                            </li>
+                        </ul>
+                    </li>
+                </ul>
+            </li>
+        </ul>
+    <li>
+</ul>
+
+<p>The pseudo-folders in this example are those at paths \(/\), \(/a\), \(/a/b\), \(/a/b/c\), \(/e\), \(/e/f\) and \(/e/f/h\).</p>
+
+<p>This list of pseudo-folders <em>includes</em> the paths that map to objects: /a/b/c and /e/f/h. While a traditional filesystem does not allow a path to be <em>both</em> a folder and a file, S3 does not forbid the equivalent: for example both a/b and a/b/c could be keys to objects. This fact means that <em>every</em> path should be treated as a pseudo-folder.</p>
+
+<p>Note that <a href="https://docs.aws.amazon.com/AmazonS3/latest/API/v2-RESTBucketGET.html">List Objects API</a> allows you to list objects in a pseudo-folder, i.e. objects with the same key prefix, using the <code class="inline">prefix</code> and <code class="inline">delimeter</code> options, and the AWS console uses this to provide a reasonable illusion of folders. However, there is no API that provides atomic operations on all the objects on such lists.</p>
+
+<h4>Notation</h4>
+
+<p>S3 object keys will not start with a slash. Corresponding paths and pseudo-folders will always be written in full, and starting with a foward slash /.</p>
+
+<h3>Scope</h3>
+
+<p>We consider 4 categories of operations on of pseudo-folders that we would like to be atomic [from the point of view of other clients]</p>
+
+<dl>
+    <dt><i class="fa-li fa fa-caret-right"></i>Write & Delete</dt>
+    <dd>A write to one pseudo-folder</dd>
+    <dt><i class="fa-li fa fa-caret-right"></i>Rename</dt>
+    <dd>A write to two pseudo-folders</dd>
+    <dt><i class="fa-li fa fa-caret-right"></i>Copy</dt>
+    <dd>A read from one pseudo-folder, write to another pseudo-folder</dd>
+    <dt><i class="fa-li fa fa-caret-right"></i>Read</dt>
+    <dd>A read from one pseudo-folder</dd>
+</dl>
+
+<p>We don't try to implement atomicity in the case of the server going down mid-way through such operations. We also don't concern ourselves with the eventual consistency properties of some operations on S3. We also only consider locking schemes, and only consider schemes where locking and unlocking occurs taking a number of operations that is independent of the number of locks currently held, i.e. is constant-time.</p>
+
+<h4 id="single-object-get">Single-object GETs</h4>
+
+<p>It should be noted that a GET to a single object in S3 is atomic: it will either succeed with a consistent object, or fail with a 404. Therefore GETs to single objects won't typically need to be protected by locks. Because of this, whenever we mention a <em>read</em> of a pseudo-folder, we are concerned with a read that need an atomic view of the entire pseudo-folder. For example, if we needed to make a zip file from all of its contents.</p>
+
+<p>Single-object PUTs however, even though they are also atomic, depending on the strucure of keys the application enforces, may need locking in order to maintain.</p>
+
+<h3>Locking interface &amp; usage</h3>
+
+<p>Knowing the main classes of operations we are interested in, we can design an API for a class, <code class="inline">PathLock</code>. If implemented, we could write something like the below.</p>
+
+{{#highlight 'python'}}
+import asyncio
+from path_lock import PathLock
+
+lock = PathLock()
+
+async def delete(path):
+  async with lock(read=[], write=[path]):
+    ...
+
+async def write(path, ...):
+  async with lock(read=[], write=[path]):
+    ...
+
+async def rename(path_from, path_to):
+  async with lock(read=[], write=[path_from, path_to]):
+    ...
+
+async def copy(path_from, path_to):
+  async with lock(read=[path_from], write=[path_to]):
+    ...
+
+async def read(path):
+  async with lock(read=[path], write=[]):
+    ...
+{{/highlight}}
+
+<p>Each <code class="inline">path</code> argument can be some object that represents a path, such as <a href="https://docs.python.org/3/library/pathlib.html#pathlib.PurePosixPath">PurePosixPath</a>.</p>
+
+<h3>Granularity</h3>
+
+<p>As is typical with locks, we have the problem of making the lock as <em>granular</em> as possible: it should only block operations that would be unsafe to run concurrently, and other operations should progress unhampered. In our case unsafe combinations of operations on a pseudo-folder are "writes and writes", and "writes and reads". We aim to make a locking system that blocks these, but allows everything else to proceed</p>
+
+<p>At first thought, it might appear that a read/write lock on each pseudo-folder could be enough. However, given that pseudo folders can be nested, it requires some thought to actually implement such a lock around such operations, especially in light of the fact that we're are only considering constant-time locking for each path.
+
+<p>We'll start with an example, and then generalise.</p>
+
+<hr>
+
+<p>Consider a copy of \(/a/b\) to \(/a/b'\). This is a read from the pseudo folder at the path \(/a/b\), i.e. from all possible keys prefixed with \(a/b/\), and a write to \(/a/b'\), i.e. to keys prefixed with \(a/b'/\).</p>
+
+<ul class="folder-root">
+    <li class="folder-item">
+        <div class="folder-item-label">\(/\)</div>
+        <ul class="folder-item-children">
+            <li>
+                <div class="folder-item-label">\(/a\)</div>
+                <ul class="folder-item-children">
+                    <li class="folder-item">
+                        <div class="folder-item-label folder-item-label-read">\(/a/b\) (read)</div>
+                        <ul class="folder-item-children folder-item-children-read">
+                            <li class="folder-item">
+                                <div class="folder-item-label folder-item-label-read">\(/a/b/c → a/b/c\)</div>
+                            </li>
+                            <li class="folder-item">
+                                <div class="folder-item-label folder-item-label-read">\(/a/b/d → a/b/d\)</div>
+                            </li>
+                        </ul>
+                    </li>
+                    <li class="folder-item folder-item-spacer">
+                        <div class="folder-item-label folder-item-label-write">\(/a/b'\) (write)</div>
+                        <ul class="folder-item-children folder-item-children-write">
+                            <li class="folder-item">
+                                <div class="folder-item-label folder-item-label-write">\(/a/b'/c → a/b'/c\)</div>
+                            </li>
+                            <li class="folder-item">
+                                <div class="folder-item-label folder-item-label-write">\(/a/b'/d → a/b'/d\)</div>
+                            </li>
+                        </ul>
+                    </li>
+                </ul>
+            </li>
+            <li class="folder-item">
+                <div class="folder-item-label">\(/e\)</div>
+                <ul class="folder-item-children">
+                    <li class="folder-item">
+                        <div class="folder-item-label">\(/e/f\)</div>
+                        <ul class="folder-item-children">
+                            <li class="folder-item">
+                                <div class="folder-item-label">\(/e/f/g → e/f/g\)</div>
+                            </li>
+                            <li class="folder-item">
+                                <div class="folder-item-label">\(/e/f/h → e/f/h\)</div>
+                            </li>
+                        </ul>
+                    </li>
+                </ul>
+            </li>
+        </ul>
+    <li>
+</ul>
+
+<p>During this copy, the following operations are not compatible, and should be blocked to ensure atomicity:</p>
+
+<ul class="fa-ul">
+    <li><i class="fa-li fa fa-caret-right"></i> reads from the pseudo-folder \(/a/b'\)</li>
+    <li><i class="fa-li fa fa-caret-right"></i> reads from any descendant pseudo-folders of \(/a/b'\)</li>
+    <li><i class="fa-li fa fa-caret-right"></i> reads from the ancestor pseudo-folders of \(/a/b\) and \(/a/b'\), namely \(/a\) and \(/\) </li>
+    <li><i class="fa-li fa fa-caret-right"></i> writes to the pseudo-folders \(/a/b\) and \(/a/b'\);</li>
+    <li><i class="fa-li fa fa-caret-right"></i> writes to an any descendent pseudo-folders of \(/a/b\) and \(/a/b'\);</i> 
+    <li><i class="fa-li fa fa-caret-right"></i> write to the ancestor pseudo-folders of \(/a/b\) and \(/a/b'\), namely \(/a\) and /\(/a\)</li>
+</ul>
+
+<p>We can write these rules more succinctly using the concept of <em>lineage</em>. We define \(\mathbb{L}(p)\) as the lineage of a path \(p\): the union of all of \(p\)'s ancestors, descendants, and \(p\) itself. We also define \(R(A)\) as all the read operations on the set of paths \(A\), and \(W(A)\) as all the write operations on the set of paths \(A\). Using these terms, we can say that a copy from \(/a/b\) to \(/a/b'\) should block</p>
+
+<ul class="fa-ul">
+    <li><i class="fa-li fa fa-caret-right"></i> \(W(\mathbb{L}(/a/b))\), </li>
+    <li><i class="fa-li fa fa-caret-right"></i> \(R(\mathbb{L}(/a/b'))\), and</li>
+    <li><i class="fa-li fa fa-caret-right"></i> \(W(\mathbb{L}(/a/b'))\).</li>
+</ul>
+
+<p>We generalise this further and state that for a path \(p\)</p>
+
+<ul class="fa-ul">
+    <li><i class="fa-li fa fa-caret-right"></i> \(R({p})\) should block \(W(\mathbb{L}(p))\)</li>
+    <li><i class="fa-li fa fa-caret-right"></i> \(W({p})\) should block \(W(\mathbb{L}(p))\) and \(R(\mathbb{L}(p))\).</li>
+</ul>
+
+<p>We can express these rules a different way, and say that for any path \(p\)</p>
+
+<ul class="fa-ul">
+    <li><i class="fa-li fa fa-caret-right"></i> \(R(\mathbb{L}(p))\) should block \(W(\mathbb{L}(p))\)</li>
+    <li><i class="fa-li fa fa-caret-right"></i> \(W(\mathbb{L}(p))\) should block \(W(\mathbb{L}(p))\) and \(R(\mathbb{L}(p))\).</li>
+</ul>
+
+<p>The second rule above implies the first, so we just need:</p>
+
+<ul class="fa-ul">
+    <li><i class="fa-li fa fa-caret-right"></i> \(W(\mathbb{L}(p))\) should block \(W(\mathbb{L}(p))\) and \(R(\mathbb{L}(p))\).</li>
+</ul>
+
+
+<p>We express the rules this way so we can show them in a symmetric compatibility table, showing the for two concurrent tasks, A and B, and for a path p, what operations can run concurrently. Since the table is symmetric about the leading diagonal, operations that are duplicates are shown faded in grey. In order to include all possible operations, we also define \(\mathbb{L}^c(p)\) as the set of all paths <em>not</em> in the lineage of \(p\).</p>
+
+<table class="table">
+  <colgroup>
+    <col></col>
+    <col></col>
+    <col></col>
+    <col></col>
+    <col></col>
+  </colgroup>
+  <thead>
+    <tr>
+      <th><div class="top-right">B</div><div class="bottom-left">A</div></th>
+      <th>\(R(\mathbb{L}^c(p))\)</th>
+      <th>\(R(\mathbb{L}(p))\)</th>
+      <th>\(W(\mathbb{L}^c(p))\)</th>
+      <th>\(W(\mathbb{L}(p))\)</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <th>\(R(\mathbb{L}^c(p))\)</th>
+      <td class="large green">✓</td>
+      <td class="large green background-grey">✓</td>
+      <td class="large green background-grey">✓</td>
+      <td class="large green background-grey">✓</td>
+    </tr>
+    <tr>
+      <th>\(R(\mathbb{L}(p))\)</th>
+      <td class="large green">✓</td>
+      <td class="large green">✓</td>
+      <td class="large green background-grey">✓</td>
+      <td class="large red background-grey">✗</td>
+    </tr>
+    <tr>
+      <th>\(W(\mathbb{L}^c(p))\)</th>
+      <td class="large green">✓</td>
+      <td class="large green">✓</td>
+      <td class="large green">✓</td>
+      <td class="large green background-grey">✓</td>
+    </tr>
+    <tr>
+      <th>\(W(\mathbb{L}(p))\)</th>
+      <td class="large green">✓</td>
+      <td class="large red">✗</td>
+      <td class="large green">✓</td>
+      <td class="large red">✗</td>
+    </tr>
+  </tbody>
+</table>
+
+<p>Another reason for expressing the rules this way is that it makes clearer that for every possible \(p\) we would like to <em>somehow</em> to be able to lock \(\mathbb{L}(p)\), and with different sorts of locks.</p>
+
+<p>This table also gives us a way to rate and compare locking schemes in terms of what they allow concurrently. All schemes must block the 2 unsafe combinations, but that leaves 8 safe combinations they should allow, and so we can assign each potential scheme a score out of 8.
+
+<h3>Global exclusive lock: 0/8</h3>
+
+<p>As an initial example, we can consider an extremly simple implementation of <code class="inline">PathLock</code> that ignores its arguments and defers to a single instance of <a href="https://docs.python.org/3/library/asyncio-sync.html#asyncio.Lock">asyncio.Lock</a>.</p>
+
+{{#highlight 'python'}}
+import asyncio
+import contextlib
+
+class PathLock():
+
+    def __init__(self):
+        self.lock = asyncio.Lock()
+
+    @contextlib.asynccontextmanager
+    async def lock(read, write):
+        async with self.lock:
+            yield
+{{/highlight}}
+
+<p>As you might expect, this doesn't have great concurrency properties:</p>
+
+<table class="table">
+  <colgroup>
+    <col></col>
+    <col></col>
+    <col></col>
+    <col></col>
+    <col></col>
+  </colgroup>
+  <thead>
+    <tr>
+      <th><div class="top-right">B</div><div class="bottom-left">A</div></th>
+      <th>\(R(\mathbb{L}^c(p))\)</th>
+      <th>\(R(\mathbb{L}(p))\)</th>
+      <th>\(W(\mathbb{L}^c(p))\)</th>
+      <th>\(W(\mathbb{L}(p))\)</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <th>\(R(\mathbb{L}^c(p))\)</th>
+      <td class="large red">✗</td>
+      <td class="large red background-grey">✗</td>
+      <td class="large red background-grey">✗</td>
+      <td class="large red background-grey">✗</td>
+    </tr>
+    <tr>
+      <th>\(R(\mathbb{L}(p))\)</th>
+      <td class="large red">✗</td>
+      <td class="large red">✗</td>
+      <td class="large red background-grey">✗</td>
+      <td class="large red background-grey">✗</td>
+    </tr>
+    <tr>
+      <th>\(W(\mathbb{L}^c(p))\)</th>
+      <td class="large red">✗</td>
+      <td class="large red">✗</td>
+      <td class="large red">✗</td>
+      <td class="large red background-grey">✗</td>
+    </tr>
+    <tr>
+      <th>\(W(\mathbb{L}(p))\)</th>
+      <td class="large red">✗</td>
+      <td class="large red">✗</td>
+      <td class="large red">✗</td>
+      <td class="large red">✗</td>
+    </tr>
+  </tbody>
+</table>
+
+<p>But the implementation is tremendously simple. Keeping in mind the fact that <a href="#single-object-get">single-object GETs</a>, this may be good enough for many situations.</p>
+
+<h3>Global read/write lock: 3/8</h3>
+
+<p>Better locking can be acheived by using a global <a href="/blog/posts/python/asyncio/read-write-lock/">read/write lock.</a>. If we define \(P\) as the set of all possible paths, such a lock would have a compatibility table</p>
+
+<table class="table">
+  <colgroup>
+    <col></col>
+    <col></col>
+    <col></col>
+  </colgroup>
+  <thead>
+    <tr>
+      <th><div class="top-right">B</div><div class="bottom-left">A</div></th>
+      <th>\(R(P)\)</th>
+      <th>\(W(P)\)</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <th>\(R(P)\)</th>
+      <td class="large green">✓</td>
+      <td class="large red background-grey">✗</td>
+    </tr>
+    <tr>
+      <th>\(W(P)\)</th>
+      <td class="large red">✗</td>
+      <td class="large red">✗</td>
+    </tr>
+  </tbody>
+</table>
+
+<p>which could be used as below.</p>
+
+{{#highlight 'python'}}
+import contextlib
+from asyncio_read_write_lock import ReadWriteLock
+
+class PathLock():
+
+    def __init__(self):
+        self.lock = ReadWriteLock()
+
+    @contextlib.asynccontextmanager
+    async def lock(read, write):
+        lock_func = lock.write if write else read
+        async with lock_func():
+            yield
+{{/highlight}}
+
+<p>As you might expect, this allows more concurrency than the global exclusive lock.</p>
+
+<table class="table">
+  <colgroup>
+    <col></col>
+    <col></col>
+    <col></col>
+    <col></col>
+    <col></col>
+  </colgroup>
+  <thead>
+    <tr>
+      <th><div class="top-right">B</div><div class="bottom-left">A</div></th>
+      <th>\(R(\mathbb{L}^c(p))\)</th>
+      <th>\(R(\mathbb{L}(p))\)</th>
+      <th>\(W(\mathbb{L}^c(p))\)</th>
+      <th>\(W(\mathbb{L}(p))\)</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <th>\(R(\mathbb{L}^c(p))\)</th>
+      <td class="large green">✓</td>
+      <td class="large green background-grey">✓</td>
+      <td class="large red background-grey">✗</td>
+      <td class="large red background-grey">✗</td>
+    </tr>
+    <tr>
+      <th>\(R(\mathbb{L}(p))\)</th>
+      <td class="large green">✓</td>
+      <td class="large green">✓</td>
+      <td class="large red background-grey">✗</td>
+      <td class="large red background-grey">✗</td>
+    </tr>
+    <tr>
+      <th>\(W(\mathbb{L}^c(p))\)</th>
+      <td class="large red">✗</td>
+      <td class="large red">✗</td>
+      <td class="large red">✗</td>
+      <td class="large red background-grey">✗</td>
+    </tr>
+    <tr>
+      <th>\(W(\mathbb{L}(p))\)</th>
+      <td class="large red">✗</td>
+      <td class="large red">✗</td>
+      <td class="large red">✗</td>
+      <td class="large red">✗</td>
+    </tr>
+  </tbody>
+</table>
+
+<p>As when using the global exclusive lock, this may well be good enough for many cases.</p>
+
+<h3>Read/write locks on each path: 7/8</h3>
+
+<p>To improve upon the above, we construct an algorithm inspired by <a href="#ref-1">[1]</a>. For each path p we can maintain a read/write lock</p>
+
+<table class="table">
+  <colgroup>
+    <col></col>
+    <col></col>
+    <col></col>
+  </colgroup>
+  <thead>
+    <tr>
+      <th><div class="top-right">B</div><div class="bottom-left">A</div></th>
+      <th>\(R({p})\)</th>
+      <th>\(W({p})\)</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <th>\(R({p})\)</th>
+      <td class="large green">✓</td>
+      <td class="large red background-grey">✗</td>
+    </tr>
+    <tr>
+      <th>\(W({p})\)</th>
+      <td class="large red">✗</td>
+      <td class="large red">✗</td>
+    </tr>
+  </tbody>
+</table>
+
+<p>and we need to access [either read or write] to a pseudo-folder, we acquire the <em>write</em> lock on its path, and for all of its ancestor paths, acquire a <em>read</em> lock. To avoid deadlock, the locks are acquired ancestor-first.</p>
+
+<p>For example, if a task needed to to access \(/a/b\), it would</p>
+
+<ol>
+  <li>acquire a read lock on \(/\),</li>
+  <li>acquire a read lock on \(/a\),</li>
+  <li>acquire a write lock on \(/a/b\).</li>
+</ol>
+
+<p>If a concurrent task wanted to lock anything in \(\mathbb{L}(/a/b)\), it would get blocked. For example, if another task tried to access an <em>ancestor</em> or \(/a/b\), such as, \(/a\), it would try to acquire the write lock on \(/a\), and get blocked by the original task's read lock on \(/a\). Alternatively, if a task tried to access a <em>descendant</em> of \(/a/b\), such as \(/a/b/c\), it would get blocked by the write lock on \(/a/b\).</p>
+
+<p>A downside of this is that there is no difference between reads and writes, which means that concurrent reads to the same lineage are forbidden, as can be seen in the below compatibility table.</p>
+
+<table class="table">
+  <colgroup>
+    <col></col>
+    <col></col>
+    <col></col>
+    <col></col>
+    <col></col>
+  </colgroup>
+  <thead>
+    <tr>
+      <th><div class="top-right">B</div><div class="bottom-left">A</div></th>
+      <th>\(R(\mathbb{L}^c(p))\)</th>
+      <th>\(R(\mathbb{L}(p))\)</th>
+      <th>\(W(\mathbb{L}^c(p))\)</th>
+      <th>\(W(\mathbb{L}(p))\)</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <th>\(R(\mathbb{L}^c(p))\)</th>
+      <td class="large green">✓</td>
+      <td class="large green background-grey">✓</td>
+      <td class="large green background-grey">✓</td>
+      <td class="large green background-grey">✓</td>
+    </tr>
+    <tr>
+      <th>\(R(\mathbb{L}(p))\)</th>
+      <td class="large green">✓</td>
+      <td class="large red">✗</td>
+      <td class="large green background-grey">✓</td>
+      <td class="large red background-grey">✗</td>
+    </tr>
+    <tr>
+      <th>\(W(\mathbb{L}^c(p))\)</th>
+      <td class="large green">✓</td>
+      <td class="large green">✓</td>
+      <td class="large green">✓</td>
+      <td class="large green background-grey">✓</td>
+    </tr>
+    <tr>
+      <th>\(W(\mathbb{L}(p))\)</th>
+      <td class="large green">✓</td>
+      <td class="large red">✗</td>
+      <td class="large green">✓</td>
+      <td class="large red">✗</td>
+    </tr>
+  </tbody>
+</table>
+
+<p>However, keeping in mind the single-object GET exception, this may be acceptable.</p>
+
+<p>Note also that if a path isn't locked, then the lock object itself doesn't need to be retained in memory. As in the implementation below, using a weak-reference cache can be used for these</p>
+
+<h3>Read/write/ancestor locks on each path: 8/8</h3>
+
+<p>We can improve on the above by maintaining a different sort of lock on each path. Instead of a read/write lock with two, modes, \(R\) and \(W\), we construct one with 4: \(R\), \(W\), \(R^A\), <em>read-ancestor</em>, and \(W^A\), <em>write-ancestor</em>.</p>
+
+<table class="table">
+  <colgroup>
+    <col></col>
+    <col></col>
+    <col></col>
+    <col></col>
+    <col></col>
+  </colgroup>
+  <thead>
+    <tr>
+      <th><div class="top-right">B</div><div class="bottom-left">A</div></th>
+      <th>\(R^A(p)\)</th>
+      <th>\(R(p)\)</th>
+      <th>\(W^A(p)\)</th>
+      <th>\(W(p)\)</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <th>\(R(p)\)</th>
+      <td class="large green">✓</td>
+      <td class="large green background-grey">✓</td>
+      <td class="large green background-grey">✓</td>
+      <td class="large red background-grey">✗</td>
+    </tr>
+    <tr>
+      <th>\(R^A(p)\)</th>
+      <td class="large green">✓</td>
+      <td class="large green">✓</td>
+      <td class="large red background-grey">✗</td>
+      <td class="large red background-grey">✗</td>
+    </tr>
+    <tr>
+      <th>\(W^A(p)\)</th>
+      <td class="large green">✓</td>
+      <td class="large red">✗</td>
+      <td class="large green">✓</td>
+      <td class="large red background-grey">✗</td>
+    </tr>
+    <tr>
+      <th>\(W(p)\)</th>
+      <td class="large red">✗</td>
+      <td class="large red">✗</td>
+      <td class="large red">✗</td>
+      <td class="large red">✗</td>
+    </tr>
+  </tbody>
+</table>
+
+<p>Using this primative on each path, we can have a pair of algorithms. For reading from a pseudo-folder at \(p\) we</p>
+
+<ol>
+  <li>acquire a \(R^A(p)\) lock for all ancestors of \(p\), in order starting from \(/\),</li>
+  <li>acquire a \(R(p)\) lock on \(p)</li>
+</ol>
+
+<p>and for writing to a pseudo-folder at \(p\)</p>
+
+<ol>
+  <li>acquire a \(W^A(p)\) lock for all ancestors of \(p\), in order starting from \(/\),</li>
+  <li>acquire a \(W(p)\) lock on \(p\).</li>
+</ol>
+
+<p>Using this algorithm, we then can acheive a perfect concurrency score of 8/8, and acheive the following concurrency table.</p>
+
+<table class="table">
+  <colgroup>
+    <col></col>
+    <col></col>
+    <col></col>
+    <col></col>
+    <col></col>
+  </colgroup>
+  <thead>
+    <tr>
+      <th><div class="top-right">B</div><div class="bottom-left">A</div></th>
+      <th>\(R(\mathbb{L}^c(p))\)</th>
+      <th>\(R(\mathbb{L}(p))\)</th>
+      <th>\(W(\mathbb{L}^c(p))\)</th>
+      <th>\(W(\mathbb{L}(p))\)</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <th>\(R(\mathbb{L}^c(p))\)</th>
+      <td class="large green">✓</td>
+      <td class="large green background-grey">✓</td>
+      <td class="large green background-grey">✓</td>
+      <td class="large green background-grey">✓</td>
+    </tr>
+    <tr>
+      <th>\(R(\mathbb{L}(p))\)</th>
+      <td class="large green">✓</td>
+      <td class="large green">✓</td>
+      <td class="large green background-grey">✓</td>
+      <td class="large red background-grey">✗</td>
+    </tr>
+    <tr>
+      <th>\(W(\mathbb{L}^c(p))\)</th>
+      <td class="large green">✓</td>
+      <td class="large green">✓</td>
+      <td class="large green">✓</td>
+      <td class="large green background-grey">✓</td>
+    </tr>
+    <tr>
+      <th>\(W(\mathbb{L}(p))\)</th>
+      <td class="large green">✓</td>
+      <td class="large red">✗</td>
+      <td class="large green">✓</td>
+      <td class="large red">✗</td>
+    </tr>
+  </tbody>
+</table>
+
+<p>As per the version that uses read/write locks, if a path isn't locked, then the lock object itself doesn't need to be retained in memory: a weak-reference cache can be used.</p>
+
+<hr>
+
+<ul>
+  <li id="ref-1">[1] Ritik Malhotra; An Efficient Locking Scheme for Path-based File
+Systems; <a href="https://people.eecs.berkeley.edu/~kubitron/courses/cs262a-F14/projects/reports/project6_report.pdf">https://people.eecs.berkeley.edu/~kubitron/courses/cs262a-F14/projects/reports/project6_report.pdf</a></li>
+</ul>
