@@ -321,7 +321,7 @@ class PathLock():
         self.lock = asyncio.Lock()
 
     @contextlib.asynccontextmanager
-    async def lock(read, write):
+    async def __call__(self, read, write):
         async with self.lock:
             yield
 {{/highlight}}
@@ -422,7 +422,7 @@ class PathLock():
         self.lock = ReadWriteLock()
 
     @contextlib.asynccontextmanager
-    async def lock(read, write):
+    async def __call__(self, read, write):
         lock_func = lock.write if write else read
         async with lock_func():
             yield
@@ -599,7 +599,7 @@ class PathLock():
         ]
 
     @contextlib.asynccontextmanager
-    async def lock(self, read, write):
+    async def __call__(self, read, write):
         writable_paths = set(read).union(set(write))
         writable_locks = self._with_locks(writable_paths, lambda lock: lock.write())
 
