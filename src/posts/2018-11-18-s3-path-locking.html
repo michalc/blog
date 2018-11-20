@@ -486,7 +486,7 @@ class PathLock():
   </tbody>
 </table>
 
-<p>and we need to access [either read or write] to a pseudo-folders, we acquire the <em>write</em> lock on the paths of the pseudo folders, and for all of the ancestor paths of the pseudo-folders, acquire a <em>read</em> lock on each. To avoid deadlock, the locks are acquired ancestor-first, and then in lexographical order.</p>
+<p>and when we need to access [either read or write] to a pseudo-folders, we acquire the <em>write</em> lock on the paths of the pseudo folders, and for all of the ancestor paths of the pseudo-folders, acquire a <em>read</em> lock on each. To avoid deadlock, the locks are acquired ancestor-first, and then in lexographical order.</p>
 
 <p>For example, if a task needed to to access \(/a/b\) and \(/a/b'\) it would</p>
 
@@ -643,23 +643,18 @@ def _flatten(to_flatten):
   </tbody>
 </table>
 
-<p>Using this primative on each path, we  . if we want to read from pseudo-folders \(P_R\) and write to pseudo-folders \(P_W\)</p>
+<p>In order to read from pseudo-folders at paths \(P_R\) and write to pseudo-folders at paths \(P_W\), we acquire the locks</p>
 
-<ol>
-  <li>Find all the ancestor paths of \(P_R\) and \(P_w\)</li>
-  <li>Sort this list ancestor-first, then lexographically on path-component name.</li> 
-  <li>acquire a \(R^A(\{p\})\) lock for all ancestors of \(p\), in order starting from \(/\),</li>
-  <li>acquire a \(R(\{p\})\) lock on \(p\)</li>
-</ol>
+<ul class="fa-ul">
+    <li><i class="fa-li fa fa-caret-right"></i> \(R^A(\{p\})\) for all \(p\) that are ancestors of the paths in \(P_R\)</li>
+    <li><i class="fa-li fa fa-caret-right"></i> \(W^A(\{p\})\) for all \(p\) that are ancestors of the paths in \(P_W\)</li>
+    <li><i class="fa-li fa fa-caret-right"></i> \(R(\{p\})\) for all \(p\) in \(P_R\)</li>
+    <li><i class="fa-li fa fa-caret-right"></i> \(W(\{p\})\) for all \(p\) in \(P_W\)</li>
+</ul>
 
-<p>and for writing to a pseudo-folder at \(p\)</p>
+<p>To avoid deadlock, these lock are acquired amcestor-first, and then in lexographical order.</p>
 
-<ol>
-  <li>acquire a \(W^A(\{p\})\) lock for all ancestors of \(p\), in order starting from \(/\),</li>
-  <li>acquire a \(W(\{p\})\) lock on \(p\).</li>
-</ol>
-
-<p>Using this algorithm, we then can acheive a perfect concurrency score of 4/4, and acheive the following concurrency table.</p>
+<p>Using this set of locks, we then can acheive a perfect concurrency score of 4/4, and acheive the following concurrency table.</p>
 
 <table class="table">
   <colgroup>
