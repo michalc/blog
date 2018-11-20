@@ -299,7 +299,7 @@ async def read(path):
 
 <p>This table also gives us a way to compare locking schemes. All schemes must block the 2 incompatible combinations of operations, but that leaves 4 combinations they should allow for maximum concurrency, and so we can assign each potential scheme a score out of 4.</p>
 
-<h3>Global exclusive lock: 2/4</h3>
+<h3>Global exclusive lock: 0/4</h3>
 
 <p>As an initial example, we can consider an extremly simple implementation of <code class="inline">PathLock</code> that ignores its arguments and defers to a single instance of <a href="https://docs.python.org/3/library/asyncio-sync.html#asyncio.Lock">asyncio.Lock</a>.</p>
 
@@ -362,7 +362,7 @@ class PathLock():
 
 <p>But the implementation is tremendously simple. Keeping in mind that <a href="#single-object-get">single-object GETs don't need to be locked</a>, this may be good enough for many situations.</p>
 
-<h3>Global read/write lock: 3/8</h3>
+<h3>Global read/write lock: 2/4</h3>
 
 <p>Better locking can be acheived by using a global <a href="/blog/posts/python/asyncio/read-write-lock/">read/write lock.</a>. If we define \(P\) as the set of all possible paths, such a lock would have a compatibility table</p>
 
