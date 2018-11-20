@@ -364,7 +364,7 @@ class PathLock():
 
 <h3>Global read/write lock: 2/4</h3>
 
-<p>Better locking can be acheived by using a global <a href="/blog/posts/python/asyncio/read-write-lock/">read/write lock.</a>. If we define \(P\) as the set of all possible paths, such a lock would have a compatibility table</p>
+<p>Better locking can be acheived by using a global <a href="/blog/posts/python/asyncio/read-write-lock/">read/write lock</a>. If we define \(P\) as the set of all possible paths, such a lock would have a compatibility table</p>
 
 <table class="table">
   <colgroup>
@@ -375,18 +375,18 @@ class PathLock():
   <thead>
     <tr>
       <th><div class="top-right">B</div><div class="bottom-left">A</div></th>
-      <th>\(R(P)\)</th>
-      <th>\(W(P)\)</th>
+      <th>\(\overline{R}(P)\)</th>
+      <th>\(\overline{W}(P)\)</th>
     </tr>
   </thead>
   <tbody>
     <tr>
-      <th>\(R(P)\)</th>
+      <th>\(\overline{R}(P)\)</th>
       <td class="large green">✓</td>
       <td class="large red background-grey">✗</td>
     </tr>
     <tr>
-      <th>\(W(P)\)</th>
+      <th>\(\overline{W}(P)\)</th>
       <td class="large red">✗</td>
       <td class="large red">✗</td>
     </tr>
@@ -457,7 +457,7 @@ class PathLock():
 
 <h3>Read/write locks on each path: 3/4</h3>
 
-<p>To improve upon the above, we construct an algorithm inspired by <a href="#ref-1">[1]</a>. For each path p we can maintain a read/write lock</p>
+<p>To improve upon the above, we construct an algorithm inspired by <a href="#ref-1">[1]</a>. For each path we can maintain a read/write lock, with two modes \(\overline{R}\) and \(\overline{W}\), with the below compatibility table.</p>
 
 <table class="table">
   <colgroup>
@@ -467,26 +467,28 @@ class PathLock():
   </colgroup>
   <thead>
     <tr>
-      <th><div class="top-right">B</div><div class="bottom-left">A</div></th>
-      <th>\(R\)</th>
-      <th>\(W\)</th>
+      <th></th>
+      <th>\(\overline{R}\)</th>
+      <th>\(\overline{W}\)</th>
     </tr>
   </thead>
   <tbody>
     <tr>
-      <th>\(R\)</th>
+      <th>\(\overline{R}\)</th>
       <td class="large green">✓</td>
       <td class="large red background-grey">✗</td>
     </tr>
     <tr>
-      <th>\(W\)</th>
+      <th>\(\overline{W}\)</th>
       <td class="large red">✗</td>
       <td class="large red">✗</td>
     </tr>
   </tbody>
 </table>
 
-<p>and when we need to access [either read or write] to a pseudo-folders, we acquire the <em>write</em> lock on the paths of the pseudo folders, and for all of the ancestor paths of the pseudo-folders, acquire a <em>read</em> lock on each. To avoid deadlock, the locks are acquired ancestor-first, and then in lexographical order.</p>
+<p>[To distinguish read and write locks from the similarly named operations, we write locks with a horizontal bar.]</p>
+
+<p>When we need to access [either read or write] to a pseudo-folders, we acquire the <em>write</em> lock on the paths of the pseudo folders, and for all of the ancestor paths of the pseudo-folders, acquire a <em>read</em> lock on each. To avoid deadlock, the locks are acquired ancestor-first, and then in lexographical order.</p>
 
 <p>For example, if a task needed to to access \(/a/b\) and \(/a/b'\) it would</p>
 
@@ -592,7 +594,7 @@ def _flatten(to_flatten):
 
 <h3>Read/write/ancestor locks on each path: 4/4</h3>
 
-<p>We can improve on the above by maintaining a different sort of lock on each path. Instead of a read/write lock with two, modes, \(R\) and \(W\), we construct one with 4: \(R\), \(W\), \(R^A\), <em>read-ancestor</em>, and \(W^A\), <em>write-ancestor</em>.</p>
+<p>We can improve on the above by maintaining a different sort of lock on each path. Instead of a read/write lock with two modes, \(\overline{R}\) and \(\overline{W}\), we construct one with 4: \(\overline{R}\), \(\overline{W}\), \(\overline{R_A}\), <em>read-ancestor</em>, and \(\overline{W_A}\), <em>write-ancestor</em>.</p>
 
 <table class="table">
   <colgroup>
@@ -604,37 +606,37 @@ def _flatten(to_flatten):
   </colgroup>
   <thead>
     <tr>
-      <th><div class="top-right">B</div><div class="bottom-left">A</div></th>
-      <th>\(R^A\)</th>
-      <th>\(R\)</th>
-      <th>\(W^A\)</th>
-      <th>\(W\)</th>
+      <th></th>
+      <th>\(\overline{R_A}\)</th>
+      <th>\(\overline{R}\)</th>
+      <th>\(\overline{W_A}\)</th>
+      <th>\(\overline{W}\)</th>
     </tr>
   </thead>
   <tbody>
     <tr>
-      <th>\(R^A\)</th>
+      <th>\(\overline{R_A}\)</th>
       <td class="large green">✓</td>
       <td class="large green background-grey">✓</td>
       <td class="large green background-grey">✓</td>
       <td class="large red background-grey">✗</td>
     </tr>
     <tr>
-      <th>\(R\)</th>
+      <th>\(\overline{R}\)</th>
       <td class="large green">✓</td>
       <td class="large green">✓</td>
       <td class="large red background-grey">✗</td>
       <td class="large red background-grey">✗</td>
     </tr>
     <tr>
-      <th>\(W^A\)</th>
+      <th>\(\overline{W_A}\)</th>
       <td class="large green">✓</td>
       <td class="large red">✗</td>
       <td class="large green">✓</td>
       <td class="large red background-grey">✗</td>
     </tr>
     <tr>
-      <th>\(W\)</th>
+      <th>\(\overline{W}\)</th>
       <td class="large red">✗</td>
       <td class="large red">✗</td>
       <td class="large red">✗</td>
@@ -646,10 +648,10 @@ def _flatten(to_flatten):
 <p>In order to read from pseudo-folders at paths \(P_R\) and write to pseudo-folders at paths \(P_W\), we acquire the locks</p>
 
 <ul class="fa-ul">
-    <li><i class="fa-li fa fa-caret-right"></i> \(R^A(p)\) for all \(p\) that are ancestors of the paths in \(P_R\)</li>
-    <li><i class="fa-li fa fa-caret-right"></i> \(W^A(p)\) for all \(p\) that are ancestors of the paths in \(P_W\)</li>
-    <li><i class="fa-li fa fa-caret-right"></i> \(R(p)\) for all \(p\) in \(P_R\)</li>
-    <li><i class="fa-li fa fa-caret-right"></i> \(W(p)\) for all \(p\) in \(P_W\)</li>
+    <li><i class="fa-li fa fa-caret-right"></i> \(\overline{R_A}(p)\) for all \(p\) that are ancestors of the paths in \(P_R\)</li>
+    <li><i class="fa-li fa fa-caret-right"></i> \(\overline{W_A}(p)\) for all \(p\) that are ancestors of the paths in \(P_W\)</li>
+    <li><i class="fa-li fa fa-caret-right"></i> \(\overline{R}(p)\) for all \(p\) in \(P_R\)</li>
+    <li><i class="fa-li fa fa-caret-right"></i> \(\overline{W}(p)\) for all \(p\) in \(P_W\)</li>
 </ul>
 
 <p>To avoid deadlock, these lock are acquired amcestor-first, and then in lexographical order.</p>
