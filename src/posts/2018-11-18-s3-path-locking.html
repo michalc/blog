@@ -14,7 +14,7 @@ categories: python asyncio
 <p>Some familiarity with S3 is assumed, especially the <a href="https://docs.aws.amazon.com/AmazonS3/latest/API/RESTObjectPUT.html">PUT</a>/<a href="https://docs.aws.amazon.com/AmazonS3/latest/API/RESTObjectGET.html">GET</a>/<a href="https://docs.aws.amazon.com/AmazonS3/latest/API/RESTObjectDELETE.html">DELETE</a> APIs for objects.</p>
 
 <blockquote>
-  <p style="text-align: center"><strong style="font-weight: bold;"">This post is not finished: expect lots of typos and little sense</strong></p>
+  <p style="text-align: center"><strong style="font-weight: bold;">This post is not finished: expect lots of typos and little sense</strong></p>
 </blockquote>
 
 <h3>Pseudo-folders, paths, and key prefixes</h3>
@@ -95,7 +95,7 @@ categories: python asyncio
 
 <h3>Scope</h3>
 
-<p>We consider 4 categories of operations on of pseudo-folders that we would like to be atomic [from the point of view of other clients]</p>
+<p>We consider 4 categories of operations on of pseudo-folders that we would like to be atomic.</p>
 
 <dl>
     <dt><i class="fa-li fa fa-caret-right"></i>Write & Delete</dt>
@@ -108,7 +108,7 @@ categories: python asyncio
     <dd>A read from one pseudo-folder</dd>
 </dl>
 
-<p>We don't try to implement atomicity in the case of the server going down mid-way through such operations. We also don't concern ourselves with the eventual consistency properties of some operations on S3. We also only consider locking schemes, and only consider schemes where locking and unlocking occurs taking a number of operations that is independent of the number of locks currently held, i.e. is constant-time.</p>
+<p>We don't try to maintain atomicity in the case of the server going down mid-way through such operations. We also don't concern ourselves with the eventual consistency properties of some operations on S3. We also only consider locking schemes, and only consider schemes where locking and unlocking on a given path takes a number of operations that is independent of the number of locks currently held, and independent of the number of descendents the path has, i.e. is constant-time.</p>
 
 <h4 id="single-object-get">Single-object GETs</h4>
 
@@ -118,7 +118,7 @@ categories: python asyncio
 
 <h3>Locking interface &amp; usage</h3>
 
-<p>Knowing the main classes of operations we are interested in, we can design an API for a class, <code class="inline">PathLock</code>. If implemented, we could write something like the below.</p>
+<p>Knowing the categories of operations we are interested in, we can design an API for a class, <code class="inline">PathLock</code>. If implemented, we could write something like the below.</p>
 
 {{#highlight 'python'}}
 import asyncio
@@ -147,13 +147,13 @@ async def read(path):
     ...
 {{/highlight}}
 
-<p>Each <code class="inline">path</code> argument can be some object that represents a path, such as <a href="https://docs.python.org/3/library/pathlib.html#pathlib.PurePosixPath">PurePosixPath</a>.</p>
+<p>Each <code class="inline">path</code> argument can be some object that represents the path of a pseudo folder, such as <a href="https://docs.python.org/3/library/pathlib.html#pathlib.PurePosixPath">PurePosixPath</a>.</p>
 
 <h3>Granularity</h3>
 
 <p>As is typical with locks, we have the problem of making the lock as <em>granular</em> as possible: it should only block operations that would be unsafe to run concurrently, and other operations should progress unhampered. In our case unsafe combinations of operations on a pseudo-folder are "writes and writes", and "writes and reads". We aim to make a locking system that blocks these, but allows everything else to proceed</p>
 
-<p>At first thought, it might appear that a read/write lock on each pseudo-folder could be enough. However, given that pseudo folders can be nested, it requires some thought to actually implement such a lock around such operations, especially in light of the fact that we're are only considering constant-time locking for each path.
+<p>At first thought, it might appear that a read/write lock on each pseudo-folder could be enough. However, given that pseudo folders can be nested, it requires some thought to actually implement such a lock around such operations in order to acheive a granular lock and constant time locking.</p>
 
 <p>We'll start with an example, and then generalise.</p>
 
@@ -220,10 +220,12 @@ async def read(path):
     <li><i class="fa-li fa fa-caret-right"></i> reads from the ancestor pseudo-folders of \(/a/b\) and \(/a/b'\), namely \(/a\) and \(/\) </li>
     <li><i class="fa-li fa fa-caret-right"></i> writes to the pseudo-folders \(/a/b\) and \(/a/b'\);</li>
     <li><i class="fa-li fa fa-caret-right"></i> writes to an any descendent pseudo-folders of \(/a/b\) and \(/a/b'\);</i> 
-    <li><i class="fa-li fa fa-caret-right"></i> write to the ancestor pseudo-folders of \(/a/b\) and \(/a/b'\), namely \(/a\) and /\(/a\)</li>
+    <li><i class="fa-li fa fa-caret-right"></i> write to the ancestor pseudo-folders of \(/a/b\) and \(/a/b'\), namely \(/a\) and \(/\)</li>
 </ul>
 
-<p>We can write these rules more succinctly using the concept of <em>lineage</em>. We define \(\mathbb{L}(p)\) as the lineage of a path \(p\): the union of all of \(p\)'s ancestors, descendants, and \(p\) itself. We also define \(R(A)\) as all the read operations on the set of paths \(A\), and \(W(A)\) as all the write operations on the set of paths \(A\). Using these terms, we can say that a copy from \(/a/b\) to \(/a/b'\) should block</p>
+<p>All other read and write operations are compatible.</p>
+
+<p>We can write these rules more succinctly using the concept of <em>lineage</em>. We define \(\mathbb{L}(p)\) as the lineage of a path \(p\): the union of all of \(p\)'s ancestors, descendants, and \(\{p\}\) itself. We also define \(R(A)\) as all the read operations on the set of paths \(A\), and \(W(A)\) as all the write operations on the set of paths \(A\). Using these terms, we can say that a copy from \(/a/b\) to \(/a/b'\) should block</p>
 
 <ul class="fa-ul">
     <li><i class="fa-li fa fa-caret-right"></i> \(W(\mathbb{L}(/a/b))\), </li>
@@ -234,8 +236,8 @@ async def read(path):
 <p>We generalise this further and state that for a path \(p\)</p>
 
 <ul class="fa-ul">
-    <li><i class="fa-li fa fa-caret-right"></i> \(R({p})\) should block \(W(\mathbb{L}(p))\)</li>
-    <li><i class="fa-li fa fa-caret-right"></i> \(W({p})\) should block \(W(\mathbb{L}(p))\) and \(R(\mathbb{L}(p))\).</li>
+    <li><i class="fa-li fa fa-caret-right"></i> \(R(\{p\})\) should block \(W(\mathbb{L}(p))\)</li>
+    <li><i class="fa-li fa fa-caret-right"></i> \(W(\{p\})\) should block \(W(\mathbb{L}(p))\) and \(R(\mathbb{L}(p))\).</li>
 </ul>
 
 <p>We can express these rules a different way, and say that for any path \(p\)</p>
@@ -252,7 +254,7 @@ async def read(path):
 </ul>
 
 
-<p>We express the rules this way so we can show them in a symmetric compatibility table, showing the for two concurrent tasks, A and B, and for a path p, what operations can run concurrently. Since the table is symmetric about the leading diagonal, operations that are duplicates are shown faded in grey. In order to include all possible operations, we also define \(\mathbb{L}^c(p)\) as the set of all paths <em>not</em> in the lineage of \(p\).</p>
+<p>We express the rules this way so we can show them in a symmetric compatibility table, showing what operations can run concurrently for two tasks. Since the table is symmetric about the leading diagonal, operations that are duplicates are shown faded in grey. In order to include all possible operations, we also define \(\mathbb{L}^c(p)\) as the set of all paths <em>not</em> in the lineage of \(p\).</p>
 
 <table class="table">
   <colgroup>
@@ -392,18 +394,18 @@ class PathLock():
   <thead>
     <tr>
       <th><div class="top-right">B</div><div class="bottom-left">A</div></th>
-      <th>\(R(P)\)</th>
-      <th>\(W(P)\)</th>
+      <th>\(R(\{p\})\)</th>
+      <th>\(W(\{p\})\)</th>
     </tr>
   </thead>
   <tbody>
     <tr>
-      <th>\(R(P)\)</th>
+      <th>\(R(\{p\})\)</th>
       <td class="large green">✓</td>
       <td class="large red background-grey">✗</td>
     </tr>
     <tr>
-      <th>\(W(P)\)</th>
+      <th>\(W(\{p\})\)</th>
       <td class="large red">✗</td>
       <td class="large red">✗</td>
     </tr>
@@ -494,18 +496,18 @@ class PathLock():
   <thead>
     <tr>
       <th><div class="top-right">B</div><div class="bottom-left">A</div></th>
-      <th>\(R({p})\)</th>
-      <th>\(W({p})\)</th>
+      <th>\(R(\{p\})\)</th>
+      <th>\(W(\{p\})\)</th>
     </tr>
   </thead>
   <tbody>
     <tr>
-      <th>\(R({p})\)</th>
+      <th>\(R(\{p\})\)</th>
       <td class="large green">✓</td>
       <td class="large red background-grey">✗</td>
     </tr>
     <tr>
-      <th>\(W({p})\)</th>
+      <th>\(W(\{p\})\)</th>
       <td class="large red">✗</td>
       <td class="large red">✗</td>
     </tr>
@@ -640,36 +642,36 @@ def _flatten(to_flatten):
   <thead>
     <tr>
       <th><div class="top-right">B</div><div class="bottom-left">A</div></th>
-      <th>\(R^A(p)\)</th>
-      <th>\(R(p)\)</th>
-      <th>\(W^A(p)\)</th>
-      <th>\(W(p)\)</th>
+      <th>\(R^A(\{p\})\)</th>
+      <th>\(R(\{p\})\)</th>
+      <th>\(W^A(\{p\})\)</th>
+      <th>\(W(\{p\})\)</th>
     </tr>
   </thead>
   <tbody>
     <tr>
-      <th>\(R^A(p)\)</th>
+      <th>\(R^A(\{p\})\)</th>
       <td class="large green">✓</td>
       <td class="large green background-grey">✓</td>
       <td class="large green background-grey">✓</td>
       <td class="large red background-grey">✗</td>
     </tr>
     <tr>
-      <th>\(R(p)\)</th>
+      <th>\(R(\{p\})\)</th>
       <td class="large green">✓</td>
       <td class="large green">✓</td>
       <td class="large red background-grey">✗</td>
       <td class="large red background-grey">✗</td>
     </tr>
     <tr>
-      <th>\(W^A(p)\)</th>
+      <th>\(W^A(\{p\})\)</th>
       <td class="large green">✓</td>
       <td class="large red">✗</td>
       <td class="large green">✓</td>
       <td class="large red background-grey">✗</td>
     </tr>
     <tr>
-      <th>\(W(p)\)</th>
+      <th>\(W(\{p\})\)</th>
       <td class="large red">✗</td>
       <td class="large red">✗</td>
       <td class="large red">✗</td>
@@ -678,18 +680,20 @@ def _flatten(to_flatten):
   </tbody>
 </table>
 
-<p>Using this primative on each path, we can have a pair of algorithms. For reading from a pseudo-folder at \(p\) we</p>
+<p>Using this primative on each path, we  . if we want to read from pseudo-folders \(P_R\) and write to pseudo-folders \(P_W\)</p>
 
 <ol>
-  <li>acquire a \(R^A(p)\) lock for all ancestors of \(p\), in order starting from \(/\),</li>
-  <li>acquire a \(R(p)\) lock on \(p\)</li>
+  <li>Find all the ancestor paths of \(P_R\) and \(P_w\)</li>
+  <li>Sort this list ancestor-first, then lexographically on path-component name.</li> 
+  <li>acquire a \(R^A(\{p\})\) lock for all ancestors of \(p\), in order starting from \(/\),</li>
+  <li>acquire a \(R(\{p\})\) lock on \(p\)</li>
 </ol>
 
 <p>and for writing to a pseudo-folder at \(p\)</p>
 
 <ol>
-  <li>acquire a \(W^A(p)\) lock for all ancestors of \(p\), in order starting from \(/\),</li>
-  <li>acquire a \(W(p)\) lock on \(p\).</li>
+  <li>acquire a \(W^A(\{p\})\) lock for all ancestors of \(p\), in order starting from \(/\),</li>
+  <li>acquire a \(W(\{p\})\) lock on \(p\).</li>
 </ol>
 
 <p>Using this algorithm, we then can acheive a perfect concurrency score of 8/8, and acheive the following concurrency table.</p>
