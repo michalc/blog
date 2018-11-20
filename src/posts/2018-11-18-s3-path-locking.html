@@ -364,7 +364,7 @@ class PathLock():
 
 <h3>Global read/write lock: 2/4</h3>
 
-<p>Better locking can be acheived by using a global <a href="/blog/posts/python/asyncio/read-write-lock/">read/write lock</a>. If we define \(P\) as the set of all possible paths, such a lock would have a compatibility table</p>
+<p>Better locking can be acheived by using a global <a href="/blog/posts/python/asyncio/read-write-lock/">read/write lock</a>, with two modes \(\overline{R}\) and \(\overline{W}\), with compatibility table</p>
 
 <table class="table">
   <colgroup>
@@ -374,24 +374,26 @@ class PathLock():
   </colgroup>
   <thead>
     <tr>
-      <th><div class="top-right">B</div><div class="bottom-left">A</div></th>
-      <th>\(\overline{R}(P)\)</th>
-      <th>\(\overline{W}(P)\)</th>
+      <th></th>
+      <th>\(\overline{R}\)</th>
+      <th>\(\overline{W}\)</th>
     </tr>
   </thead>
   <tbody>
     <tr>
-      <th>\(\overline{R}(P)\)</th>
+      <th>\(\overline{R}\)</th>
       <td class="large green">✓</td>
       <td class="large red background-grey">✗</td>
     </tr>
     <tr>
-      <th>\(\overline{W}(P)\)</th>
+      <th>\(\overline{W}\)</th>
       <td class="large red">✗</td>
       <td class="large red">✗</td>
     </tr>
   </tbody>
 </table>
+
+<p>[To distinguish read and write locks from the similarly named operations, we write locks with a horizontal bar.]</p>
 
 <p>which could be used as below.</p>
 
@@ -457,7 +459,7 @@ class PathLock():
 
 <h3>Read/write locks on each path: 3/4</h3>
 
-<p>To improve upon the above, we construct an algorithm inspired by <a href="#ref-1">[1]</a>. For each path we can maintain a read/write lock, with two modes \(\overline{R}\) and \(\overline{W}\), with the below compatibility table.</p>
+<p>To improve upon the above, we construct an algorithm inspired by <a href="#ref-1">[1]</a>. Instead of a global read/write lock, we maintain a read/write lock for each path \(p\).</p>
 
 <table class="table">
   <colgroup>
@@ -468,25 +470,23 @@ class PathLock():
   <thead>
     <tr>
       <th></th>
-      <th>\(\overline{R}\)</th>
-      <th>\(\overline{W}\)</th>
+      <th>\(\overline{R}(p)\)</th>
+      <th>\(\overline{W}(p)\)</th>
     </tr>
   </thead>
   <tbody>
     <tr>
-      <th>\(\overline{R}\)</th>
+      <th>\(\overline{R}(p)\)</th>
       <td class="large green">✓</td>
       <td class="large red background-grey">✗</td>
     </tr>
     <tr>
-      <th>\(\overline{W}\)</th>
+      <th>\(\overline{W}(p)\)</th>
       <td class="large red">✗</td>
       <td class="large red">✗</td>
     </tr>
   </tbody>
 </table>
-
-<p>[To distinguish read and write locks from the similarly named operations, we write locks with a horizontal bar.]</p>
 
 <p>When we need to access [either read or write] to a pseudo-folders, we acquire the <em>write</em> lock on the paths of the pseudo folders, and for all of the ancestor paths of the pseudo-folders, acquire a <em>read</em> lock on each. To avoid deadlock, the locks are acquired ancestor-first, and then in lexographical order.</p>
 
@@ -607,36 +607,36 @@ def _flatten(to_flatten):
   <thead>
     <tr>
       <th></th>
-      <th>\(\overline{R_A}\)</th>
-      <th>\(\overline{R}\)</th>
-      <th>\(\overline{W_A}\)</th>
-      <th>\(\overline{W}\)</th>
+      <th>\(\overline{R_A}(p)\)</th>
+      <th>\(\overline{R}(p)\)</th>
+      <th>\(\overline{W_A}(p)\)</th>
+      <th>\(\overline{W}(p)\)</th>
     </tr>
   </thead>
   <tbody>
     <tr>
-      <th>\(\overline{R_A}\)</th>
+      <th>\(\overline{R_A}(p)\)</th>
       <td class="large green">✓</td>
       <td class="large green background-grey">✓</td>
       <td class="large green background-grey">✓</td>
       <td class="large red background-grey">✗</td>
     </tr>
     <tr>
-      <th>\(\overline{R}\)</th>
+      <th>\(\overline{R}(p)\)</th>
       <td class="large green">✓</td>
       <td class="large green">✓</td>
       <td class="large red background-grey">✗</td>
       <td class="large red background-grey">✗</td>
     </tr>
     <tr>
-      <th>\(\overline{W_A}\)</th>
+      <th>\(\overline{W_A}(p)\)</th>
       <td class="large green">✓</td>
       <td class="large red">✗</td>
       <td class="large green">✓</td>
       <td class="large red background-grey">✗</td>
     </tr>
     <tr>
-      <th>\(\overline{W}\)</th>
+      <th>\(\overline{W}(p)\)</th>
       <td class="large red">✗</td>
       <td class="large red">✗</td>
       <td class="large red">✗</td>
