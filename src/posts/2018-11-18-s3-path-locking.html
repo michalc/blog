@@ -225,7 +225,7 @@ async def read(path):
 
 <p>All other read and write operations are compatible.</p>
 
-<p>We can write these rules more succinctly using the concept of <em>lineage</em>. We define \(\mathbb{L}(p)\) as the lineage of a path \(p\): the union of all of \(p\)'s ancestors, descendants, and \(\{p\}\) itself. We also define \(R(A)\) as all the read operations on the set of paths \(A\), and \(W(A)\) as all the write operations on the set of paths \(A\). Using these terms, we can say that a copy from \(/a/b\) to \(/a/b'\) should block</p>
+<p>We can write these rules more succinctly using the concept of <em>lineage</em>. We define \(\mathbb{L}(p)\) as the lineage of a path \(p\): the union of all of \(p\)'s ancestors, descendants, and \(\{p\}\) itself. We also define \(R(A)\) as all the read operations on the set of paths \(A\), and \(W(A)\) as all the write operations on the set of paths \(A\). Using these terms, we can say that a copy from the pseudo-folder at path \(/a/b\) to \(/a/b'\) should block</p>
 
 <ul class="fa-ul">
     <li><i class="fa-li fa fa-caret-right"></i> \(W(\mathbb{L}(/a/b))\), </li>
@@ -253,8 +253,9 @@ async def read(path):
     <li><i class="fa-li fa fa-caret-right"></i> \(W(\mathbb{L}(p))\) should block \(W(\mathbb{L}(p))\) and \(R(\mathbb{L}(p))\).</li>
 </ul>
 
+<p>We can see that out aim is to be able to construct a read/write lock on  \(\mathbb{L}(p)\) for all paths \(p\).</p> 
 
-<p>We can now express this in a compatibility table, showing what operations can, and cannot, run concurrently for two tasks. We also define \(\mathbb{L}^c(p)\) as the set of all paths <em>not</em> in the lineage of \(p\) in order to better show how locking schemes differ in the concurrency they allow.</p>
+<p>We can also express this as a compatibility table, showing what operations should, and should not, run concurrently for two tasks. We also define \(\mathbb{L}^c(p)\) as the set of all paths <em>not</em> in the lineage of \(p\) in order to better show how locking schemes differ in the concurrency they allow.</p>
 
 <table class="table">
   <colgroup>
@@ -359,7 +360,7 @@ class PathLock():
   </tbody>
 </table>
 
-<p>But the implementation is tremendously simple. Keeping in mind the fact that <a href="#single-object-get">single-object GETs</a>, this may be good enough for many situations.</p>
+<p>But the implementation is tremendously simple. Keeping in mind that <a href="#single-object-get">single-object GETs don't need to be locked</a>, this may be good enough for many situations.</p>
 
 <h3>Global read/write lock: 3/8</h3>
 
