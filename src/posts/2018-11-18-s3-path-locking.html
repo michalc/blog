@@ -254,62 +254,51 @@ async def read(path):
 </ul>
 
 
-<p>We express the rules this way so we can show them in a symmetric compatibility table, showing what operations can run concurrently for two tasks. Since the table is symmetric about the leading diagonal, operations that are duplicates are shown faded in grey. In order to include all possible operations, we also define \(\mathbb{L}^c(p)\) as the set of all paths <em>not</em> in the lineage of \(p\).</p>
+<p>We can now express this in a compatibility table, showing what operations can, and cannot, run concurrently for two tasks. We also define \(\mathbb{L}^c(p)\) as the set of all paths <em>not</em> in the lineage of \(p\) in order to better show how locking schemes differ in the concurrency they allow.</p>
 
 <table class="table">
   <colgroup>
     <col></col>
     <col></col>
     <col></col>
-    <col></col>
-    <col></col>
   </colgroup>
-  <thead>
-    <tr>
-      <th><div class="top-right">B</div><div class="bottom-left">A</div></th>
-      <th>\(R(\mathbb{L}^c(p))\)</th>
-      <th>\(R(\mathbb{L}(p))\)</th>
-      <th>\(W(\mathbb{L}^c(p))\)</th>
-      <th>\(W(\mathbb{L}(p))\)</th>
-    </tr>
-  </thead>
   <tbody>
     <tr>
-      <th>\(R(\mathbb{L}^c(p))\)</th>
-      <td class="large green">✓</td>
-      <td class="large green background-grey">✓</td>
-      <td class="large green background-grey">✓</td>
-      <td class="large green background-grey">✓</td>
-    </tr>
-    <tr>
-      <th>\(R(\mathbb{L}(p))\)</th>
-      <td class="large green">✓</td>
-      <td class="large green">✓</td>
-      <td class="large green background-grey">✓</td>
-      <td class="large red background-grey">✗</td>
-    </tr>
-    <tr>
-      <th>\(W(\mathbb{L}^c(p))\)</th>
-      <td class="large green">✓</td>
-      <td class="large green">✓</td>
-      <td class="large green">✓</td>
-      <td class="large green background-grey">✓</td>
-    </tr>
-    <tr>
-      <th>\(W(\mathbb{L}(p))\)</th>
-      <td class="large green">✓</td>
+      <td>\(W(\mathbb{L}(p))\)</td>
+      <td>\(R(\mathbb{L}(p))\)</td>
       <td class="large red">✗</td>
-      <td class="large green">✓</td>
+    </tr>
+    <tr>
+      <td>\(W(\mathbb{L}(p))\)</td>
+      <td>\(W(\mathbb{L}(p))\)</td>
       <td class="large red">✗</td>
+    </tr>
+    <tr>
+      <td>\(W(\mathbb{L}(p))\)</td>
+      <td>\(W(\mathbb{L}^c(p))\)</td>
+      <td class="large green">✓</td>
+    </tr>
+    <tr>
+      <td>\(W(\mathbb{L}(p))\)</td>
+      <td>\(R(\mathbb{L}^c(p))\)</td>
+      <td class="large green">✓</td>
+    </tr>
+      <tr>
+      <td>\(R(\mathbb{L}(p))\)</td>
+      <td>\(R(\mathbb{L}(p))\)</td>
+      <td class="large green">✓</td>
+    </tr>
+    <tr>
+      <td>\(R(\mathbb{L}(p))\)</td>
+      <td>\(R(\mathbb{L}^c(p))\)</td>
+      <td class="large green">✓</td>
     </tr>
   </tbody>
 </table>
 
-<p>Another reason for expressing the rules this way is that it makes clearer that for every possible \(p\) we would like to <em>somehow</em> to be able to lock \(\mathbb{L}(p)\), and with different sorts of locks.</p>
+<p>This table also gives us a way to compare locking schemes. All schemes must block the 2 incompatible combinations of operations, but that leaves 4 combinations they should allow for maximum concurrency, and so we can assign each potential scheme a score out of 4.</p>
 
-<p>This table also gives us a way to rate and compare locking schemes in terms of what they allow concurrently. All schemes must block the 2 unsafe combinations, but that leaves 8 safe combinations they should allow, and so we can assign each potential scheme a score out of 8.
-
-<h3>Global exclusive lock: 0/8</h3>
+<h3>Global exclusive lock: 2/4</h3>
 
 <p>As an initial example, we can consider an extremly simple implementation of <code class="inline">PathLock</code> that ignores its arguments and defers to a single instance of <a href="https://docs.python.org/3/library/asyncio-sync.html#asyncio.Lock">asyncio.Lock</a>.</p>
 
@@ -335,45 +324,36 @@ class PathLock():
     <col></col>
     <col></col>
     <col></col>
-    <col></col>
-    <col></col>
   </colgroup>
-  <thead>
-    <tr>
-      <th><div class="top-right">B</div><div class="bottom-left">A</div></th>
-      <th>\(R(\mathbb{L}^c(p))\)</th>
-      <th>\(R(\mathbb{L}(p))\)</th>
-      <th>\(W(\mathbb{L}^c(p))\)</th>
-      <th>\(W(\mathbb{L}(p))\)</th>
-    </tr>
-  </thead>
   <tbody>
     <tr>
-      <th>\(R(\mathbb{L}^c(p))\)</th>
+      <td>\(W(\mathbb{L}(p))\)</td>
+      <td>\(R(\mathbb{L}(p))\)</td>
       <td class="large red">✗</td>
-      <td class="large red background-grey">✗</td>
-      <td class="large red background-grey">✗</td>
-      <td class="large red background-grey">✗</td>
     </tr>
     <tr>
-      <th>\(R(\mathbb{L}(p))\)</th>
+      <td>\(W(\mathbb{L}(p))\)</td>
+      <td>\(W(\mathbb{L}(p))\)</td>
       <td class="large red">✗</td>
-      <td class="large red">✗</td>
-      <td class="large red background-grey">✗</td>
-      <td class="large red background-grey">✗</td>
     </tr>
     <tr>
-      <th>\(W(\mathbb{L}^c(p))\)</th>
+      <td>\(W(\mathbb{L}(p))\)</td>
+      <td>\(W(\mathbb{L}^c(p))\)</td>
       <td class="large red">✗</td>
-      <td class="large red">✗</td>
-      <td class="large red">✗</td>
-      <td class="large red background-grey">✗</td>
     </tr>
     <tr>
-      <th>\(W(\mathbb{L}(p))\)</th>
+      <td>\(W(\mathbb{L}(p))\)</td>
+      <td>\(R(\mathbb{L}^c(p))\)</td>
       <td class="large red">✗</td>
+    </tr>
+      <tr>
+      <td>\(R(\mathbb{L}(p))\)</td>
+      <td>\(R(\mathbb{L}(p))\)</td>
       <td class="large red">✗</td>
-      <td class="large red">✗</td>
+    </tr>
+    <tr>
+      <td>\(R(\mathbb{L}(p))\)</td>
+      <td>\(R(\mathbb{L}^c(p))\)</td>
       <td class="large red">✗</td>
     </tr>
   </tbody>
@@ -394,18 +374,18 @@ class PathLock():
   <thead>
     <tr>
       <th><div class="top-right">B</div><div class="bottom-left">A</div></th>
-      <th>\(R(\{p\})\)</th>
-      <th>\(W(\{p\})\)</th>
+      <th>\(R(P)\)</th>
+      <th>\(W(P)\)</th>
     </tr>
   </thead>
   <tbody>
     <tr>
-      <th>\(R(\{p\})\)</th>
+      <th>\(R(P)\)</th>
       <td class="large green">✓</td>
       <td class="large red background-grey">✗</td>
     </tr>
     <tr>
-      <th>\(W(\{p\})\)</th>
+      <th>\(W(P)\)</th>
       <td class="large red">✗</td>
       <td class="large red">✗</td>
     </tr>
@@ -437,53 +417,44 @@ class PathLock():
     <col></col>
     <col></col>
     <col></col>
-    <col></col>
-    <col></col>
   </colgroup>
-  <thead>
-    <tr>
-      <th><div class="top-right">B</div><div class="bottom-left">A</div></th>
-      <th>\(R(\mathbb{L}^c(p))\)</th>
-      <th>\(R(\mathbb{L}(p))\)</th>
-      <th>\(W(\mathbb{L}^c(p))\)</th>
-      <th>\(W(\mathbb{L}(p))\)</th>
-    </tr>
-  </thead>
   <tbody>
     <tr>
-      <th>\(R(\mathbb{L}^c(p))\)</th>
-      <td class="large green">✓</td>
-      <td class="large green background-grey">✓</td>
-      <td class="large red background-grey">✗</td>
-      <td class="large red background-grey">✗</td>
+      <td>\(W(\mathbb{L}(p))\)</td>
+      <td>\(R(\mathbb{L}(p))\)</td>
+      <td class="large red">✗</td>
     </tr>
     <tr>
-      <th>\(R(\mathbb{L}(p))\)</th>
-      <td class="large green">✓</td>
-      <td class="large green">✓</td>
-      <td class="large red background-grey">✗</td>
-      <td class="large red background-grey">✗</td>
+      <td>\(W(\mathbb{L}(p))\)</td>
+      <td>\(W(\mathbb{L}(p))\)</td>
+      <td class="large red">✗</td>
     </tr>
     <tr>
-      <th>\(W(\mathbb{L}^c(p))\)</th>
+      <td>\(W(\mathbb{L}(p))\)</td>
+      <td>\(W(\mathbb{L}^c(p))\)</td>
       <td class="large red">✗</td>
-      <td class="large red">✗</td>
-      <td class="large red">✗</td>
-      <td class="large red background-grey">✗</td>
     </tr>
     <tr>
-      <th>\(W(\mathbb{L}(p))\)</th>
+      <td>\(W(\mathbb{L}(p))\)</td>
+      <td>\(R(\mathbb{L}^c(p))\)</td>
       <td class="large red">✗</td>
-      <td class="large red">✗</td>
-      <td class="large red">✗</td>
-      <td class="large red">✗</td>
+    </tr>
+      <tr>
+      <td>\(R(\mathbb{L}(p))\)</td>
+      <td>\(R(\mathbb{L}(p))\)</td>
+      <td class="large green">✓</td>
+    </tr>
+    <tr>
+      <td>\(R(\mathbb{L}(p))\)</td>
+      <td>\(R(\mathbb{L}^c(p))\)</td>
+      <td class="large green">✓</td>
     </tr>
   </tbody>
 </table>
 
 <p>As when using the global exclusive lock, this may well be good enough for many cases.</p>
 
-<h3>Read/write locks on each path: 7/8</h3>
+<h3>Read/write locks on each path: 3/4</h3>
 
 <p>To improve upon the above, we construct an algorithm inspired by <a href="#ref-1">[1]</a>. For each path p we can maintain a read/write lock</p>
 
@@ -534,46 +505,37 @@ class PathLock():
     <col></col>
     <col></col>
     <col></col>
-    <col></col>
-    <col></col>
   </colgroup>
-  <thead>
-    <tr>
-      <th><div class="top-right">B</div><div class="bottom-left">A</div></th>
-      <th>\(R(\mathbb{L}^c(p))\)</th>
-      <th>\(R(\mathbb{L}(p))\)</th>
-      <th>\(W(\mathbb{L}^c(p))\)</th>
-      <th>\(W(\mathbb{L}(p))\)</th>
-    </tr>
-  </thead>
   <tbody>
     <tr>
-      <th>\(R(\mathbb{L}^c(p))\)</th>
-      <td class="large green">✓</td>
-      <td class="large green background-grey">✓</td>
-      <td class="large green background-grey">✓</td>
-      <td class="large green background-grey">✓</td>
+      <td>\(W(\mathbb{L}(p))\)</td>
+      <td>\(R(\mathbb{L}(p))\)</td>
+      <td class="large red">✗</td>
     </tr>
     <tr>
-      <th>\(R(\mathbb{L}(p))\)</th>
-      <td class="large green">✓</td>
+      <td>\(W(\mathbb{L}(p))\)</td>
+      <td>\(W(\mathbb{L}(p))\)</td>
       <td class="large red">✗</td>
-      <td class="large green background-grey">✓</td>
-      <td class="large red background-grey">✗</td>
     </tr>
     <tr>
-      <th>\(W(\mathbb{L}^c(p))\)</th>
+      <td>\(W(\mathbb{L}(p))\)</td>
+      <td>\(W(\mathbb{L}^c(p))\)</td>
       <td class="large green">✓</td>
-      <td class="large green">✓</td>
-      <td class="large green">✓</td>
-      <td class="large green background-grey">✓</td>
     </tr>
     <tr>
-      <th>\(W(\mathbb{L}(p))\)</th>
+      <td>\(W(\mathbb{L}(p))\)</td>
+      <td>\(R(\mathbb{L}^c(p))\)</td>
       <td class="large green">✓</td>
+    </tr>
+      <tr>
+      <td>\(R(\mathbb{L}(p))\)</td>
+      <td>\(R(\mathbb{L}(p))\)</td>
       <td class="large red">✗</td>
+    </tr>
+    <tr>
+      <td>\(R(\mathbb{L}(p))\)</td>
+      <td>\(R(\mathbb{L}^c(p))\)</td>
       <td class="large green">✓</td>
-      <td class="large red">✗</td>
     </tr>
   </tbody>
 </table>
@@ -627,7 +589,7 @@ def _flatten(to_flatten):
     ]
 {{/highlight}}
 
-<h3>Read/write/ancestor locks on each path: 8/8</h3>
+<h3>Read/write/ancestor locks on each path: 4/4</h3>
 
 <p>We can improve on the above by maintaining a different sort of lock on each path. Instead of a read/write lock with two, modes, \(R\) and \(W\), we construct one with 4: \(R\), \(W\), \(R^A\), <em>read-ancestor</em>, and \(W^A\), <em>write-ancestor</em>.</p>
 
@@ -696,53 +658,44 @@ def _flatten(to_flatten):
   <li>acquire a \(W(\{p\})\) lock on \(p\).</li>
 </ol>
 
-<p>Using this algorithm, we then can acheive a perfect concurrency score of 8/8, and acheive the following concurrency table.</p>
+<p>Using this algorithm, we then can acheive a perfect concurrency score of 4/4, and acheive the following concurrency table.</p>
 
 <table class="table">
   <colgroup>
     <col></col>
     <col></col>
     <col></col>
-    <col></col>
-    <col></col>
   </colgroup>
-  <thead>
-    <tr>
-      <th><div class="top-right">B</div><div class="bottom-left">A</div></th>
-      <th>\(R(\mathbb{L}^c(p))\)</th>
-      <th>\(R(\mathbb{L}(p))\)</th>
-      <th>\(W(\mathbb{L}^c(p))\)</th>
-      <th>\(W(\mathbb{L}(p))\)</th>
-    </tr>
-  </thead>
   <tbody>
     <tr>
-      <th>\(R(\mathbb{L}^c(p))\)</th>
-      <td class="large green">✓</td>
-      <td class="large green background-grey">✓</td>
-      <td class="large green background-grey">✓</td>
-      <td class="large green background-grey">✓</td>
-    </tr>
-    <tr>
-      <th>\(R(\mathbb{L}(p))\)</th>
-      <td class="large green">✓</td>
-      <td class="large green">✓</td>
-      <td class="large green background-grey">✓</td>
-      <td class="large red background-grey">✗</td>
-    </tr>
-    <tr>
-      <th>\(W(\mathbb{L}^c(p))\)</th>
-      <td class="large green">✓</td>
-      <td class="large green">✓</td>
-      <td class="large green">✓</td>
-      <td class="large green background-grey">✓</td>
-    </tr>
-    <tr>
-      <th>\(W(\mathbb{L}(p))\)</th>
-      <td class="large green">✓</td>
+      <td>\(W(\mathbb{L}(p))\)</td>
+      <td>\(R(\mathbb{L}(p))\)</td>
       <td class="large red">✗</td>
-      <td class="large green">✓</td>
+    </tr>
+    <tr>
+      <td>\(W(\mathbb{L}(p))\)</td>
+      <td>\(W(\mathbb{L}(p))\)</td>
       <td class="large red">✗</td>
+    </tr>
+    <tr>
+      <td>\(W(\mathbb{L}(p))\)</td>
+      <td>\(W(\mathbb{L}^c(p))\)</td>
+      <td class="large green">✓</td>
+    </tr>
+    <tr>
+      <td>\(W(\mathbb{L}(p))\)</td>
+      <td>\(R(\mathbb{L}^c(p))\)</td>
+      <td class="large green">✓</td>
+    </tr>
+      <tr>
+      <td>\(R(\mathbb{L}(p))\)</td>
+      <td>\(R(\mathbb{L}(p))\)</td>
+      <td class="large green">✓</td>
+    </tr>
+    <tr>
+      <td>\(R(\mathbb{L}(p))\)</td>
+      <td>\(R(\mathbb{L}^c(p))\)</td>
+      <td class="large green">✓</td>
     </tr>
   </tbody>
 </table>
