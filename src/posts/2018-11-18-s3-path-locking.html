@@ -99,20 +99,20 @@ categories: python asyncio
 
 <dl>
     <dt><i class="fa-li fa fa-caret-right"></i>Write & Delete</dt>
-    <dd>A write to one pseudo-folder</dd>
+    <dd>A write of one pseudo-folder</dd>
     <dt><i class="fa-li fa fa-caret-right"></i>Rename</dt>
-    <dd>A write to two pseudo-folders</dd>
+    <dd>A write of two pseudo-folders</dd>
     <dt><i class="fa-li fa fa-caret-right"></i>Copy</dt>
-    <dd>A read from one pseudo-folder, write to another pseudo-folder</dd>
+    <dd>A read of one pseudo-folder, write of another pseudo-folder</dd>
     <dt><i class="fa-li fa fa-caret-right"></i>Read</dt>
-    <dd>A read from one pseudo-folder</dd>
+    <dd>A read of one pseudo-folder</dd>
 </dl>
 
 <p>We don't try to maintain atomicity in the case of the server going down mid-way through such operations. We also don't concern ourselves with the eventual consistency properties of some operations on S3. We also only consider locking schemes, and only consider schemes where locking and unlocking on a given path takes a number of operations that is independent of the number of locks currently held, and independent of the number of descendents the path has, i.e. is constant-time.</p>
 
 <h4 id="single-object-get">Single-object GETs</h4>
 
-<p>It should be noted that a GET to a single object in S3 is atomic: it will either succeed with a consistent object, or fail with a 404. Therefore GETs to single objects won't typically need to be protected by locks. Because of this, whenever we mention a <em>read</em> of a pseudo-folder, we are concerned with a read that need an atomic view of the entire pseudo-folder. For example, if we needed to make a zip file from all of its contents.</p>
+<p>It should be noted that a GET to a single object in S3 is atomic: it will either succeed with a consistent object, or fail with a 404. Therefore GETs to single objects won't typically need to be protected by locks. Note that whenever we mention a read of a pseudo-folder, we are concerned with a read that need an atomic view of the entire pseudo-folder. For example, if we needed to make a zip file from all of its contents.</p>
 
 <p>Single-object PUTs however, even though they are also atomic, depending on the strucure of keys the application enforces, may need locking in order to maintain.</p>
 
@@ -159,7 +159,7 @@ async def read(path):
 
 <hr>
 
-<p>Consider a copy of \(/a/b\) to \(/a/b'\). This is a read from the pseudo folder at the path \(/a/b\), i.e. from all possible keys prefixed with \(a/b/\), and a write to \(/a/b'\), i.e. to keys prefixed with \(a/b'/\).</p>
+<p>Consider a copy of \(/a/b\) to \(/a/b'\). This is a read of the pseudo folder at the path \(/a/b\), i.e. from all possible keys prefixed with \(a/b/\), and a write of \(/a/b'\), i.e. to keys prefixed with \(a/b'/\).</p>
 
 <ul class="folder-root">
     <li class="folder-item">
@@ -215,12 +215,12 @@ async def read(path):
 <p>During this copy, the following operations are not compatible, and should be blocked to ensure atomicity:</p>
 
 <ul class="fa-ul">
-    <li><i class="fa-li fa fa-caret-right"></i> reads from the pseudo-folder \(/a/b'\)</li>
-    <li><i class="fa-li fa fa-caret-right"></i> reads from any descendant pseudo-folders of \(/a/b'\)</li>
-    <li><i class="fa-li fa fa-caret-right"></i> reads from the ancestor pseudo-folders of \(/a/b\) and \(/a/b'\), namely \(/a\) and \(/\) </li>
-    <li><i class="fa-li fa fa-caret-right"></i> writes to the pseudo-folders \(/a/b\) and \(/a/b'\);</li>
-    <li><i class="fa-li fa fa-caret-right"></i> writes to an any descendent pseudo-folders of \(/a/b\) and \(/a/b'\);</i> 
-    <li><i class="fa-li fa fa-caret-right"></i> write to the ancestor pseudo-folders of \(/a/b\) and \(/a/b'\), namely \(/a\) and \(/\)</li>
+    <li><i class="fa-li fa fa-caret-right"></i> reads of the pseudo-folder \(/a/b'\)</li>
+    <li><i class="fa-li fa fa-caret-right"></i> reads of any descendant pseudo-folders of \(/a/b'\)</li>
+    <li><i class="fa-li fa fa-caret-right"></i> reads of the ancestor pseudo-folders of \(/a/b\) and \(/a/b'\), namely \(/a\) and \(/\) </li>
+    <li><i class="fa-li fa fa-caret-right"></i> writes of the pseudo-folders \(/a/b\) and \(/a/b'\);</li>
+    <li><i class="fa-li fa fa-caret-right"></i> writes of an any descendent pseudo-folders of \(/a/b\) and \(/a/b'\);</i> 
+    <li><i class="fa-li fa fa-caret-right"></i> write of the ancestor pseudo-folders of \(/a/b\) and \(/a/b'\), namely \(/a\) and \(/\)</li>
 </ul>
 
 <p>All other read and write operations are compatible.</p>
@@ -645,7 +645,7 @@ def _flatten(to_flatten):
   </tbody>
 </table>
 
-<p>In order to read from pseudo-folders at paths \(P_R\) and write to pseudo-folders at paths \(P_W\), we acquire the locks</p>
+<p>In order to read of pseudo-folders at paths \(P_R\) and write of pseudo-folders at paths \(P_W\), we acquire the locks</p>
 
 <ul class="fa-ul">
     <li><i class="fa-li fa fa-caret-right"></i> \(\overline{R_A}(p)\) for all \(p\) that are ancestors of the paths in \(P_R\)</li>
