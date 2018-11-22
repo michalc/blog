@@ -599,6 +599,10 @@ async def read(path):
 
 <p>To avoid deadlock, these lock are acquired ancestor-first, and then in lexographical order.</p>
 
+<!-- UNCSS_IGNORE_START -->
+<script src="https://gist.github.com/michalc/7c2e0333e0dd394265ded351e958d062.js"></script>
+<!-- UNCSS_IGNORE_STOP -->
+
 <p>Using this set of locks, we then can acheive a perfect concurrency score of 4/4, and acheive the following concurrency table.</p>
 
 <table class="table">
