@@ -303,20 +303,9 @@ async def read(path):
 
 <p>As an initial example, we can consider an extremly simple implementation of <code class="inline">PathLock</code> that ignores its arguments and defers to a single instance of <a href="https://docs.python.org/3/library/asyncio-sync.html#asyncio.Lock">asyncio.Lock</a>.</p>
 
-{{#highlight 'python'}}
-import asyncio
-import contextlib
-
-class PathLock():
-
-    def __init__(self):
-        self.lock = asyncio.Lock()
-
-    @contextlib.asynccontextmanager
-    async def __call__(self, read, write):
-        async with self.lock:
-            yield
-{{/highlight}}
+<!-- UNCSS_IGNORE_START -->
+<script src="https://gist.github.com/michalc/3a50e77256079ea413746587160b0dc1.js"></script>
+<!-- UNCSS_IGNORE_STOP -->
 
 <p>As you might expect, this doesn't have great concurrency properties:</p>
 
@@ -395,23 +384,11 @@ class PathLock():
 
 <p>[To distinguish read and write locks from the similarly named operations, we write locks with a horizontal bar.]</p>
 
-<p>which could be used as below.</p>
+<p>which could be implemented as below.</p>
 
-{{#highlight 'python'}}
-import contextlib
-from asyncio_read_write_lock import ReadWriteLock
-
-class PathLock():
-
-    def __init__(self):
-        self.lock = ReadWriteLock()
-
-    @contextlib.asynccontextmanager
-    async def __call__(self, read, write):
-        lock_func = lock.write if write else read
-        async with lock_func():
-            yield
-{{/highlight}}
+<!-- UNCSS_IGNORE_START -->
+<script src="https://gist.github.com/michalc/6e4b528d04b05e299ca714a9e8fa1dcd.js"></script>
+<!-- UNCSS_IGNORE_STOP -->
 
 <p>As you might expect, this allows more concurrency than the global exclusive lock.</p>
 
@@ -554,50 +531,9 @@ class PathLock():
 
 <p>Note also that if a path isn't locked, then the lock object itself doesn't need to be retained in memory. As in the implementation below, using a weak-reference cache can be used for these.</p>
 
-{{#highlight 'python'}}
-import contextlib
-import weakref
-
-from asyncio_read_write_lock import ReadWriteLock
-
-class PathLock():
-
-    def __init__(self):
-        self._locks = weakref.WeakValueDictionary()
-
-    @staticmethod
-    def _sort_key(path_lock):
-        return len(path_lock[0].parents), path_lock[0].as_posix()
-
-    def _with_locks(self, paths, locker):
-        return [
-            (path, self._locks.setdefault(path, default=ReadWriteLock()), locker)
-            for path in paths
-        ]
-
-    @contextlib.asynccontextmanager
-    async def __call__(self, read, write):
-        writable_paths = set(read).union(set(write))
-        writable_locks = self._with_locks(writable_paths, lambda lock: lock.write())
-
-        ancestor_paths = _flatten(path.parents for path in writable_paths)
-        readable_paths = set(ancestor_paths) - writable_paths
-        readable_locks = self._with_locks(readable_paths, lambda lock: lock.read())
-
-        sorted_locks = sorted(readable_locks + writable_locks, key=self._sort_key)
-        async with contextlib.AsyncExitStack() as stack:
-            for _, lock, lock_func in sorted_locks:
-                await stack.enter_async_context(lock_func(lock))
-
-            yield
-
-def _flatten(to_flatten):
-    return [
-        item
-        for sub_list in to_flatten
-        for item in sub_list
-    ]
-{{/highlight}}
+<!-- UNCSS_IGNORE_START -->
+<script src="https://gist.github.com/michalc/786aa4f1ef93d957a5c8b7280612d7ea.js"></script>
+<!-- UNCSS_IGNORE_STOP -->
 
 <h3>Read/write/ancestor locks on each path: 4/4</h3>
 
