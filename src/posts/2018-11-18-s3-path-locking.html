@@ -488,7 +488,7 @@ class PathLock():
   </tbody>
 </table>
 
-<p>When we need to access [either read or write] to a pseudo-folders, we acquire the <em>write</em> lock on the paths of the pseudo folders, and for all of the ancestor paths of the pseudo-folders, acquire a <em>read</em> lock on each.</p>
+<p>When we need to access, either read or write, to a pseudo-folders, we acquire the <em>write</em> lock \(\overline{W}(p)\) on the paths of the pseudo folders, and for all of the ancestor paths of the pseudo-folders, acquire a <em>read</em> lock \(\overline{R}(p)\) on each.</p>
 
 <p>In order to access pseudo-folders at paths \(P\), we acquire the locks</p>
 
@@ -497,7 +497,7 @@ class PathLock():
     <li><i class="fa-li fa fa-caret-right"></i> \(\overline{W}(p)\) for all \(p\) in \(P\)</li>
 </ul>
 
-<p>To avoid deadlock, the locks are acquired one at a time, ancestor-first, and then in lexographical order. For example, if a task needed to to access \(/a/b\) and \(/a/b'\) it would</p>
+<p>To avoid deadlock, the locks are acquired ancestor-first, and then in lexographical order. For example, if a task needed to to access \(/a/b\) and \(/a/b'\) it would</p>
 
 <ol>
   <li>acquire a read lock on \(/\),</li>
@@ -661,7 +661,7 @@ def _flatten(to_flatten):
     <li><i class="fa-li fa fa-caret-right"></i> \(\overline{W}(p)\) for all \(p\) in \(P_W\)</li>
 </ul>
 
-<p>To avoid deadlock, these lock are acquired one at a time, acquired ancestor-first, and then in lexographical order.</p>
+<p>To avoid deadlock, these lock are acquired ancestor-first, and then in lexographical order.</p>
 
 <p>Using this set of locks, we then can acheive a perfect concurrency score of 4/4, and acheive the following concurrency table.</p>
 
