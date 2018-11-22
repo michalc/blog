@@ -78,26 +78,27 @@ async def locked():
 
 <h3>Read/write lock: usage</h3>
 
-<p>The usage is very similar to the built-in exclusive lock, except that the lock object has two methods, <code class="inline">read</code> and <code class="inline">write</code>, that must be called to return the appropriate context managers.</p>
+<p>The usage is very similar to the built-in exclusive lock, except that the lock object is callable with a required argument, an object representing which of the <code class="inline">Read</code> and <code class="inline">Write</code> lock modes is desired.</p>
 
 {{#highlight 'python'}}
-from asyncio_read_write_lock import ReadWriteLock
+from asyncio_read_write_lock import FifoLock, Read, Write
 
-lock = ReadWriteLock()
+lock = FifoLock()
 
 # ...
 async def read():
     # ...
-    async with lock.read():
+    async with lock(Read):
        # multiple tasks can be here, but only if there are no writers
 
 # ...
 async def write():
     # ...
-    async with lock.write():
+    async with lock(Write):
        # only one task can be here at any given time, and only if no readers
 {{/highlight}}
 
+<p>The lock class <code class="inline">FifoLock</code> is general, and can support more complex locks than read/write, although here we just use it as a read/write lock.</p>
 
 <h3 id="implementation">Read/write lock: comparison with aiorwlock.</h3>
 
