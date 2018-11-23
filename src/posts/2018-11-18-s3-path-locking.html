@@ -474,7 +474,7 @@ async def read(path):
     <li><i class="fa-li fa fa-caret-right"></i> \(\overline{R}(p)\) for all \(p\) that are ancestors of the paths in \(P\), except any in \(P\)</li>
 </ul>
 
-<p>To avoid deadlock, the locks are acquired ancestor-first, and then in lexographical order. For example, if a task needed to to access \(/a/b\) and \(/a/b'\) it would</p>
+<p>To avoid deadlock, the locks are acquired ancestor-first, and then in lexographical order on path-component name; and each task attempts to acquire at most one lock at a time. For example, if a task needed to to access \(/a/b\) and \(/a/b'\) it would</p>
 
 <ol>
   <li>acquire a read lock on \(/\),</li>
@@ -598,7 +598,7 @@ async def read(path):
     <li><i class="fa-li fa fa-caret-right"></i> \(\overline{R_A}(p)\) for all \(p\) that are ancestors of the paths in \(P_R\), except any in \(P_W\), and any ancestors of \(P_W\), and any in \(P_R\)</li>
 </ul>
 
-<p>To avoid deadlock, these lock are acquired ancestor-first, and then in lexographical order.</p>
+<p>To avoid deadlock, these lock are acquired ancestor-first, and then in lexographical order on path-component name; rand each task attempts to acquire at most one lock at a time</p>
 
 <!-- UNCSS_IGNORE_START -->
 <script src="https://gist.github.com/michalc/7c2e0333e0dd394265ded351e958d062.js"></script>
