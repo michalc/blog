@@ -7,7 +7,7 @@ categories: python asyncio
 
 ---
 
-<script src='https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.5/MathJax.js?config=TeX-MML-AM_CHTML' async></script>
+<script src='https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.5/MathJax.js?config=TeX-MML-AM_CHTML' defer></script>
 
 <p>AWS S3 is a key/value store, with operations that only operate on a single key at a time. There is no native concept of a folder: the closest thing is a group of keys with the same prefix. These facts mean that in applications that treat S3 as a filesystem, operations on such <em>pseudo</em>-folders, such as a renames or copies, are not atomic: if performed by different users at the same time, corruption of the key structure can occur. Here, I present a method to mitigate the chance of this based on locking.</p>
 
