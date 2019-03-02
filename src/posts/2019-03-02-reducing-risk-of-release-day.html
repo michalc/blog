@@ -42,8 +42,11 @@ categories: git workflows
 
 <p>There is a technique that is especially helpful here: keep each commit small, releasable, and put test additions/changes in the same commit as the corresponding production code change. This requires a bit of diligence, and often use of <code class="inline">git rebase -i</code> to squash commits. If you do this, then it's <em>far</em> easier to re-order them safely, again using <code class="inline">git rebase -i</code>: the safety is achieved by running the tests* for each re-ordered commit to make sure everything works. So, if you do refactoring at the <em>end</em> of a feature branch, with small, releasable commits, you can then re-order the commits to put it at the <em>beginning</em>.</p>
 
-<p>There may be conflicts, but if you fix them, run tests*, and it all works, then you should be able to separate out the refactoring commit(s) into a separate branch [<code class="inline">git cherry-pick</code> can be used for this], and go through your process to merge this into master and get it released. You then rebase your feature branch onto master [so the branch, compared to master, just contains the non-refactoring feature changes].</p>
+<p>There may be conflicts, but if you fix them, run tests*, and it all works, then you should be able to separate out the refactoring commit(s) into a separate branch [<code class="inline">git cherry-pick</code> can be used for this], and go through your process to merge this into master and get it released. You then rebase your feature branch onto master, and ensuring to fix conflicts and making sure tests pass for each commit. At this point, master will contain the refactoring for the change, and the feature branch will just contain the (non refactoring) change. Repeat for as many refactorings as needed.</p>
 
+<hr>
+
+<p>The most extreme example of this that I've done was for Django upgrade of an application that was coupled to a lot of subtle/semi-private Django behaviour. To limit the risk of the Django upgrade + application code changes all going live at once, I repeatedly refactored the application code so the same code worked in both versions. Ultimately, there were about ~20 refactoring branches, each reviewed, QA-ed, and released, <em>before</em> the actual Django upgrade itself.</p>
 
 <h3>Feature flag [minimising code behind flag]</h3>
 
