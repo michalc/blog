@@ -1,0 +1,57 @@
+---
+layout: post
+title:  "Reducing risk of release day"
+subtitle: "Large changes do not have to fill you with fear"
+date: 2019-03-02 22:30:00
+categories: git workflows
+
+---
+
+<p>Sometimes planned changes are large, and you might initially think that there is no alternative other than for it all to go live at once, few day, weeks, months (or even longer!) away. Ideally, the actual public changes of behaviour will be release incrementally to get feedback and to be able to iterate on this, but sometimes this just isn't possible or desirable. Three common ones are:</p>
+
+<ul class="fa-ul">
+  <li><i class="fa-li fa fa-caret-right"></i> a user-facing feature that is seemingly small, but actually needs large scale internal code changes</li>
+  <li><i class="fa-li fa fa-caret-right"></i> a larger user-facing feature-set that needs lots of UI and backend changes [often released at once for marketing reasons]</li>
+  <li><i class="fa-li fa fa-caret-right"></i> a "private" property of an application that is seemingly all-or-nothing, such as bumping the version of a framework through a breaking change that requires large scale changes in the codebase</li>
+</ul>
+
+<p>You can automated test, QA, or load test the large change all you like, but it is rarely a replacement for feedback from production: in terms of bugs but <em>especially</em> for performance characteristics of large swathes of code that has not run in production by large numbers of users.</p>
+
+<p>However, you can often get feedback before the final change, simply splitting up the large change up so each is:</p>
+
+<ul class="fa-ul">
+  <li><i class="fa-li fa fa-caret-right"></i> small: ~1 day's work;</li>
+  <li><i class="fa-li fa fa-caret-right"></i> released: so the code actually runs in production, and its result used;</li>
+  <li><i class="fa-li fa fa-caret-right"></i> safe: reviewed/tested/QA-ed as you deem appropriate.</li>
+</ul>
+
+<p>[Even if you don't use any feedback from one change to inform the next, there is another benefit: you reduce the chance of multiple bugs being released at the same. It's <em>far</em> more difficult to debug multiple related bugs rather than just one.]</p>
+
+<p>There are two techniques you can use to acheive small, released and safe changes, detailed below</p>
+
+
+<h3>Long-running feature branch [but keeping it as small as possible]</h3>
+
+<p>A long-running feature branch is often the traditional way of doing large changes, periodically merging in any changes from the master branch. This is by far the worst technique. Not only are you essentially maintining two versions of the application [similar to The Big Rewrite], but come release day, it will all hit production at once!</p>
+
+<p>However, a variation of this can often have great properties that reduce risk on release day.</p>
+
+<p>As you're working, always think about what could be released [and used in production] first, without changing the public behaviour. Put another way, try to refactor* the production code to be run <em>both</em> the original behaviours, and the new ones.</p>
+
+<p>Ideally, you can plan this: do the refactoring up-front, and then move onto the new behaviour that uses the refactored code. However this is often not possible: not until having written some of the feature do you then realise some parts of the code need to be refactored, and this should/could be released first. However, it can be tricky to reorder this: the refactoring done <em>second</em> is to be release <em>first</em>.</p>
+
+<p>There is a technique that is especially helpful here: keep each commit small, releasable, and has any associated tests [sound familiar? Just like each overall released change!]. This requires a bit of diligence, and often use of <code class="inline">git rebase -i</code> to squash commits. However, if you do this, then it's <em>far</em> easier to re-order them safely, again using <code class="inline">git rebase -i</code>. You run the tests* for each re-ordered commit and make sure everything works. If you do refactoring at the (current) <em>end</em> of a feature branch, you can then re-order the commits to put it at the beginning.</p>
+
+<p>There may be conflicts, but if you fix them, run tests*, and it all works, then you should be able to separate out the refactoring commit(s) into a separate branch [<code class="inline">git cherry-pick</code> can be used for this], and go through your process to merge this into master and get it released. You then rebase your feature branch onto master [so the branch, compared to master, just contains the non-refactoring feature changes].</p>
+
+
+<h3>Feature flag [minimising code behind flag]</h3>
+
+<p>An alternative to a feature branch is a feature flag. This is in many ways similar to a feature branch, but the feature code is deployed to production, and only run by certain users. This is often acceptable at the beginning [say, to get feedback on the UI of a feature before it's fully working], but always consider what will happen on release day. On release day, the feature flag will be effectivly enabled for all users, and lots of code will be run by lots of users that wasn't before. For this reason, the code behind the feature flag should be minimised <em>before</em> release day: often to just the UI that enables the particular feature.</p>
+
+<p>A great benefit of this technique is that often it is possible to incrementally refactor* a lot of the code out from behind the feature flag. Even if at the beginning there might be a fair bit of code behind the feature flag, you can go through several release/QA cycles, moving more and more of the code into production before release day.</p>
+
+
+<hr>
+
+<p>* It's important to have high-level feature/integration tests to support refactoring and safe rebasing. Low-level tests [often called unit tests] are less helpful.</p>
