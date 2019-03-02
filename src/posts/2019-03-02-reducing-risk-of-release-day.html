@@ -36,7 +36,7 @@ categories: git workflows
 
 <p>However, a variation of this can often have great properties that reduce risk on release day. Instead of periodically taking changes from master into the feature branch, do it the other way around. In more detail...</p>
 
-<p>As you're working on a feature branch, always think about what could be released [and used in production] first, without changing the public behaviour. Put another way, try to refactor* the production code so it can run <em>both</em> the original behaviours, and the new ones.</p>
+<p>As you're working on a feature branch, always think about what could be released [and used in production] first, without changing the public behaviour. Put another way, try to refactor* the production code so it can run <em>both</em> the original behaviours, and the new ones, and release the refactoring before the actual feature is released.</p>
 
 <p>Ideally, you can plan this: do the refactoring up-front, and then move onto the new behaviour that uses the refactored code. However this is often not possible: not until having written some of the feature do you then realise some parts of the code need to be refactored, and this should/could be released first. However, it can be tricky to reorder this: the refactoring done <em>second</em> is to be released <em>first</em>.</p>
 
