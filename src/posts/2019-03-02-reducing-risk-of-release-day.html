@@ -49,7 +49,7 @@ categories: git workflows
 
 <p>An alternative to a feature branch is a feature flag. This is in many ways similar to a feature branch, as in it's kept from running by most users, but with a feature flag the code is deployed to the production application, and it's only run by certain users. This is often acceptable at the beginning [say, to get feedback on the UI of a feature before it's fully working], but always consider what will happen on release day. On release day, the feature flag will be effectivly enabled for all users, and lots of code will be run by lots of users that wasn't before. For this reason, the code behind the feature flag should be minimised <em>before</em> release day: often to just the UI that enables the particular feature.</p>
 
-<p>A great benefit of this technique is that often it is possible to incrementally refactor* a lot of the code out from behind the feature flag. Even if at the beginning there might be a fair bit of code behind the feature flag, you can go through several release/QA cycles, moving more and more of the code into production before release day.</p>
+<p>A great benefit of this technique is that often it is possible to incrementally refactor* a lot of the code out from behind the feature flag. Even if at the beginning there might be a fair bit of code behind the feature flag, you can go through several release/QA cycles, moving more and more of the code into production <em>before</em> release day.</p>
 
 
 <hr>
