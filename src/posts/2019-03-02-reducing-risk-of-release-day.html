@@ -46,9 +46,9 @@ categories: git workflows
 
 <hr>
 
-<p>The most extreme example of this that I've done was for Django upgrade of an application that was coupled to a lot of subtle/semi-private Django behaviour. To limit the risk of the Django upgrade + application code changes all going live at once, I repeatedly refactored the application code so the same code worked in both versions. Ultimately, there were about ~20 refactoring branches, each reviewed, QA-ed, and released, <em>before</em> the actual Django upgrade itself.</p>
+<p>The most extreme example of this that I've done was for Django upgrade of a fairly complex application that was coupled to a lot of subtle/semi-private Django behaviour. To limit the risk of the Django upgrade + application code changes all going live at once, I repeatedly refactored the application code so the same code worked in both versions. Ultimately, there were about ~20 refactoring branches, each reviewed, QA-ed, and released, <em>before</em> the actual Django upgrade itself.</p>
 
-<p>It was crucial that the actual code changes are run in production to get value from this technique. If I had code like the below.</p>
+<p>It was crucial that the actual code changes are run in production to get value from this technique. If I had code like the below,</p>
 
 {{#highlight 'python'}}
 if DJANGO_VERSION == NEW:
