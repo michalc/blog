@@ -48,7 +48,7 @@ categories: git workflows
 
 <p>The most extreme example of this that I've done was for Django upgrade of a fairly complex application that was coupled to a lot of subtle/semi-private Django behaviour. To limit the risk of the Django upgrade + application code changes all going live at once, I repeatedly refactored the application code so the same code worked in both versions. Ultimately, there were about ~20 refactoring branches, each reviewed, QA-ed, and released, <em>before</em> the actual Django upgrade itself.</p>
 
-<p>It was crucial that the actual code changes are run in production to get value from this technique. If I had code like the below,</p>
+<p>Note: it was crucial that the actual code changes are run in production to get value from this technique. If I had code like the below,</p>
 
 {{#highlight 'python'}}
 if DJANGO_VERSION == NEW:
@@ -57,7 +57,7 @@ else:
   ...
 {{/highlight}}
 
-<p>I would have been incrementally adding a feature flag with lots of code behind it, which would have all been switched on on release day. Perhaps acceptable for initial investigation about the consequences of the Django upgrade, but before the actual production switch, it should be refactored to not have behaviour conditional on the Django version [detailed below].</p>
+<p>I would have been effectivelyincrementally adding a feature flag with lots of code behind it, which would have all been switched on on release day. This code be acceptable for initial investigation, but <em>before</em> the actual production switch of Django version, it should be refactored to not have this conditional behaviour.</p>
 
 
 <h3>Feature flag [minimising code behind flag]</h3>
