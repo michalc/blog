@@ -96,7 +96,7 @@ else:
 
 <ul class="fa-ul">
   <li><i class="fa-li fa fa-caret-right"></i> A long running [but kept small] feature branch may not be feasible when more than one person needs to work on that feature branch. A feature flag is probably more helpful here: multiple people can more easily work on branches changing code behind the flag / refactoring it out from behind the flag.</li>
-  <li><i class="fa-li fa fa-caret-right"></i> Long-running feature branches, even if as small as possible, are harder to work with when there are lots of conflicting master branch changes: you may hit The Big Rewrite issues of maintaining two applications. A feature flag may be better here: impact on the "other" application will be visible in the code exactly when making changes, rather than making it a a problem down the line when merging/rebasing.</li>
+  <li><i class="fa-li fa fa-caret-right"></i> Long-running feature branches, even if as small as possible, are harder to work with when there are lots of conflicting master branch changes: you may hit The Big Rewrite issues of maintaining two applications. A feature flag may be better here: impact on the "other" application will be visible in the code exactly when making changes, rather than making it a problem down the line when merging/rebasing.</li>
   <li><i class="fa-li fa fa-caret-right"></i> A feature flag may not be helpful for a change that needs a lot of refactoring, but which is itself small in terms of final change that will be released on release day, and can/should be done by one person. A long-running [small] feature branch will likely be suitable in this case.</li>
 </ul>
 
