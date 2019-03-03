@@ -71,7 +71,7 @@ else:
 
 <h3>Feature flag [minimising code behind flag]</h3>
 
-<p>An alternative to a feature branch is a feature flag. This is in many ways similar to a feature branch, as in it's kept from running by most users. However, with a feature flag the code is deployed to the production application, but it's only run by certain users with a certain flag enabled, or perhaps by hitting a certain URL.</p>
+<p>An alternative to a feature branch is a feature flag. This is in many ways similar to a feature branch, as in the feature code is kept from running by most users. However, with a feature flag the code is deployed to the production application, but it's only run by certain users with a certain flag enabled, or perhaps by hitting a certain URL.</p>
 
 <p>This is often acceptable at the beginning of a feature [say, to get feedback on the UI of a feature before it's fully designed or working], but always consider what will happen down the line on release day. On release day, the feature flag will be effectivly enabled for all users, and potentially lots of code will be run by lots of users that wasn't before.</p>
 
