@@ -68,7 +68,7 @@ else:
   ...
 {{/highlight}}
 
-<p>I would have been effectively incrementally adding a feature flag with lots of code behind it, which would have all been switched on on release day. This code be acceptable for initial investigation, but <em>before</em> the actual production switch of Django version, it should be refactored to not have this conditional behaviour, as discussed below.</p>
+<p>I would have been effectively incrementally adding a feature flag with lots of code behind it, which would have all been switched on on release day. This may be acceptable for an initial investigation, but <em>before</em> the actual production switch of Django version, it should be refactored to not have this conditional behaviour, as discussed below.</p>
 
 
 <h3>Feature flag [minimising code behind flag]</h3>
