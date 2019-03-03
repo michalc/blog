@@ -75,7 +75,7 @@ else:
 
 <p>This is often acceptable at the beginning of a feature [say, to get feedback on the UI of a feature before it's fully designed or working], but always consider what will happen down the line on release day. On release day, the feature flag will be effectivly enabled for all users, and potentially lots of code will be run by lots of users that wasn't before.</p>
 
-<p>For this reason, don't enable the feature flag for everyone until the code behind the feature flag is minimised. Often it's possible to have not much more than just the UI that enables the particular feature. The rest of the code was run by large number of users long before release of the feature.</p>
+<p>For this reason, don't enable the feature flag for everyone until the code behind the feature flag is minimised. Often it's possible to have not much more than just the UI that enables the particular feature. The rest of the code was run by large number of users long before the public release.</p>
 
 <p>A great benefit of this technique is that often it is possible to incrementally refactor* a lot of the code out from behind the feature flag. Even if at the beginning there might be a fair bit of code behind it, you can go through several release/QA cycles, moving more and more of the code into production <em>before</em> release day.</p>
 
