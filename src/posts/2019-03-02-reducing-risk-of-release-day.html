@@ -87,6 +87,27 @@ else:
 
 <p>In this particular case, once you know of nothing more to be done to the code, you don't even have to release the feature to all users all at once. You can slow bump up the maximum for some users, in order to be able to get feedback from production, in terms of behaviour of the UI, from any reported bugs, and from performance. If you don't have a production use-case for each user to have a different maximum, then you can then set the maximum globally and remove some of the per-user configuration.</p>
 
+
+<h3>Addressing common critiscms</h3>
+
+<p>There are a a few common critiscms of the frequent-release technique:</p>
+
+
+<h4>Each release introduces risk, and so releasing often is more risky than less.</h4>
+
+<p>At first glance, this argument makes sense. However, this technique pushes you to split up what you will be releasing <em>anyway</em>, rather than releasing more things.</p>
+
+
+<h4>Frequent releasing == testing less. This is risky! We don't do risk here.</h4>
+
+<p>Make sure each release is tested/QA-ed as you would any other change. This is not "move fast and break things", this is "do what you need to do to minimise the risk of each change".</p>
+
+
+<h4>This is wasting QA time: you'll testing the same thing multiple times</h4>
+
+<p>This isn't wasting time, it's using QA time to reduce risk of changes that are going to go live anyway.</p>
+
+
 <hr>
 
 <p>* It's important to have high-level feature/integration tests to support refactoring and safe rebasing. Low-level tests [often called unit tests] are less helpful.</p>
