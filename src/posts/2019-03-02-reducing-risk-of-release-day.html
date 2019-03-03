@@ -90,6 +90,16 @@ else:
 <p>In this particular case, once you know of nothing more to be done to the code, you don't even have to release the feature to all users all at once. You can slowly bump up the maximum for some users, in order to be able to get feedback from production, in terms of behaviour of the UI, from any reported bugs, and from performance. If you don't have a production use-case for each user to have a different maximum, then you can then set the maximum globally and remove some of the per-user configuration.</p>
 
 
+<h3>When to use which technique?</h3>
+
+<p>I don't know of a hard-and-fast rule, each case is different. However, some considerations:</p>
+
+<ul class="fa-ul">
+  <li><i class="fa-li fa fa-caret-right"></i> A long running (but kept small) feature branch may not be feasible when more than one person needs to work on that feature branch. A feature flag is probably more helpful here: multiple people can more easily work on branches changing code behind the flag / refactoring it out from behind the flag.</li>
+  <li><i class="fa-li fa fa-caret-right"></i> A feature flag is may not be helpful for a change that needs a lot of refactoring, but is which is itself small in terms of final code and can/should be done by one person.</li>
+</ul>
+
+
 <h3>Addressing common critiscms</h3>
 
 <p>There are a a few common critiscms of the frequent-release techniques:</p>
