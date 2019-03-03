@@ -85,7 +85,7 @@ else:
 
 <p>What you can often do is to make a configuration option that limits the maximum of the "something", and set all users to have a maximum of 1. Then you can work, layer at a time, making it work with N, but because each user is configured to have a maximum of 1, they will see no difference. Each layer can be tested*, QA-ed, and released. If there are problems, you have a lot of chances to get feedback before release day. Only when all the layers of the code are done, can you change the configuration option for production users.</p>
 
-<p>In this particular case, once you know of nothing more to be done to the code, you don't even have to release the feature to all users all at once. You can slow bump up the maximum for some users, in order to be able to get feedback from production, in terms of behaviour of the UI, from any reported bugs, and from performance. If you don't have a production use-case for each user to have a different maximum, then you can then set the maximum globally and remove some of the per-user configuration.</p>
+<p>In this particular case, once you know of nothing more to be done to the code, you don't even have to release the feature to all users all at once. You can slowly bump up the maximum for some users, in order to be able to get feedback from production, in terms of behaviour of the UI, from any reported bugs, and from performance. If you don't have a production use-case for each user to have a different maximum, then you can then set the maximum globally and remove some of the per-user configuration.</p>
 
 
 <h3>Addressing common critiscms</h3>
