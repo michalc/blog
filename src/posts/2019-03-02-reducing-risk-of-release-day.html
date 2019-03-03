@@ -7,7 +7,9 @@ categories: git workflows
 
 ---
 
-<p>Ideally, changes of behaviour are released incrementally to get feedback in order to respond to it. But sometimes this just isn't possible. Sometimes planned changes are so large, and you might initially think that there is no alternative other than for it all to go live at once, a few days, weeks, months (or even longer!) away. Three common ones examples are:</p>
+<p>Ideally, changes of behaviour are released incrementally to base your next steps on feedback. But sometimes this just isn't possible. Sometimes planned changes are so large, and you might initially think that there is no alternative other than for it all to go live at once, a few days, weeks, months [or even longer!] down the road. Ironically, it is exactly for the sorts of changes where you might have difficulty seeing how it could be split up that are the most important to split up: they are complex and so high risk.</p>
+
+<p>Three common classes of such changes are:</p>
 
 <ul class="fa-ul">
   <li><i class="fa-li fa fa-caret-right"></i> a user-facing feature that is seemingly small, but actually needs large scale internal code changes;</li>
@@ -15,7 +17,7 @@ categories: git workflows
   <li><i class="fa-li fa fa-caret-right"></i> an internal property of an application that is seemingly all-or-nothing, such as bumping the version of a framework through a breaking change that requires large scale changes in the codebase.</li>
 </ul>
 
-<p>You can automated test, QA, or load test the large change all you like, but these checks are rarely a replacement for feedback from production: in terms of bugs but <em>especially</em> for performance. The performance characteristics of large swathes of code that has not run in production by large numbers of users can rarely be predicted.</p>
+<p>You can automated test, QA, or load test these large changes all you like, but these checks are rarely a replacement for feedback from production: in terms of bugs but <em>especially</em> for performance. The performance characteristics of large swathes of code that has not run in production by large numbers of users can rarely be predicted.</p>
 
 <p>However, it is often still possible to get production feedback on a lot of code before release day, by splitting up the change in a certain way. As is typical for many [all?] changes, each change should be:</p>
 
