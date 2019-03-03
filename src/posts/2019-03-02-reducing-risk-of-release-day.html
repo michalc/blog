@@ -42,14 +42,14 @@ categories: git workflows
 
 <p>There is a technique that is especially helpful here: keep each commit small, releasable, and put test additions/changes in the same commit as the corresponding production code change. This requires a bit of diligence, and often use of <code class="inline">git rebase -i</code> to squash commits. But if you do this, then it's <em>far</em> easier to re-order them safely, again using <code class="inline">git rebase -i</code>: the safety is achieved by running the tests* for each re-ordered commit to make sure everything works. So, if you do refactoring at the <em>end</em> of a feature branch, with small, releasable commits, you can then re-order them so the refactoring is put at the <em>beginning</em>.</p>
 
-<p>There may be conflicts when you re-order, but if you fix them, run tests* on commit, and it all works, then you known
+<p>There may be conflicts when you re-order, but if you fix them, run tests* on commit, and it all works, then you know
 
 <ul class="fa-ul">
   <li><i class="fa-li fa fa-caret-right"></i> the refactoring doesn't break any of the existing code or the feature;</li>
   <li><i class="fa-li fa fa-caret-right"></i> the refactoring can be usefully <em>released</em> first.</li>
 </ul>
 
-<p>So you do exactly that: you separate the refactoring commit(s) into a separate branch [<code class="inline">git cherry-pick</code> can be used for this], and go through your process to merge this into master and get it released. You then <em>rebase</em> your feature branch onto master, and ensuring to fix conflicts and making sure tests pass for each commit. At this point, master will contain the refactoring for the change, and the feature branch will just contain the (non refactoring) change. Repeat for as many refactorings as needed.</p>
+<p>So you do exactly that: you separate the refactoring commit(s) into a separate branch [<code class="inline">git cherry-pick</code> can be used for this], and go through your process to merge this into master and get it released. You then <em>rebase</em> your feature branch onto master, and ensuring to fix conflicts and making sure tests pass for each commit. At this point, master will contain the refactoring for the change, and the feature branch will just contain the [non refactoring] change. Repeat for as many refactorings as needed.</p>
 
 <p>Another benefit to this comes if you're not the only person working on this code. Getting each refactoring into master as soon as it's known to be required, means the rest of the team can rebase onto these changes, and deal with any conflicts sooner [and so typically with less or simpler code] rather than later. If each person in the team has been writing small, releasable commits on their own branches, then any conflicts can often be safely and quickly sorted out.</p>
 
