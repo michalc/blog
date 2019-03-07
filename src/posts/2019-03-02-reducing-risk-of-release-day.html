@@ -53,6 +53,8 @@ categories: git workflows
 
 <p>So you do exactly that: you separate the refactoring commit(s) into a separate branch [<code class="inline">git cherry-pick</code> can be used for this], and go through your process to merge this into master and get it released. You then <em>rebase</em> your feature branch onto master, and ensuring to fix conflicts and making sure tests pass for each commit. At this point, master will contain the refactoring for the change, and the feature branch will just contain the [non refactoring] change. Repeat for as many refactorings as needed.</p>
 
+<p>The rebase onto master, as opposed to a merge: this replays [the diff of] each commit from the feature branch, one by one, and with each you fix conflicts and can run tests. Here is where the benefit of rebase [over merge] with small releasable commits is revealed: you get smaller conflicts which are usually more managable.<p>
+
 <p>Another benefit to this comes if you're not the only person working on this code. Getting each refactoring into master as soon as it's known to be required, means the rest of the team can rebase onto these changes, and deal with any conflicts sooner [and so typically with less or simpler code] rather than later. If each person in the team has been writing small, releasable commits on their own branches, then any conflicts can often be safely and quickly sorted out.</p>
 
 <hr>
