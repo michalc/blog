@@ -32,7 +32,7 @@ categories: git workflows
 
 <h3>Long-running feature branch [but keeping it as small as possible]</h3>
 
-<p>A long-running feature branch is often the traditional way of doing large changes, periodically merging in any changes from the master branch. This is by far the worst technique. Not only are you essentially maintaining two versions of the application [similar to The Big Rewrite], but come release day, it will all hit production at once!</p>
+<p>A long-running feature branch is often the traditional way of doing large changes, periodically merging in any changes from the master branch, and releasing by merging to master at the end. This is by far the worst technique. Not only are you essentially maintaining two versions of the application [similar to The Big Rewrite], but come release day, it will all hit production at once!</p>
 
 <p>However, a variation of this can often have great properties that reduce risk on release day. Instead of just periodically taking changes from master into the feature branch, you also do it other way around. In more detail...</p>
 
