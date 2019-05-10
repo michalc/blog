@@ -62,6 +62,8 @@ func_1, func_2 = MyClass(...)
   <li><i class="fa-li fa fa-caret-right"></i> You can name the returned functions whatever you like, even <code class="inline">_</code> if not needed.</li>
 
   <li><i class="fa-li fa fa-caret-right"></i> <a href="http://tech.magnetic.com/2015/05/optimize-python-with-closures.html">There are cases when it's faster</a>.</li>
+
+  <li><i class="fa-li fa fa-caret-right"></i> They allow you to escape <a href="http://kmkeen.com/self-hell/">self-hell</a> [although you may need more <code class="inline">nonlocal</code>].</li>
 </ul>
 
 <p>As examples, <a href="https://github.com/michalc/lowhaio">lowhaio</a> and <a href="https://github.com/michalc/aiodnsresolver">aiodnsresolver</a> both use class-like functions.</p>
