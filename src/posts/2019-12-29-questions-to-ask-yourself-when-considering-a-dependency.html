@@ -1,0 +1,68 @@
+---
+layout: post
+title:  "Questions to ask yourself when considering a dependency"
+subtitle: "You can use dependencies: but keep your eyes open"
+date: 2019-12-29 12:40:00
+categories: methodologies dependencies
+
+---
+
+<h3>What is the underlying data transformation I need?</h3>
+
+<p>If it's trivial, or almost trivial, consider writing it yourself.</p>
+
+<h3>What does it do in my specific case?</h3>
+
+<p>Consider the actual data transformation you need done, and go through it in the dependency's codebase. Often libraries have extremely generic components to support lots of use cases. You however, may just have the one, and so this genericness is unnecessary. Generic components are often difficult to debug and difficult to optimise: make sure it's worth having them.</p>
+
+<h3>What would I do if I do need to make changes to it?</h3>
+
+<p>Ensure you look through its code to see how much of a project it would be to make changes to it, ideally with some specific changes in mind. Keep in mind that in may cases, the dependency authors have no obligation to address your issues, so being aware of what it would take to make certain changes yourself is important. If it would be extremely time-consuming, consider not using the dependency.</p>
+
+<h3>Am I treating code in the dependency as not part of my software?</h3>
+
+<p>It's an easy bias to fall into: out of sight, out of mind. But dependencies are part of your software: they take your CPU cycles, your memory, their bugs are your bugs, their security issues are your security issues, their updates are your updates. Consider reviewing its code as you would any other PR into your codebase.</p>
+
+<h3>How much of its API am I actually using?</h3>
+
+<p>If you've using 1 function of a 30 function API, you may be introducing a lot of dead/unreachable code into your software, as well as something that may not be as tailored to your use case as it could be. This means that if changes need to be made to tailor to your case, they would likely be harder than they would otherwise be. Consider just writing it yourself, or if licensing allows, just including that function in your codebase.</p>
+
+<h3>What's the coverage like when I run my tests on it?</h3>
+
+<p>Consider introducing the dependency, but then running your test suite with code coverage <em>including</em> the dependency's code. If it's low, you would be introducing a lot of code into your project that is not covered by your own test suite.</p>
+
+<h3>Can I write a simpler version myself that's enough for now?</h3>
+
+<p>What has been specified as "needed" often isn't really needed quite yet: often it's acceptable to release something incrementally. Consider writing a simpler version, geting feedback, and then moving to the fuller/more complex versions armed with confirmation on exactly what complexity is needed. You can iterate on your own-rolled solution, or decide that introducing the dependency really is the best move.<p>
+
+<h3>How much does it offer over its dependencies?</h3>
+
+<p>Sometimes dependencies just offer a thin layer over their own dependencies. Consider depending on those directly [and then asking yourself these questions for all of them].</p>
+
+<h3>Am I adding it because I'm scared of implementing myself?</h3>
+
+<p>Consider spending some time trying to do it to overcome the fear. You might realise it's not such a big and scary thing. Keep the scope focused: your aims are often not the aims of the dependency's authors, such as creating a generic library to be used in a lot of cases. Even if you do think you will need generic components, this can often be done later when you have confirmation of your requirements.</p>
+
+<h3>How long would it take for me write the functionality I need?</h3>
+
+<p>If your estimate is a few hours or days, consider just doing it. Even if you abandon this and decide to use the dependency in the end, this is not necessarily time wasted: you would have learnt more about what the dependency does, and so what your own software does, and puts you in a better position for supporting a wider range of future requirements.</p>
+
+<h3>Am I adding it because its marketing suggests it does a lot?</h3>
+
+<p>Often dependencies market themselves as doing/having done a lot [even just via a README], which indirectly suggests that attempting the same thing yourself would be foolish. This may be misleading in two ways: they may have not done a lot; or they may well have done a lot, but you might be depending on just a tiny sliver of that work. Consider keeping in mind <em>your</em> specific use case, the data transformation <em>you</em> need it to perform, and looking through its code.</p>
+
+<h3>Can I still add it later easily?</h3>
+
+<p>If yes, consider implementating part of it yourself, and adding it later when you have more evidence of its usefulness.</p>
+
+<h3>Am I adding it "just in case" I need some of the functionality?</h3>
+
+<p>Be <em>very</em> careful of this. It's often easier to add a dependency later than to remove it, so consider deferring the addition until you have good evidence that it's a benefit.</p>
+
+<h3>Am I treating recent commits as evidence of free work?</h3>
+
+<p>It's easy to look at recent commits and see the author as another member of your team. In most cases, they are under no obligation to do anything about your issues. It's a risk to depend on this. This risk may be required or acceptable, but it may be unnecessary or too high.</p>
+
+<h3>Am I treating a lack of recent commits as a dead project and so something to avoid?</h3>
+
+<p>There may be nothing wrong with a project that has had no recent activity. Say it has a small API, few or no dependencies, you look through the code and its fine: then there may be little to do on it. It may be just be finished! Or at very least, finished enough for you to use.</p>
