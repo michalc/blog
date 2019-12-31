@@ -1,0 +1,55 @@
+---
+layout: post
+title:  "The core S3 API is beautiful"
+subtitle: "Just PUT and GET: it couldn't be simpler"
+date: 2019-12-30 08:10:00
+categories: http s3
+
+---
+
+<p>One of the beautiful, and maybe even genius, things about the core S3 API: it's just an HTTP PUT to store an object, and an HTTP GET to fetch it. You need <a href="https://gist.github.com/michalc/ccb87856363a895fd1fadf52ab4cdcec">a few headers</a>, but that's it.</p>
+
+<h4>Structure of an S3 PUT request</h4>
+
+<div class="highlight"><pre><code class="block">PUT /key/of/the/object HTTP/1.1
+host: my-example-bucket.s3-eu-west-1.amazonaws.com\r\n
+authorization: ...\r\n
+content-length: ...\r\n
+x-amz-content-sha256: ...\r\n
+x-amz-date: ...\r\n
+The bytes of the object</code></pre></div>
+
+<h4>Structure of an S3 GET request</h4>
+
+<div class="highlight"><pre><code class="block">PUT /key/of/the/object HTTP/1.1
+host: my-example-bucket.s3-eu-west-1.amazonaws.com\r\n
+authorization: ...\r\n
+x-amz-content-sha256: ...\r\n
+x-amz-date: ...\r\n</code></pre></div>
+
+<p>This means that as long as you can inject the right headers, you can use <em>any</em> HTTP client to make the requests. Here's an example using Python requests.</p>
+
+{{#highlight 'python'}}
+import os
+import requests
+
+# from https://gist.github.com/michalc/ccb87856363a895fd1fadf52ab4cdcec
+from aws_sig_v4_headers import aws_sig_v4_headers
+
+host = 'my-example-bucket.s3-eu-west-1.amazonaws.com'
+service = 's3'
+region = 'eu-west-1'
+path = '/key/of/the/object'
+pre_auth_headers = {}
+query = {}
+data = b''
+headers = aws_sig_v4_headers(
+	os.environ['AWS_ACCESS_KEY_ID'], os.environ['AWS_SECRET_ACCESS_KEY'], pre_auth_headers,
+	service, region, host, 'GET', path, query, data,
+)
+response = requests.get(f'https://{host}{path}', headers=headers)
+{{/highlight}}
+
+<p>There are now a number of S3-compatible services around, including offerings by Google and Microsoft. If the core wasn't so straightforward, I suspect they would have rolled-their-own.</p>
+
+<p>I don't often say this: but thank you AWS.</p>
