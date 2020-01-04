@@ -70,7 +70,7 @@ The bytes of the body</code></pre></div>
 
 <p>However, it is usually better to avoid <code class="inline">transfer-encoding: chunked</code> and instead set a <code class="inline">content-length</code> header. The client can use this in various ways, such as to or be able to allocate resources needed at the start of downloading the body, or estimate time remaining. If the client needs to know how many bytes are in the body, using <code class="inline">transfer-encoding: chunked</code> may be forcing it to buffer the entire body in memory.<p>
 
-<p>Wonderfully, you <em>can</em> often still stream responses with a correctly set <code class="inline">content-length</code>, but you may need to go to a bit of effort to find the right value. For example, to stream a file you may need to query the file system explicity to find the length of the file before starting to fetch its bytes.</p>
+<p>Wonderfully, you <em>can</em> often still stream bodies with a correctly set <code class="inline">content-length</code>, but you may need to go to a bit of effort to find the right value. For example, to stream a file you may need to query the file system explicity to find the length of the file before starting to fetch its bytes.</p>
 
 <h4>Connection header</h4>
 
