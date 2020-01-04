@@ -1,0 +1,120 @@
+---
+layout: post
+title:  "Mini HTTP guide for developers"
+subtitle: "A glance behind the curtain: it can affect engineering decisions"
+date: 2020-01-04 16:00:00
+categories: abstractions http
+
+---
+
+<p>Frameworks often hide/abstract parts of HTTP away. I think this is often a bit of a shame: it hides what's possible with HTTP, and so can lead to effects on engineering decisions.</p>
+
+<p>This short guide aims to rectify that. It details a few of the most common and useful parts of HTTP, and is aimed for developers with a some experience making or receiving HTTP requests. [In this post, the term HTTP is used to refer to the bytes of the HTTP protocol, which is the same if those bytes are sent over plain TCP, or through a TLS tunnel. The term HTTPS is used omly when necessary to distinguish HTTP over TLS.]</p>
+
+<h2>Initialising the connection</h2>
+
+<p>Say we ask our HTTP client to make a GET request to the URL https://example.com/the/path. Firstly, there isn't no such a thing as a URL in HTTP: it's just a shorthand that the client parses and uses the different components at various points in the process.</p>
+
+<ul class="fa-ul">
+  <li><i class="fa-li fa fa-caret-right"></i> The client resolves example.com to an IP address, say to 1.2.3.4. Note that typically in many cases this would involve sending the string example.com unencrypted across the network.</li>
+
+  <li><i class="fa-li fa fa-caret-right"></i> Initiate a TCP connection to the IP address 1.2.3.4 on port 443: if no port is specified in a https URL, port 443 is assumed.</li>
+
+  <li><i class="fa-li fa fa-caret-right"></i> Initiate a TLS connection over the top of this TCP connection. This again would uses the domain example.com, in both SNI, and verification of the subsequently supplied certificate. In many cases, the domain name example.com would be transmitted unencrypted across the internet.</li>
+
+  <li><i class="fa-li fa fa-caret-right"></i> Then start the HTTP request/response process. This would use both the domain example.com, as well as /the/path. This process is detailed below.</li>
+</ul>
+
+<h2>The HTTP request</h2>
+
+<p>The client sends the bytes of the HTTP request message over the TLS connection. This is made of a <em>request-line</em> containing the method and the path, followed by a number of <em>header</em> key:value pair  lines, a blank line, and then the <em>body</em>. In this case, the body is 0-bytes long, which is typical for GET requests.</p>
+
+<div class="highlight"><pre><code class="block">GET /the/path HTTP/1.1\r\n
+host: example.com\r\n\r\n</code></pre></div>
+
+<p>A "line" ends with the two characters <code class="inline">\r\n</code>.</p>
+
+<h3>The HTTP response</h3>
+
+<p>The server would then respond with a <em>status-line</em>, some <em>headers</em>, a blank line, and the body of the response.</p>
+
+<div class="highlight"><pre><code class="block">HTTP/1.1 200 OK\r\n
+content-length: 21\r\n\r\n
+The bytes of the body</code></pre></div>
+
+<h3>Notable headers</h3>
+
+<h4>Host header</h4>
+
+<p>Usually HTTP clients add this automatically from the supplied URL. This has two common uses.</p>
+
+<ul class="fa-ul">
+  <li><i class="fa-li fa fa-caret-right"></i> CDNs or reverse proxies use the host header to determine how to route requests onwards.</li>
+
+  <li><i class="fa-li fa fa-caret-right"></i> Application server code uses the host header in a best-effort attempt as to what domain the HTTP client used to make the request. Depending on the configuration of intermediate proxies, this can mean the application server may not be able to correctly determine what the original domain was.</li>
+</ul>
+
+<h4>Content-length header</h4>
+
+<p>HTTP is sent over TCP [or TCP+TLS], which surfaces as a stream of bytes in client code. A "stream of bytes" means that the receiver just a single byte at a time, perhaps even with seconds of delay between each. The receiver has no way to know if it has received all of the bytes, or the connection is just a bit slow. For this reason, requests and responses [that can have a body], can supply a header that tells the other end how many bytes are part of the body of the message. This is the <code class="inline">content-length</code> header.</p>
+
+<p>Often HTTP clients add this automatically if they know at the time of starting sending the HTTP message how many bytes will be sent in the body.</p>
+
+<h4>Transfer-encoding header</h4>
+
+<p>A HTTP message sender may want to send a body, but it does not know at the start how many bytes make up that body. One option is that it can wait until it knows how many bytes, and set the <code class="inline">content-length</code> header appropriately. However, this may involve having to buffer all the bytes in memory, which may not be possible or desirable.</p>
+
+<p>An alternative is to use <code class="inline">transfer-encoding: chunked</code>. With this header, the body of the message is split into chunks, each prefixed by the number of bytes in that chunk [as it happens, in hexadecimal]. This means the body transfer can be started without knowing how many bytes in total will be sent. Common chunk sizes are between 8kb and 64kb. Often HTTP clients "do the chunking" themselves, adding the chunk header before each chunk as needed.</p>
+
+<p>However, it is usually better to avoid <code class="inline">transfer-encoding: chunked</code> and instead set a <code class="inline">content-length</code> header. The client can use this in various ways, such as to or be able to allocate resources needed at the start of downloading the body, or estimate time remaining. If the client needs to know how many bytes are in the body, using <code class="inline">transfer-encoding: chunked</code> may be forcing it to buffer the entire body in memory.<p>
+
+<p>Wonderfully, you <em>can</em> often still stream responses with a correctly set <code class="inline">content-length</code>, but you may need to go to a bit of effort to find the right value. For example, to stream a file you may need to query the file system explicity to find the length of the file before starting to fetch its bytes.</p>
+
+<h4>Connection header</h4>
+
+<p>HTTP/1.1 by default keeps connections open after a HTTP request/response, so they can be used for subsequent request/response, and avoid the overhead of new TCP [or TCP+TLS] connections. This referred to as persistant connections, and is often a good thing, but has downsides.</p>
+
+<p>Usually servers would only keep the connections alive for a certain period of time, and then close them. This means there is a race condition: a server could have closed the connection from their point of view, but the client not be aware of this and attempt to re-use the connection: send its bytes, but the server wouldn't process them the client would be aware of an error condition. The client may not know if it's safe to retry the request or not. For example, a POST may have errored <em>after</em> it has been processed by the server. If designing an API, you may wish to implement some sort of unique idempotency-key for such requests. With this, the client can safely retry requests that have failed from its point of view, while the server knows not to reprocess any duplicates, and can still return the response corresponding to the original request.</p>
+
+<p>Another downside is that if you don't end up re-using the connection, resources would continue to be used needlessly on both the client and the server.</p>
+
+<p>If you want a smaller chance of issues like this, you may explicitly set a <code class="inline">connection: close</code> header. If you <em>can</em> deal with such issues, you may wish to design the system to take better advantage of persistant connections. For example, instead of choosing to have multiple S3 buckets each on a different domain, you choose to have one, to take better advantage of per-domain HTTP persistent connections and speed up S3 requests/responses.</p>
+
+<h4>X-forwarded-proto</h4>
+
+<p>This is a modern header: it is often added to requests by HTTP-aware intermediate CDNs or reverse proxies. If the proxy has received an HTTPS connection, it can add <code class="inline">x-forwarded-proto: https</code>, and otherwise adds <code class="inline">x-forwarded-proto: http</code>.</p>
+
+<p>Without this header, the application server behind a reverse proxy would have no mechanism to know if the client made its request via HTTP or HTTPS. This may be important if you would like to respond to HTTP requests with redirects to HTTPS URLs.</p>
+
+<h4>X-forwarded-for</h4>
+
+<p>Often an application server would like to know the IP address of the client. However, if the client connects to a reverse proxy, and then the reverse proxy connects to the application server, the application server only has details of that final TCP connection. From its point of view, its TCP client is the reverse proxy. This is often not helpful.</p>
+
+<p>The solution to this is that each intermediate proxy adds (to) the <code class="inline">x-forwarded-for</code> header in the request, setting the IP address that its <em>incoming</em> TCP connection is <em>from</em>. If there is already an <code class="inline">x-forwarded-for</code> header on its incoming HTTP request, it appends the IP address to this in a comma separated list before forwarding the HTTP request onwards.</p>
+
+<p>This means that the application server can receive an <code class="inline">x-forwarded-for</code> with a long chain of IP addresses in it, and the client IP address may be neither the last nor first of these. Because each server adds to the value of the existing <code class="inline">x-forwarded-for</code> header, care must be taken before trusting any particular value in the list of IP addresses in <code class="inline">x-forwarded-for</code>.</p>
+
+<p>For example, you may have an application accessible behind a CDN, which adds an <code class="inline">x-forwarded-for</code>, so in the application server you may be tempted to trust the first IP in <code class="inline">x-forwarded-for</code>. However, the CDN would append to any existing values in <code class="inline">x-forwarded-for</code>. This means that an evil client can send a request with an existing <code class="inline">x-forwarded-for</code> header, set with some IP, and trick the application into thinking the client is at that IP. Knowing this, you may choose to use the <em>last</em> IP address in the list, thinking that this can be trusted. However, this may also not be a good choice: often applications are accessible both from the CDN, but also directly, even if just via an IP address. An evil client could connect to this with a spoofed <code class="inline">x-forwarded-for</code> header, and again trick the application.</p>
+
+<p>Solutions to this trust issue involve only using the last N values of <code class="inline">x-forwarded-for</code>, where you have a mechanism to ensure that those N hops a) definitely involved certain infrastructure and b) you trust that infrastruture to manipulate any existing  <code class="inline">x-forwarded-for</code> in a certain way.</p>
+
+<hr>
+
+<h3>Summary: (Re-)Constructing URLs</h3>
+
+<p>Reconstructing the URL that a client used involves multiple parts of the HTTP request: the path path of the start-line, the <code class="inline">host</code> header, as well as the <code class="inline">x-forwarded-proto</code> header. For all this to work, intermediate proxies must be appropriately configured.</p>
+
+<h3>Summary: Streaming</h3>
+
+<p>HTTP is often enough for streaming: you may not need anything fancier. If you can determine the full length of the body, set the <code class="inline">content-length</code> header; otherwise, use <code class="inline">transfer-encoding: chunked</code>.</p>
+
+<h3>Summary: HTTP is leaky</h3>
+
+<blockquote>
+  <p>All non-trivial abstractions, to some degree, are leaky.</p>
+  <cite>Joel Spolsky</cite>
+</blockquote>
+
+<p>HTTP is itself leaky, giving information on the underlying TCP [or TCP+TLS] connection via the <code class="inline">x-forwarded-*</code> headers; giving the ability to control that connection via the <code class="inline">connection</code> header; and requiring one of <code class="inline">content-length</code> or <code class="inline">transfer-encoding</code> headers to make up for the fact that TCP doesn't have any concept of message length.<p>
+
+<p>If you want to take full advantage of HTTP, you should be aware of these; compensate for them; and even be able to leverage them when needed to avoid unnecessary time, memory, code, or infrastructure use.</p>
