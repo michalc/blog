@@ -30,7 +30,8 @@ categories: abstractions http
 <p>The client sends the bytes of the HTTP request message over the TLS connection. This is made of a <em>request-line</em> containing the method and the path, followed by a number of <em>header</em> key:value pair  lines, a blank line, and then the <em>body</em>. In this case, the body is 0-bytes long, which is typical for GET requests.</p>
 
 <div class="highlight"><pre><code class="block">GET /the/path HTTP/1.1\r\n
-host: example.com\r\n\r\n</code></pre></div>
+host: example.com\r\n
+\r\n</code></pre></div>
 
 <p>A "line" ends with the two characters <code class="inline">\r\n</code>.</p>
 
@@ -39,7 +40,8 @@ host: example.com\r\n\r\n</code></pre></div>
 <p>The server would then respond with a <em>status-line</em>, some <em>headers</em>, a blank line, and the body of the response.</p>
 
 <div class="highlight"><pre><code class="block">HTTP/1.1 200 OK\r\n
-content-length: 21\r\n\r\n
+content-length: 21\r\n
+\r\n
 The bytes of the body</code></pre></div>
 
 <h3>Notable headers</h3>
