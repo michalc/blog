@@ -11,7 +11,7 @@ categories: abstractions http
 
 <p>This short guide aims to rectify that. It details a few of the most common and useful parts of HTTP, and is aimed for developers with a some experience making or receiving HTTP requests. [In this post, the term HTTP is used to refer to the bytes of the HTTP protocol, which is the same if those bytes are sent over plain TCP, or through a TLS tunnel. The term HTTPS is used omly when necessary to distinguish HTTP over TLS.]</p>
 
-<h2>Initialising the connection</h2>
+<h3>Initialising the connection</h3>
 
 <p>Say we ask our HTTP client to make a GET request to the URL https://example.com/the/path. Firstly, there isn't no such a thing as a URL in HTTP: it's just a shorthand that the client parses and uses the different components at various points in the process.</p>
 
@@ -25,7 +25,7 @@ categories: abstractions http
   <li><i class="fa-li fa fa-caret-right"></i> Then start the HTTP request/response process. This would use both the domain example.com, as well as /the/path. This process is detailed below.</li>
 </ul>
 
-<h2>The HTTP request</h2>
+<h3>The HTTP request</h3>
 
 <p>The client sends the bytes of the HTTP request message over the TLS connection. This is made of a <em>request-line</em> containing the method and the path, followed by a number of <em>header</em> key:value pair  lines, a blank line, and then the <em>body</em>. In this case, the body is 0-bytes long, which is typical for GET requests.</p>
 
