@@ -18,7 +18,7 @@ categories: abstractions http
 <ul class="fa-ul">
   <li><i class="fa-li fa fa-caret-right"></i> The client resolves example.com to an IP address, say to 1.2.3.4. Note that typically in many cases this would involve sending the string example.com unencrypted across the network.</li>
 
-  <li><i class="fa-li fa fa-caret-right"></i> Initiate a TCP connection to the IP address 1.2.3.4 on port 443: if no port is specified in a https URL, port 443 is assumed.</li>
+  <li><i class="fa-li fa fa-caret-right"></i> Initiate a TCP connection to the IP address 1.2.3.4 on port 443: if no port is specified in an HTTPS URL, port 443 is assumed. For HTTP URLs, port 80 is assumed.</li>
 
   <li><i class="fa-li fa fa-caret-right"></i> Initiate a TLS connection over the top of this TCP connection. This again would uses the domain example.com, in both SNI, and verification of the subsequently supplied certificate. In many cases, the domain name example.com would be transmitted unencrypted across the internet.</li>
 
