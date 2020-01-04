@@ -55,7 +55,7 @@ The bytes of the body</code></pre></div>
 <ul class="fa-ul">
   <li><i class="fa-li fa fa-caret-right"></i> CDNs or reverse proxies use the host header to determine how to route requests onwards.</li>
 
-  <li><i class="fa-li fa fa-caret-right"></i> Application server code uses the host header in a best-effort attempt as to what domain the HTTP client used to make the request. Depending on the configuration of intermediate proxies, this can mean the application server may not be able to correctly determine what the original domain was.</li>
+  <li><i class="fa-li fa fa-caret-right"></i> Application server code uses the host header in a best-effort attempt to determine the domain the HTTP client used to make the request. Depending on the configuration of intermediate proxies, this can mean the application server may not be able to correctly determine what the original domain was.</li>
 </ul>
 
 <h4>Content-length header</h4>
