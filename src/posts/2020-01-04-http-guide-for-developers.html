@@ -60,7 +60,7 @@ The bytes of the body</code></pre></div>
 
 <h4>Content-length header</h4>
 
-<p>HTTP is sent over TCP [or TCP+TLS], which surfaces as a stream of bytes in client code. A "stream of bytes" means that the receiver could just a single byte at a time, perhaps even with seconds of delay between each. The receiver has no way to know if it has received all of the bytes, or the connection is just a bit slow. For this reason, requests and responses [that can have a body], can supply a header that tells the other end how many bytes are part of the body of the message. This is the <code class="inline">content-length</code> header.</p>
+<p>HTTP is sent over TCP [or TCP+TLS], which surfaces as a stream of bytes in client code. A "stream of bytes" means that the receiver could just receive a single byte at a time, perhaps even with seconds of delay between each. The receiver has no way to know if it has received all of the bytes, or the connection is just a bit slow. For this reason, requests and responses [that can have a body], can supply a header that tells the other end how many bytes are part of the body of the message. This is the <code class="inline">content-length</code> header.</p>
 
 <p>Often HTTP clients add this automatically if they know at the time of starting sending the HTTP message how many bytes will be sent in the body.</p>
 
