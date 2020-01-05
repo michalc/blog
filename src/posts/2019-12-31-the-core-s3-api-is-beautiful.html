@@ -17,6 +17,7 @@ authorization: ...\r\n
 content-length: ...\r\n
 x-amz-content-sha256: ...\r\n
 x-amz-date: ...\r\n
+\r\n
 The bytes of the object</code></pre></div>
 
 <h4>Structure of an S3 GET request</h4>
@@ -25,6 +26,7 @@ The bytes of the object</code></pre></div>
 host: my-example-bucket.s3-eu-west-1.amazonaws.com\r\n
 authorization: ...\r\n
 x-amz-content-sha256: ...\r\n
+\r\n
 x-amz-date: ...\r\n</code></pre></div>
 
 <p>This means that as long as you can inject the right headers, you can use <em>any</em> HTTP client to make the requests. Here's an example using Python requests.</p>
