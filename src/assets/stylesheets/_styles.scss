@@ -315,16 +315,6 @@ p, ul, nav, table, dl, ol {
   text-decoration: underline;
 }
 
-/* Comments */
-.comments {
-  @include standard-border();
-  margin-top: $standard-spacing;
-  padding-top: $standard-spacing;
-  h3 {
-    display: none;
-  }
-}
-
 /* Inline Code */
 .inline {
 	display: inline;
