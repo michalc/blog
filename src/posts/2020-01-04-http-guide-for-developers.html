@@ -117,6 +117,6 @@ The bytes of the body</code></pre></div>
   <cite>Joel Spolsky</cite>
 </blockquote>
 
-<p>HTTP is itself leaky, giving information on the underlying TCP [or TCP+TLS] connection via the <code class="inline">x-forwarded-*</code> headers; giving the ability to control that connection via the <code class="inline">connection</code> header; and requiring one of <code class="inline">content-length</code> or <code class="inline">transfer-encoding</code> headers to make up for the fact that TCP doesn't have any concept of message length.<p>
+<p>HTTP is a leaky abstraction, exposing information on the lower-level TCP [or TCP+TLS] connection via the <code class="inline">x-forwarded-*</code> headers; giving the ability to control that connection via the <code class="inline">connection</code> header; and requiring one of <code class="inline">content-length</code> or <code class="inline">transfer-encoding</code> headers to make up for the fact that TCP doesn't have any concept of message length.<p>
 
 <p>If you want to take full advantage of HTTP, you should be aware of these; compensate for them; and even be able to leverage them when needed to avoid unnecessary time, memory, code, or infrastructure use.</p>
