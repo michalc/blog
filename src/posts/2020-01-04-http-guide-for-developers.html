@@ -102,7 +102,7 @@ The bytes of the body</code></pre></div>
 
 <p>Solutions to this trust issue involve only using the last N values of <code class="inline">x-forwarded-for</code>, where you have a mechanism to ensure that those N hops a) definitely involved certain infrastructure and b) you trust that infrastruture to manipulate any existing  <code class="inline">x-forwarded-for</code> in a certain way.</p>
 
-<h3>Summary: (Re-)Constructing URLs</h3>
+<h3>Summary: Reconstructing URLs</h3>
 
 <p>Reconstructing the URL that a client used involves multiple parts of the HTTP request: the path path of the start-line, the <code class="inline">host</code> header, as well as the <code class="inline">x-forwarded-proto</code> header. For all this to work, intermediate proxies must be appropriately configured.</p>
 
