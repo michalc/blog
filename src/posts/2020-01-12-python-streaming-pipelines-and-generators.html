@@ -15,13 +15,13 @@ categories: python streaming
 <h3>Basic examples</h3>
 
 {{#highlight 'python'}}
-def gen_words():
+def generate_words():
     yield 'first'
     yield 'second'
     yield 'third'
 
 # Will print out: "first, second, third, "
-words = gen_words()
+words = generate_words()
 for word in words:
     print(word, end=', ')
 {{/highlight}}
@@ -29,12 +29,12 @@ for word in words:
 <p>Often the keyword <code class="inline">yield</code> is itself in a loop. For example, the above is equivalent to the below.</p>
 
 {{#highlight 'python'}}
-def gen_words():
+def generate_words():
     for word in ['first', 'second', 'third']:
         yield word
 
 # Will print out: "first, second, third, "
-words = gen_words()
+words = generate_words()
 for word in words:
     print(word, end=', ')
 {{/highlight}}
@@ -42,7 +42,7 @@ for word in words:
 <p>Generators can then be chained together to make a pipeline.</p>
 
 {{#highlight 'python'}}
-def gen_words():
+def generate_words():
     for word in ['first', 'second', 'third']:
         yield word
 
@@ -51,7 +51,7 @@ def process_words(words):
         yield f'{word} apple'
 
 # Will print out: "first apple, second apple, third apple, "
-words = gen_words()
+words = generate_words()
 processed_words = process_words(words)
 for word in processed_words:
     print(word, end=', ')
