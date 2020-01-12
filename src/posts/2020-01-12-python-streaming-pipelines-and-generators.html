@@ -36,7 +36,7 @@ def gen_words():
 # Will print out: "first, second, third, "
 words = gen_words()
 for word in words:
-    print(word, end=' ')
+    print(word, end=', ')
 {{/highlight}}
 
 <p>Generators can then be chained together to make a pipeline.</p>
@@ -54,7 +54,7 @@ def process_words(words):
 words = gen_words()
 processed_words = process_words(words)
 for word in processed_words:
-    print(word, end=' ')
+    print(word, end=', ')
 {{/highlight}}
 
 <h3>Declaring a generator</h3>
