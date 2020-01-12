@@ -21,7 +21,8 @@ def gen_words():
     yield 'third'
 
 # Will print out: "first, second, third, "
-for word in gen_words():
+words = gen_words()
+for word in words:
     print(word, end=', ')
 {{/highlight}}
 
@@ -34,7 +35,8 @@ def gen_words():
         yield word
 
 # Will print out: "first, second, third, "
-for word in gen_words():
+words = gen_words()
+for word in words:
     print(word, end=' ')
 {{/highlight}}
 
@@ -53,7 +55,7 @@ def process_words(words):
 # Will print out: "first apple, second apple, third apple, "
 words = gen_words()
 processed_words = process_words(words)
-for word in processed_words():
+for word in processed_words:
     print(word, end=' ')
 {{/highlight}}
 
