@@ -85,6 +85,7 @@ for word in processed_words:
 
 {{#highlight 'python'}}
 import csv
+import os
 import psycopg2
 from django.http import StreamingHttpResponse
 
@@ -118,9 +119,7 @@ def to_csv_bytes(rows):
         yield csv_writer.writerow(row).encode('utf-8')
 
 def my_streaming_csv_view(_):
-    dsn = \
-        'host=myhost port=5432 dbname=mydatabase user=mydbuser ' \
-        'password=mydbpassword sslmode=require'
+    dsn = os.environ['DSN']
     query = 'SELECT * FROM my_table ORDER BY id'
 
     # Define a pipeline of two steps
@@ -165,9 +164,7 @@ def buffer(chunk_size, bytes_items):
         yield b''.join(queue)
 
 def my_streaming_csv_view(_):
-    dsn = \
-        'host=myhost port=5432 dbname=mydatabase user=mydbuser ' \
-        'password=mydbpassword sslmode=require'
+    dsn = os.environ['DSN']
     query = 'SELECT * FROM my_table ORDER BY id'
 
     # Our pipeline has an added step to buffer the data into 8KB chunks
