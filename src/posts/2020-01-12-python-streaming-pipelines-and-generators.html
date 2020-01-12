@@ -40,16 +40,16 @@ for word in my_gen():
 <ul class="fa-ul">
   <li><i class="fa-li fa fa-caret-right"></i> process data in a streaming way [i.e. without loading it all into memory at once];</li>
 
-  <li><i class="fa-li fa fa-caret-right"></i> while separating code with different responsibilities [which is often seen as a good thing], into a "pipeline" with clear steps;</li>
+  <li><i class="fa-li fa fa-caret-right"></i> while separating code with different responsibilities [which is often seen as a good thing], into a "pipeline" of chained generators;</li>
 
   <li><i class="fa-li fa fa-caret-right"></i> without having to write custom classes that implement <code class="inline">__iter__</code> and <code class="inline">__next__</code> [which is quite boilerplate heavy, and so can be hard to see the data-processing that's going on].</li>
 </ul>
 
-<p>The earlier basic example shows some of this: the printing code is separate from the data generation code.</p>
+<p>The earlier basic example shows some of this: the printing code is separate from the data generation code using a generator.</p>
 
 <h3>Real-world example</h3>
 
-<p>A more real-world, and complex, example is constructing a CSV dump of table from a Postgres database using psycopg2, using a single database query [not using an ORM], and streaming it from a Django view. You could do something like the following.</p>
+<p>A more real-world, and complex, example is constructing a CSV dump of table from a Postgres database using psycopg2, using a single database query [not using an ORM], and streaming it from a Django view. You could do something like the following, which uses a chain of generators.</p>
 
 {{#highlight 'python'}}
 import csv
