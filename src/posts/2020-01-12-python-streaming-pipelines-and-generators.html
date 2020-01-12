@@ -134,7 +134,7 @@ def my_streaming_csv_view(_):
     return StreamingHttpResponse(csv_bytes, content_type='text/csv')
 {{/highlight}}
 
-<p>This is ok, especially in terms of separation of components in the pipeline: fetching from from the database is separate from conversion to CSV, which in turn is separate from any HTTP concerns.</p>
+<p>This is ok, especially in terms of separation of components in the pipeline: fetching from the database is separate from conversion to CSV, which in turn is separate from any HTTP concerns.</p>
 
 <p>However, <code class="inline">StreamingHttpResponse</code> has some hidden behaviour [depending on configuration/web-server]. Every time it iterates over the value passed, it results in an HTTP chunk [which includes a short header], being sent through various layers of code, to the socket, and maybe even over the wire. Especially if each CSV line is small, this has quite a high overhead per byte of actual data.</p>
 
