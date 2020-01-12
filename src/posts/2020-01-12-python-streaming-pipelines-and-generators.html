@@ -1,0 +1,154 @@
+---
+layout: post
+title:  "Python generators"
+subtitle: "Create pipelines of streaming processing"
+date: 2020-01-12 11:00:00
+categories: python streaming
+---
+
+<p>In these days of <em>medium</em> data [data that is too big to fit in memory on a single machine, but could otherwise be processed by one], it's important to know what features your programming language offers to help you process data using streaming. <em>Generator functions</em> in Python are one such feature. [For brevity, this post will refer to generator functions as <em>generators</em>].</p>
+
+<h3>Generators vs functions</h3>
+
+<p>Generators differ from functions in that while a function can only return a value once, generators allow you to "return" multiple times. The keyword <code class="inline">return</code> is not used for this however; instead <code class="inline">yield<code class="inline"> is.</code>
+
+<h3>Basic example</h3>
+
+{{#highlight 'python'}}
+def my_gen():
+    yield 'first'
+    yield 'second'
+    yield 'third'
+
+# Will print out: "first second third "
+for word in my_gen():
+    print(word, end=' ')
+{{/highlight}}
+
+<h3>Declaring a generator</h3>
+
+<p>A generator is declared as a function, i.e. starting with <code class="inline">def function_name(</code>, but somewhere in its <em>body</em> it contains the keyword <code class="inline">yield</code>. [<a href="#">See criticism</a>]</p></p>
+
+<h3>Using a generator</h3>
+
+<p>As in the above example, you call the generator and iterate over its return value: each <code class="inline">yield</code> encountered results in an interation.</p>
+
+<h3>Purpose of generators</h3>
+
+<p>They allow you to</p>
+
+<ul class="fa-ul">
+  <li><i class="fa-li fa fa-caret-right"></i> process data in a streaming way [i.e. without loading it all into memory at once];</li>
+
+  <li><i class="fa-li fa fa-caret-right"></i> while separating code with different responsibilities [which is often seen as a good thing], into a "pipeline" with clear steps;</li>
+
+  <li><i class="fa-li fa fa-caret-right"></i> without having to write custom classes that implement <code class="inline">__iter__</code> and <code class="inline">__next__</code> [which is quite boilerplate heavy, and so can be hard to see the data-processing that's going on].</li>
+</li>
+
+<p>The earlier basic example shows some of this: the printing code is separate from the data generation code.</p>
+
+<h3>Real-world example</h3>
+
+<p>A more real-world, and complex, example is constructing a CSV dump of table from a Postgres database using psycopg2, using a single database query [not using an ORM], and streaming it from a Django view. You could do something like the following.</p>
+
+{{#highlight 'python'}}
+import csv
+import psycopg2
+from django.http import StreamingHttpResponse
+
+def fetch(dsn, query):
+    # Named cursor => server side cursor. Without this, _all_ data from the query will be fetched
+    # into memory, which defeats the purpose of streaming
+    with \
+            psycopg2.connect(dsn) as conn, \
+            conn.cursor(name='my_cursor_name') as cur:
+        cur.itersize = 5000
+        cur.arraysize = 5000
+        cur.execute(query)
+
+        while True:
+            rows = cur.fetchmany()
+            for row in rows:
+                yield row
+            if not rows:
+                break
+
+def to_csv_bytes(rows):
+    # Python's csv.writer expects a file-like object with a `write` method
+    # We give it one, but the `write` method just returns the bytes passed
+    class DummyFile:
+        def write(self, value):
+            return value
+
+    csv_writer = csv.writer(DummyFile(), quoting=csv.QUOTE_NONNUMERIC)
+
+    for row in rows:
+        yield csv_writer.write(row)
+
+def my_streaming_csv_view(_):
+    dsn = "host=myhost port=5432 dbname=mydatabase user=mydbuser password=mydbpassword sslmode=require"
+    query = "SELECT * FROM my_table ORDER BY id"
+
+    # Define a pipeline of two steps
+    db_rows = fetch_db_rows(dsn, query)
+    csv_bytes = to_csv_bytes(db_rows)
+
+    # Django will itself add to this pipeline: adding HTTP chunked headers, and data to the
+    # underlying socket
+    return StreamingHttpResponse(csv_bytes, content_type='text/csv', status_code=200)
+{{/highlight}}
+
+<p>This is ok.</p>
+
+<p>However, <code class="inline">StreamingHttpResponse</code> has some hidden behaviour [depending on configuration/web-server]. Every time it iterates over the value passed, it results in an HTTP chunk [which includes a short header], being sent through various layers of code, to the socket, and maybe even then over the wire. Especially if each CSV line is small, this has quite a high overhead per byte of actual data.</p>
+
+<p>We can do better.</p>
+
+<p>Say we want to keep the separation, but also have HTTP chunks at [for example] 8KB, even if each CSV row is smaller or bigger than 8KB. We can add a buffering step to the pipeline: we don't need to touch the database code, the CSV-writing code, or the code of <code class="inline">StreamingHttpResponse</code>.</p>
+
+{{#highlight 'python'}}
+def buffer(chunk_size, bytes_iterator):
+    queue = []
+    queue_length = 0
+
+    for bytes_item in bytes_iterator:
+        queue.append(bytes_item)
+        queue_length += len(bytes_item)
+
+        while queue_length >= chunk_size:
+            to_send_bytes = b''.join(queue)
+            chunk, to_send_bytes = to_send_bytes[:chunk_size], to_send_bytes[chunk_size:]
+
+            queue = \
+                [to_send_bytes] if to_send_bytes else \
+                []
+            queue_length = len(to_send_bytes)
+
+            yield chunk
+
+    if queue_length:
+        yield b''.join(queue)
+
+def my_streaming_csv_view(_):
+    dsn = "host=myhost port=5432 dbname=mydatabase user=mydbuser password=mydbpassword sslmode=require"
+    query = "SELECT * FROM my_table ORDER BY id"
+
+    # Our pipeline has an added step to buffer the data into 8KB chunks
+    db_rows = fetch_db_rows(dsn, query)
+    csv_bytes = to_csv_bytes(db_rows)
+    chunked_csv_bytes = buffer(8192, csv_bytes)
+
+    return StreamingHttpResponse(chunked_csv_bytes, content_type='text/csv', status_code=200)
+{{/highlight}}
+
+<p>This mechanism of being able to define and manage a pipeline, in code, with the minimum of boilerplate, in my opinion is wonderful.</p>
+
+<h3>Possible limitations</h3>
+
+<p>Each component in the above pipeline is on the same thread: none of them can actually do anything while another is processing. Specifically, between each of the <code class="inline">fetchmany</code> calls to the database, the database connection is sitting idle, when it could have been fetching the next batch of data. You may be tempted to do something about this by using threads[/similar] with another intermediate buffer.</p>
+
+<p>My suspicion is that in a lot of situations this wouldn't increase performance. The downstream connection to the client would already have buffers, and its bandwidth is likely to be much lower than upstream to the database, so the buffers may never get empty, and so the downstream connection may already be sending as many bytes per second as it can be. Threads[/similar] may do nothing than use more resources on the server, hurting performance and increasing costs. My recommendation is to KISS on only complicate the pipeline if you have good evidence it will help in your production cases.</p>
+
+<h3 id="criticism">Criticism</h3>
+
+<p>I find it odd/confusing that the only way to differentiate a function from a generator is to look inside its body and look for the keyword <code class="inline">yield</code>. Thinking how asyncio functions are declared with <code class="inline">async def my_func():</code>, I think <code class="inline">generator def my_func():</code> would have been clearer and more consistent.</p>
