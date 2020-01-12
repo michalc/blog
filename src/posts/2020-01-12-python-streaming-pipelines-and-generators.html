@@ -57,8 +57,8 @@ import psycopg2
 from django.http import StreamingHttpResponse
 
 def fetch(dsn, query):
-    # Named cursor => server side cursor. Without this, _all_ data from the query will be fetched
-    # into memory, which defeats the purpose of streaming
+    # Named cursor => server side cursor. Without this, _all_ data from the
+    # query will be fetched into memory, which defeats the purpose of streaming
     with \
             psycopg2.connect(dsn) as conn, \
             conn.cursor(name='my_cursor_name') as cur:
@@ -86,8 +86,10 @@ def to_csv_bytes(rows):
         yield csv_writer.write(row)
 
 def my_streaming_csv_view(_):
-    dsn = "host=myhost port=5432 dbname=mydatabase user=mydbuser password=mydbpassword sslmode=require"
-    query = "SELECT * FROM my_table ORDER BY id"
+    dsn = \
+        'host=myhost port=5432 dbname=mydatabase user=mydbuser ' \
+        'password=mydbpassword sslmode=require'
+    query = 'SELECT * FROM my_table ORDER BY id'
 
     # Define a pipeline of two steps
     db_rows = fetch_db_rows(dsn, query)
@@ -130,8 +132,10 @@ def buffer(chunk_size, bytes_iterator):
         yield b''.join(queue)
 
 def my_streaming_csv_view(_):
-    dsn = "host=myhost port=5432 dbname=mydatabase user=mydbuser password=mydbpassword sslmode=require"
-    query = "SELECT * FROM my_table ORDER BY id"
+    dsn = \
+        'host=myhost port=5432 dbname=mydatabase user=mydbuser ' \
+        'password=mydbpassword sslmode=require'
+    query = 'SELECT * FROM my_table ORDER BY id'
 
     # Our pipeline has an added step to buffer the data into 8KB chunks
     db_rows = fetch_db_rows(dsn, query)
