@@ -119,7 +119,8 @@ def buffer(chunk_size, bytes_items):
 
         while queue_length >= chunk_size:
             to_send_bytes = b''.join(queue)
-            chunk, to_send_bytes = to_send_bytes[:chunk_size], to_send_bytes[chunk_size:]
+            chunk, to_send_bytes = \
+                to_send_bytes[:chunk_size], to_send_bytes[chunk_size:]
 
             queue = \
                 [to_send_bytes] if to_send_bytes else \
