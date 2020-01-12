@@ -12,13 +12,26 @@ categories: python streaming
 
 <p>Generators differ from functions in that while a function can only return a value once, generators allow you to "return" multiple times. The keyword <code class="inline">return</code> is not used for this however; instead <code class="inline">yield</code> is.
 
-<h3>Basic example</h3>
+<h3>Basic examples</h3>
 
 {{#highlight 'python'}}
 def my_gen():
     yield 'first'
     yield 'second'
     yield 'third'
+
+# Will print out: "first second third "
+for word in my_gen():
+    print(word, end=' ')
+{{/highlight}}
+
+<p>Often the keyword <code class="inline">yield</code> is itself in a loop. For example, the above is equivalent to the below.</p>
+
+{{#highlight 'python'}}
+def my_gen():
+    words = ['first', 'second', 'third']
+    for word in words:
+        yield word
 
 # Will print out: "first second third "
 for word in my_gen():
