@@ -127,8 +127,8 @@ def my_streaming_csv_view(_):
     db_rows = fetch_db_rows(dsn, query)
     csv_bytes = to_csv_bytes(db_rows)
 
-    # Django itselfs adds to this pipeline: adding HTTP chunked headers, and
-    # sending data to the underlying socket
+    # Django/the web-server adds to this pipeline: adding HTTP chunked
+    # headers, and sending data to the underlying socket
     return StreamingHttpResponse(csv_bytes, content_type='text/csv')
 {{/highlight}}
 
