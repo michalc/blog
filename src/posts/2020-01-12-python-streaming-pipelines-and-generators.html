@@ -83,7 +83,7 @@ def to_csv_bytes(rows):
     csv_writer = csv.writer(DummyFile(), quoting=csv.QUOTE_NONNUMERIC)
 
     for row in rows:
-        yield csv_writer.write(row)
+        yield csv_writer.writerow(row).encode('utf-8')
 
 def my_streaming_csv_view(_):
     dsn = \
