@@ -30,8 +30,7 @@ for word in words:
 
 {{#highlight 'python'}}
 def gen_words():
-    words = ['first', 'second', 'third']
-    for word in words:
+    for word in ['first', 'second', 'third']:
         yield word
 
 # Will print out: "first, second, third, "
@@ -44,8 +43,7 @@ for word in words:
 
 {{#highlight 'python'}}
 def gen_words():
-    words = ['first', 'second', 'third']
-    for word in words:
+    for word in ['first', 'second', 'third']:
         yield word
 
 def process_words(words):
