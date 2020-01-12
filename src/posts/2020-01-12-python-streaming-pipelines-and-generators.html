@@ -152,7 +152,7 @@ def my_streaming_csv_view(_):
 
 <p>Each component in the above pipeline is on the same thread: none of them can actually do anything while another is processing. Specifically, between each of the <code class="inline">fetchmany</code> calls to the database, the database connection is sitting idle, when it could have been fetching the next batch of data. You may be tempted to do something about this by using threads[/similar] with another intermediate buffer.</p>
 
-<p>My suspicion is that in a lot of situations this wouldn't increase performance. The downstream connection to the client would already have buffers, and its bandwidth is likely to be much lower than upstream to the database, so the buffers would never get empty: the downstream connection may already be sending as many bytes per second as it can. Threads[/similar] may do nothing than use more resources on the server, hurting performance and increasing costs. My recommendation is to KISS on only complicate the pipeline if you have good evidence it will help in your production cases.</p>
+<p>My suspicion is that in a lot of situations this wouldn't increase performance. The downstream connection to the client would already have buffers, and its bandwidth is likely to be much lower than upstream to the database, so the buffers would never get empty: the downstream connection may already be sending as many bytes per second as it can. Threads[/similar] may do nothing but use more resources on the server, hurting performance and increasing costs. My recommendation is to KISS on only complicate the pipeline if you have good evidence it will help in your production cases.</p>
 
 <h3 id="criticism">Criticism</h3>
 
