@@ -146,7 +146,7 @@ def my_streaming_csv_view(_):
     return StreamingHttpResponse(chunked_csv_bytes, content_type='text/csv')
 {{/highlight}}
 
-<p>This mechanism of being able to define and manage a pipeline, in code, with the minimum of boilerplate, in my opinion is wonderful.</p>
+<p>This mechanism of being able to define and manage a pipeline, in code, with the minimum of boilerplate, and without needing any extra libraries, in my opinion is wonderful.</p>
 
 <h3>Possible limitations</h3>
 
