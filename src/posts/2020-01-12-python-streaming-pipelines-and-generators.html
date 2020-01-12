@@ -93,7 +93,7 @@ def fetch_db_rows(dsn, query):
     # query will be fetched into memory, which defeats the purpose of streaming
     with \
             psycopg2.connect(dsn) as conn, \
-            conn.cursor(name='my_cursor_name') as cur:
+            conn.cursor(name='my_csv_dump') as cur:
         cur.itersize = 5000
         cur.arraysize = 5000
         cur.execute(query)
