@@ -97,7 +97,7 @@ def my_streaming_csv_view(_):
 
     # Django itselfs adds to this pipeline: adding HTTP chunked headers, and sending data to the
     # underlying socket
-    return StreamingHttpResponse(csv_bytes, content_type='text/csv', status_code=200)
+    return StreamingHttpResponse(csv_bytes, content_type='text/csv')
 {{/highlight}}
 
 <p>This is ok.</p>
@@ -142,7 +142,7 @@ def my_streaming_csv_view(_):
     csv_bytes = to_csv_bytes(db_rows)
     chunked_csv_bytes = buffer(8192, csv_bytes)
 
-    return StreamingHttpResponse(chunked_csv_bytes, content_type='text/csv', status_code=200)
+    return StreamingHttpResponse(chunked_csv_bytes, content_type='text/csv')
 {{/highlight}}
 
 <p>This mechanism of being able to define and manage a pipeline, in code, with the minimum of boilerplate, in my opinion is wonderful.</p>
