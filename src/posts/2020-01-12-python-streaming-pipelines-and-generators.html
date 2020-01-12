@@ -56,7 +56,7 @@ import csv
 import psycopg2
 from django.http import StreamingHttpResponse
 
-def fetch(dsn, query):
+def fetch_db_rows(dsn, query):
     # Named cursor => server side cursor. Without this, _all_ data from the
     # query will be fetched into memory, which defeats the purpose of streaming
     with \
