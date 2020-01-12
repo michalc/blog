@@ -106,7 +106,7 @@ def my_streaming_csv_view(_):
 
 <p>We can do better.</p>
 
-<p>Say we want to keep the separation, but also have HTTP chunks at [for example] 8KB, even if each CSV row is smaller or bigger than 8KB. We can add a buffering step to the pipeline: we don't need to touch the database code, the CSV-writing code, or the code of <code class="inline">StreamingHttpResponse</code>.</p>
+<p>Say we want to send HTTP chunks at [for example] 8KB, even if each CSV row is smaller or bigger than 8KB. We can add a buffering step to the pipeline: we don't need to touch the database code, the CSV-writing code, or the code of <code class="inline">StreamingHttpResponse</code>.</p>
 
 {{#highlight 'python'}}
 def buffer(chunk_size, bytes_items):
