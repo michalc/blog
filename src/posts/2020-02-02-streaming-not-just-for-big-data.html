@@ -14,9 +14,17 @@ categories: streaming data
 
 <p>Any situation when you process data concurrently with receiving it. This process can be analyzing the data, or just forwarding it onwards.</p>
 
-<h3>When is it useful to process data using streaming?</h3>
+<h3>What are the benefits of streaming?</h3>
 
-<p>When you want to start processing the data as soon as the start of it is received. Often [but not always] this is when there is no alternative: the data just won't fit all in memory at once on a single machine. This amount of data can be referred to as "medium" data.</p>
+<p>There are two main [potential] benefits.</p>
+
+<h4>Speed</h4>
+
+<p>If you start processing the data sooner, before its all received, then you [might] finish sooner.</p>
+
+<h4>Lack of a [reasonable] alternative</h4>
+
+<p>In cases when the data just won't fit all in memory at once on a single machine. This amount of data can be referred to as "medium" data.</p>
 
 <p>We can hit medium-sized data even in a standard web application. Say you would like users to be able to upload 500mb files: in these days of video and hi-res images, this isn't very far-fetched. If you don't forward the uploaded data onwards while it's still being uploaded, just a few users uploading concurrently could use all memory on a server.</p>
 
@@ -52,7 +60,7 @@ categories: streaming data
 
 <h4>Performance</h4>
 
-<p>There <em>might</em> be a performance penalty compared to non-streaming solutions due to what could be radically different operations / orders of operations. This could be especially true if using streaming for smaller amounts of data.</p>
+<p>Ironically, there might be a performance <em>penalty</em> compared to non-streaming solutions due to what could be radically different operations / orders of operations. This could be especially true if using streaming for smaller amounts of data.</p>
 
 <h4>Homogeneity</h4>
 
