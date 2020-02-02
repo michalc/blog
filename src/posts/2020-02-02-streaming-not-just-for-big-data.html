@@ -64,7 +64,7 @@ categories: streaming data
 
 <p>Since fewer developers are familiar with it, issues are less likely to be spotted in code reviews, streaming behaviour may be accidentially broken [if there aren't appropriate tests on it], there are fewer people to ask for help, and unfortunately any help that is given has a higher chance of being misleading.</p>
 
-<p>[For example, I have been told by an experienced developer that it's not possible to stream with HTTP: a server has to expose some sort of special streaming API. I was <em>saddened</em> to hear this. There are even multiple ways: setting a <code class="inline">content-length</code> header if you know the overall body length, or using <code class="inline">transfer-encoding: chunked</code> if you don't.]</p>
+<p>[For example, I have been told by an experienced developer that it's not possible to stream with a HTTP endpoint: a server has to expose some sort of special streaming API. I was <em>saddened</em> to hear this. There are even multiple ways: setting a <code class="inline">content-length</code> header if you know the overall body length, or using <code class="inline">transfer-encoding: chunked</code> if you don't.]</p>
 
 <p>This is admittedly a bit of a chicken/egg situation!</p>
 
