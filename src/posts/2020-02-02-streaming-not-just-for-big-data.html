@@ -16,7 +16,7 @@ categories: streaming data
 
 <h3>When is it useful to process data using streaming?</h3>
 
-<p>When you want to start processing the data as soon as the start of it is received. Often [but not always] this is when there is no alternative: the data just won't fit all in memory at once on a single machine, but could otherwise be processed by a single machine in a reasonable amount of time. This amount of data can be referred to as "medium" data.</p>
+<p>When you want to start processing the data as soon as the start of it is received. Often [but not always] this is when there is no alternative: the data just won't fit all in memory at once on a single machine. This amount of data can be referred to as "medium" data.</p>
 
 <p>We can hit medium-sized data even in a standard web application. Say you would like users to be able to upload 500mb files: in these days of video and hi-res images, this isn't very far-fetched. If you don't forward the uploaded data onwards while it's still being uploaded, just a few users uploading concurrently could use all memory on a server.</p>
 
