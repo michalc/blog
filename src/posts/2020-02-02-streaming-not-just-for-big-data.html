@@ -56,7 +56,7 @@ categories: streaming data
 
 <p>Especially when considering error handling, retrying, or say, efficiently dealing with bandwidth differences/variation in different parts of the stream, there could be more complexity compared to a non-streaming solution.</p>
 
-<p>This being said, a) you may not need to implement such things [e.g. OS-provided TCP buffers may adequately compensate for bandwidth variation], and b) I suspect the complexity is sometimes overstated, and conflated with unfamiliarity.</p>
+<p>This being said, a) you may not need to implement such things [e.g. OS-provided TCP buffers may adequately compensate for bandwidth variation], and b) I suspect the complexity is sometimes overstated, and conflated with unfamiliarity [although it would be naive to think this is isn't a problem, as mentioned below].</p>
 
 <h4>Performance</h4>
 
