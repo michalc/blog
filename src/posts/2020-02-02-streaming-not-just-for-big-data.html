@@ -1,0 +1,88 @@
+---
+layout: post
+title:  "Streaming: a skill gap?"
+subtitle: "It's not just for big data"
+date: 2020-02-02 10:40:00
+categories: streaming data
+---
+
+<p>I've noticed a bit of a skill gap: I think a lot of developers are not able to code up "streaming" solutions to problems. The reason? I think often developers don't try to since they think "oh that's just for big data", or "that's just for live video", or "that would really take some fancy tech we don't, or can't, currently use".</p>
+
+<p>However, it can often be useful, even needed, in what are now run-of-the-mill web applications; and wonderfully, we often don't need anything fancier than the tools already being used: we just need to know how to use them.</p>
+
+<h3>What is streaming?</h3>
+
+<p>Any situation when you process data concurrently with receiving it. This process can be analyzing the data, or just forwarding it onwards.</p>
+
+<h3>When is it useful to process data using streaming?</h3>
+
+<p>When you want to start processing the data as soon as the start of it is received. Often [but not always] this is when there is no alternative: the data just won't fit all in memory at once on a single machine, but could otherwise be processed by a single machine in a reasonable amount of time. This amount of data can be referred to as "medium" data.</p>
+
+<p>We can hit medium-sized data even in a standard web application. Say you would like users to be able to upload 500mb files: in these days of video and hi-res images, this isn't very far-fetched. If you don't forward the uploaded data onwards while it's still being uploaded, just a few users uploading concurrently could use all memory on a server.</p>
+
+<h3>What are typical problems with streaming?</h3>
+
+<p>Streaming is not a perfect/one-size-fits-all solution: it does have its downsides.</p>
+
+<h4>Testing</h4>
+
+<p>You're testing an upload with a 5KB file, and it works. Are you <em>sure</em> it's streaming and will work with a 5GB file? There are two options that I'm aware of.</p>
+
+<ul class="fa-ul">
+  <li><i class="fa-li fa fa-caret-right"></i> Actually test a 5GB file [making you have less than 5GB of memory available]. While this is quite a good "real" test, it can be slow.</li>
+
+  <li><i class="fa-li fa fa-caret-right"></i> Hook into both sides of the streaming process, and ensure that the target receives data before the source has sent all of its. You can do this with smaller data, and so such a test can be quick. However, this can be more brittle with respect to refactorings, i.e. the test can fail while the production behaviour continues to work.</li>
+</ul>
+
+<h4>Errors</h4>
+
+<p>Handling errors, i.e. communicating and responding to them, can be more difficult.</p>
+
+<p>Conveniently, HTTP has some of this built-in. If streaming an HTTP body with a <code class="inline">content-length</code> header specifying the number of bytes, if the receiver doesn't receive that amount by the time the connection has closed, they know an error has occurred. If <code class="inline">transfer-encoding: chunked</code> is used, if the receiver doesn't receive a 0-length chunk at the end, they know there has been an error.</p>
+
+<p>It's not perfect though: there is no way to send an HTTP status code once the body has begun to stream. But for many situations, this is enough.</p>
+
+<p>What to do when an error has occured may be more tricky. With a non-streaming multi-stage pipeline, if one part fails, you can usually retry because you have the source bytes to retry with. However if streaming, the bytes have gone. To retry, have to build in a mechanism to re-retrieve them from the source.</p>
+
+<h4>Complexity</h4>
+
+<p>Especially when considering error handling, retrying, or say, efficiently dealing with bandwidth differences/variation in different parts of the stream, there could be more complexity compared to a non-streaming solution.</p>
+
+<p>This being said, a) you may not need to implement such things [e.g. OS-provided TCP buffers may adequately compensate for bandwidth variation], and b) I suspect the complexity is sometimes overstated, and conflated with unfamiliarity.</p>
+
+<h4>Performance</h4>
+
+<p>There <em>might</em> be a performance penalty compared to non-streaming solutions due to what could be radically different operations / orders of operations. This could be especially true if using streaming for smaller amounts of data.</p>
+
+<h4>Homogeneity</h4>
+
+<p>Each part of the pipeline needs to support streaming. It's not the default in a lot of cases: which is unfortunate since you can use code that supports streaming to process data in a non-streaming way [by just using a single "chunk"], but it's impossible to the opposite.</p>
+
+<h4>Unfamiliarity</h4>
+
+<p>Streaming has an unfortunate problem: it's the skill gap itself.</p>
+
+<p>Since fewer developers are familiar with it, issues are less likely to be spotted in code reviews, streaming behaviour may be accidentially broken [if there aren't appropriate tests on it], there are fewer people to ask for help, and unfortunately any help that is given has a higher chance of being misleading.</p>
+
+<p>[For example, I have been told by an experienced developer that it's not possible to stream with HTTP: a server has to expose some sort of special streaming API. I was <em>saddened</em> to hear this. There are even multiple ways: setting a <code class="inline">content-length</code> header if you know the overall body length, or using <code class="inline">transfer-encoding: chunked</code> if you don't.]</p>
+
+<p>This is admittedly a bit of a chicken/egg situation!</p>
+
+<h3>What can I do?</h3>
+
+<blockquote>
+  <p>I keep hearing my mother say, practice, Harry, practice!</p>
+  <cite>Harry Kim, Star Trek Voyager</cite>
+</blockquote>
+
+<p>Wonderfully, I think you can get a lot of valuable experience from just a few small practice web-based projects.</p>
+
+<ul class="fa-ul">
+  <li><i class="fa-li fa fa-caret-right"></i> A GET endpoint that responds with a generated HTTP response of several GBs, just of some fake data.</li>
+  <li><i class="fa-li fa fa-caret-right"></i> A GET endpoint that responds with a file from the filesystem of several GBs. Try with with both <code class="inline">transfer-encoding: chunked</code> and with a specified <code class="inline">content-length</code>.</li>
+  <li><i class="fa-li fa fa-caret-right"></i> Proxying a file to or from S3 through a server. Try with a plain HTTP client, not just one that is AWS-aware such as Boto3.</li>
+  <li><i class="fa-li fa fa-caret-right"></i> Downloading a Postgres table of several GBs. Try with just a single query. Try as CSV or JSON.</li>
+  <li><i class="fa-li fa fa-caret-right"></i> Accept a large CSV upload and calculate some basic stats on the columns while its being uploaded, e.g. min, max, mean, standard deviation.</li>
+</ul>
+
+<p>Once you have done these, you would be in a much better place to weigh up the trade-offs to know if a streaming solution is right for any given real-world project. At least, you'll be in a better place to review collegues' streaming-based code.</p>
