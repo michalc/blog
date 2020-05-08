@@ -18,7 +18,7 @@ async def async_main():
     async with httpx.AsyncClient() as client:
         task_1 = asyncio.create_task(make_http_requests(client, {'some': 'data'}))
         task_2 = asyncio.create_task(make_http_requests(client, {'more': 'data'}))
-        await asyncio.gather(task_1, task_1)
+        await asyncio.gather(task_1, task_2)
 
 async def make_http_requests(client, data):
     resp_1 = await client.post('https://postman-echo.com/post', data=data)
