@@ -31,7 +31,7 @@ asyncio.run(async_main())
 
 <p>A task is an asyncio thread of execution. Multiple tasks can run concurrently: typically when a task is waiting for some data to be sent/received on the network, other tasks can progress. This is in fact the whole point of asyncio.</p>
 
-<p>In the above example, <code class="inline">asyncio.run</code> creates the first task, and during that task, each call to <code class="inline">asyncio.create_task</code> creates another task. You only ever need to call <code class="inline">create_task</code> if you want to add some concurrency.</p>
+<p>In the above example, <code class="inline">asyncio.run</code> creates the first task, and during that task, each call to <code class="inline">asyncio.create_task</code> creates another task that will run concurrently with the current task.</p>
 
 <h3>await my_function()</h3>
 
