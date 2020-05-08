@@ -1,0 +1,61 @@
+---
+layout: post
+title: "I admit it: I like Python's asyncio"
+subtitle: "The useful API is actually nice and small"
+date: 2020-05-08 18:50:00
+categories: python asyncio
+---
+
+<p>Python's asyncio gets a fair bit of bad press. Some of it I agree with, but the good parts of asyncio are good enough to make me like it, and the API needed for a lot of common tasks is actually fairly small.</p>
+
+<p>Here's a small but fairly realistic program. It creates a pool of HTTP connections, and uses this to make two parallel chains of requests.</p>
+
+{{#highlight 'python'}}
+import asyncio
+import httpx
+
+async def async_main():
+    async with httpx.AsyncClient() as client:
+        task_1 = asyncio.create_task(make_http_requests(client, {'some': 'data'}))
+        task_2 = asyncio.create_task(make_http_requests(client, {'more': 'data'}))
+        await asyncio.gather(task_1, task_1)
+
+async def make_http_requests(client, data):
+    response_1 = await client.post('https://postman-echo.com/post', data=data)
+    response_2 = await client.post('https://postman-echo.com/post', data=response_1.json())
+
+asyncio.run(async_main())
+{{/highlight}}
+
+<h3>Tasks</h3>
+
+<p>A task is an asyncio thread of execution. Multiple tasks can run concurrently: typically when a task is waiting for some data to be sent/received on the network, other tasks can progress. This is in fact the whole point of asyncio.</p>
+
+<p>In the above example, <code class="inline">asyncio.run</code> creates the first task, and during that task, each call to <code class="inline">asyncio.create_task</code> creates another task. You only ever need to call <code class="inline">create_task</code> if you want to add some concurrency: it probably won't make sense to just have a single call to <code class="inline">create_task</code>.</p>
+
+<h3>await my_function()</h3>
+
+<p>If you see <code class="inline">await my_function()</code> it means two things:</p>
+
+<ul class="fa-ul">
+  <li><i class="fa-li fa fa-caret-right"></i> the current task will schedule <code class="inline">my_function</code> to run, and wait for it to finish;
+  <li><i class="fa-li fa fa-caret-right"></i> in the meantime other tasks can progress, typically during network i/o.
+</ul>
+
+<h3>asyncio.gather(...</h3>
+
+<p>To wait for multiple tasks to finish, pass them to <code class="inline">asyncio.gather</code>, and <code class="inline">await</code> the result.</p>
+
+<h3>async def my_function():</h3>
+
+<p>A function declared as <code class="inline">async</code> is very similar to a regular function, but just calling it won't do anything: it then needs to be scheduled. This is done by either <code class="inline">await</code>ing its result, or passing it to another function such as <code class="inline">create_task</code> that will schedule it for you.
+
+<p>Some don't like having to write <code class="inline">async</code> and <code class="inline">await</code>, but in complex multi-task programs, I find it useful to be clear which functions allow other tasks to progress, and which don't.</p>
+
+<h3>async with</h3>
+
+<p><code class="inline">async with</code> is like a regular context manager's <code class="inline">with</code>, except it documents that during entry or exit, other tasks may progress. It's commonly used to create and destroy pools of network connections, often a part of HTTP or database clients.</p>
+
+<hr>
+
+<p>That's it! There are more parts to the API, but for a lot of common use-cases, you don't need them.</p>
