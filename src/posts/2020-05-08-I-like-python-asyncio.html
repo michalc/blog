@@ -21,8 +21,8 @@ async def async_main():
         await asyncio.gather(task_1, task_1)
 
 async def make_http_requests(client, data):
-    response_1 = await client.post('https://postman-echo.com/post', data=data)
-    response_2 = await client.post('https://postman-echo.com/post', data=response_1.json())
+    resp_1 = await client.post('https://postman-echo.com/post', data=data)
+    resp_2 = await client.post('https://postman-echo.com/post', data=resp_1.json())
 
 asyncio.run(async_main())
 {{/highlight}}
