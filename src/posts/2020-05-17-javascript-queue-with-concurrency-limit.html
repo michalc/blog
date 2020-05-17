@@ -33,7 +33,7 @@ const Queue = (concurrency) => {
 }
 {{/highlight}}
 
-<p>You enqueue each task by passing it to the function returned by <code class="inline">Queue</code>.</p>
+<p>You enqueue a task by passing it to the function returned by <code class="inline">Queue</code>.</p>
 
 {{#highlight 'javascript'}}
 // In this case, we have a files array, and an async upload function
@@ -49,7 +49,7 @@ files.forEach((file) => {
 });
 {{/highlight}}
 
-<p>If there is available concurrency, a task will run [almost] immediately. Otherwise, it will wait until enough tasks ahead of it have completed for it to run within the concurrency limit.</p>
+<p>If there is available concurrency, the task will run [almost] immediately. Otherwise, it will wait until enough tasks ahead of it have completed for it to run within the concurrency limit.</p>
 
 <h3>Use case</h3>
 
