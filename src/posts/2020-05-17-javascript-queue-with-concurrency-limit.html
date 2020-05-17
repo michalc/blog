@@ -36,14 +36,15 @@ const Queue = (concurrency) => {
 <p>You enqueue a task by passing it to the function returned by <code class="inline">Queue</code>.</p>
 
 {{#highlight 'javascript'}}
-// In this case, we have a files array, and an async upload function
-const files = [...];
-const upload = async (file) => {...};
-
 // Create the queue with a concurrency limit
 const concurrency = 4
 const enqueue = Queue(concurrency);
 
+// In this case, each task is an async upload function...
+const upload = async (file) => {...};
+
+// ... and each task uploads a file
+const files = [...];
 files.forEach((file) => {
     enqueue(async () => upload(file));
 });
