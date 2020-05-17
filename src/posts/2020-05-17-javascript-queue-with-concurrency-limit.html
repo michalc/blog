@@ -1,0 +1,69 @@
+---
+layout: post
+title: "JavaScript task queue"
+subtitle: "Simple FIFO task queue with limited concurrency"
+date: 2020-05-17 11:00:00
+categories: javascript async
+image: assets/images/javascript-bricks.jpeg
+image-height: 512
+image-width: 1024
+---
+
+<p>If you have a number of async tasks to queue and run with limited concurrency, here's a small utility function, <code class="inline">queue</code>, to do that.</p>
+
+{{#highlight 'javascript'}}
+const queue = (concurrency) => {
+    var running = 0;
+    const tasks = [];
+
+    return async (task) => {
+        tasks.push(task);
+        if (running >= concurrency) return;
+
+        ++running;
+        while (tasks.length) {
+            try {
+                await tasks.shift()();
+            } catch(err) {
+                console.error(err);
+            }
+        }
+        --running;
+    }
+}
+{{/highlight}}
+
+<p>You enqueue each task by passing it to the function returned by <code class="inline">queue</code>.</p>
+
+{{#highlight 'javascript'}}
+// In this case, we have a files array, and an async upload function
+const files = [...];
+const upload = async (file) => {...};
+
+// Create the queue with a concurrency limit
+const concurrency = 4
+const enqueue = queue(concurrency);
+
+files.forEach((file) => {
+    enqueue(async () => upload(file));
+});
+{{/highlight}}
+
+<p>If there there is available concurrency, a task will run [almost] immediately. Otherwise, it will wait until enough tasks ahead of it have completed for it to run within the concurrency limit.</p>
+
+<h3>Use case</h3>
+
+<p>A use for this is part of a file uploader that allows arbitrary numbers of uploads. Although browsers limit the number of connections, they also limit how many requests are queued. For example, Chrome can throw <code class="inline">net::ERR_INSUFFICIENT_RESOURCES</code> if you attempt to queue too many. Instead, you can queue the uploads up front.</p>
+
+<h3>Features</h3>
+
+<ul class="fa-ul">
+    <li><i class="fa-li fa fa-caret-right"></i> Can add tasks at any point after queue creation</li>
+    <li><i class="fa-li fa fa-caret-right"></i> No recursion</li>
+    <li><i class="fa-li fa fa-caret-right"></i> No polling</li>
+    <li><i class="fa-li fa fa-caret-right"></i> Small API</li>
+    <li><i class="fa-li fa fa-caret-right"></i> Small amount of code</li>
+    <li><i class="fa-li fa fa-caret-right"></i> Leverages async/await syntax: no handling of promises or callbacks, either internally or in client code</li>
+</ul>
+
+<p>That's it!</p>
