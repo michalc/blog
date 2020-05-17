@@ -53,7 +53,7 @@ files.forEach((file) => {
 
 <h3>Use case</h3>
 
-<p>A use for this is part of a file uploader that allows arbitrary numbers of uploads. Although browsers limit the number of connections, they also limit how many requests are queued. For example, Chrome can throw <code class="inline">net::ERR_INSUFFICIENT_RESOURCES</code> if you attempt to queue too many. Instead, you can queue the uploads up front.</p>
+<p>A use for this is part of a file uploader that allows arbitrary numbers of uploads. Although browsers limit the number of connections, they also limit how many requests are queued: Chrome can throw <code class="inline">net::ERR_INSUFFICIENT_RESOURCES</code> if you attempt to queue too many. To avoid this, you can queue the uploads up front.</p>
 
 <h3>Features</h3>
 
