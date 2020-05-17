@@ -9,10 +9,10 @@ image-height: 512
 image-width: 1024
 ---
 
-<p>If you have a number of async tasks to queue and run with limited concurrency, here's a small utility function, <code class="inline">queue</code>, to do that.</p>
+<p>If you have a number of async tasks to queue and run with limited concurrency, here's a small utility function, <code class="inline">Queue</code>, to do that.</p>
 
 {{#highlight 'javascript'}}
-const queue = (concurrency) => {
+const Queue = (concurrency) => {
     var running = 0;
     const tasks = [];
 
@@ -33,7 +33,7 @@ const queue = (concurrency) => {
 }
 {{/highlight}}
 
-<p>You enqueue each task by passing it to the function returned by <code class="inline">queue</code>.</p>
+<p>You enqueue each task by passing it to the function returned by <code class="inline">Queue</code>.</p>
 
 {{#highlight 'javascript'}}
 // In this case, we have a files array, and an async upload function
@@ -42,7 +42,7 @@ const upload = async (file) => {...};
 
 // Create the queue with a concurrency limit
 const concurrency = 4
-const enqueue = queue(concurrency);
+const enqueue = Queue(concurrency);
 
 files.forEach((file) => {
     enqueue(async () => upload(file));
