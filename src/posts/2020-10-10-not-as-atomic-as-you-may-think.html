@@ -97,7 +97,7 @@ with transaction.atomic():
 <p>This leaves a lot of room for race conditions, which can be roughly split into two classes.</p>
 
 <ul class="fa-ul">
-    <li><i class="fa-li fa fa-caret-right"></i> Between multiple SELECTs, other concurrent transactions can COMMIT, and so their changes become visible <a class="reference" title="Test showing read committed SELECTs see snapshots of committed data" href="https://github.com/michalc/django-postgres-isolation-levels/blob/master/test_read_committed_sees_snapshots.py"></a>. Consider a Sock model, where each sock is either white or black.</p>
+    <li><i class="fa-li fa fa-caret-right"></i> Between multiple SELECTs in a Read committed transaction, other concurrent transactions can COMMIT, and so their changes become visible <a class="reference" title="Test showing read committed SELECTs see snapshots of committed data" href="https://github.com/michalc/django-postgres-isolation-levels/blob/master/test_read_committed_sees_snapshots.py"></a>. Consider a Sock model, where each sock is either white or black.</p>
 
 {{#highlight 'python'}}
 with transaction.atomic():
