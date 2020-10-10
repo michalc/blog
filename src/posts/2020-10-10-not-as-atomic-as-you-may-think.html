@@ -1,0 +1,173 @@
+---
+layout: post
+title: "Django's transaction.atomic()"
+subtitle: "It may not be as atomic as you think: it wasn't for me"
+date: 2020-10-10 11:00:00
+categories: django postgres transactions
+---
+
+<style type="text/css">
+    .reference-counter-reset {
+      counter-reset: reference-counter;
+    }
+    .reference::before {
+        counter-increment: reference-counter;
+        content: "[" counter(reference-counter) "]";
+    }
+</style>
+
+<p class="reference-counter-reset">I have a confession: I assumed things about Django's <code class="inline">transaction.atomic()</code> that are not true, at least not true by default in PostgreSQL. I assumed that in a <code class="inline">transaction.atomic()</code> context as below, database statements are protected from any race conditions, and everything will Just Work™.</p>
+
+{{#highlight 'python'}}
+with transaction.atomic():
+    # Database statements
+{{/highlight}}
+
+<p>But that's really not true.</p>
+
+<p>Enter the world of transaction <em>isolation levels</em>: None with <em>autocommit</em>, <em>Read committed</em>, <em>Repeatable read</em>, <em>Serializable</em>, and "do it yourself".</p>
+
+<h3>Django <span style="font-size:150%; position: relative; top: 2px">⬄</span> SQL mapping</h3>
+
+<p>This post discusses transactions mostly in terms of SQL. As such, it's good to have a reasonable understanding of what Django does in terms of SQL queries.</p>
+
+<style>
+  .table td, .table th {padding-top: 7px;}
+  .table td:first-child {border-right: 2px solid #950000;}
+</style>
+
+<table class="table">
+  <colgroup>
+    <col></col>
+    <col></col>
+  </colgroup>
+  <thead>
+    <tr>
+      <th style="background:none; padding-left: 10px">Django</th>
+      <th>SQL</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td>Fetch from a QuerySet</td>
+      <td>SELECT ...</td>
+    </tr>
+    <tr>
+      <td>Existing model <code class="inline">save</code>, or QuerySet <code class="inline">update</code></td>
+      <td>UPDATE ...</td>
+    </tr>
+    <tr>
+      <td>New model <code class="inline">save</code></td>
+      <td>INSERT ...</td>
+    </tr>
+    <tr>
+      <td>Enter an <code class="inline">atomic</code> context</td>
+      <td>START TRANSACTION</td>
+    </tr>
+    <tr>
+      <td>Exit an <code class="inline">atomic</code> context without exception</td>
+      <td>COMMIT</td>
+    </tr>
+    <tr>
+      <td>Exit an <code class="inline">atomic</code> context with an exception</td>
+      <td>ROLLBACK</td>
+    </tr>
+  </tbody>
+  </tbody>
+</table>
+
+<h3>No explicit transaction, with autocommit</h3>
+
+<p>For completeness, <em>without</em> <code class="inline">transaction.atomic()</code>, by default Django runs in <em>autocommit</em> mode, which means every statement runs in its own <em>Read committed</em> transaction and committed immediately. While tempting to translate "auto" as "don't worry", even in autocommit mode UPDATEs can block <a class="reference" title="Test showing autocommit updates can block" href="https://github.com/michalc/django-postgres-isolation-levels/blob/master/test_autocommit_update_blocks.py"></a>, deadlock <a class="reference" title="Test showing autocommit updates can deadlock" href="https://github.com/michalc/django-postgres-isolation-levels/blob/master/test_autocommit_update_deadlock.py"></a>, or miss rows <a class="reference" title="Test showing autocommit updates can miss rows" href="https://github.com/michalc/django-postgres-isolation-levels/blob/master/test_autocommit_update_misses_rows.py"></a>.</p>
+
+<h3>Read committed</h3>
+
+<p>The default isolation level of a PostgreSQL transaction, and so also of <code class="inline">transaction.atomic()</code>, is <em>Read committed</em>. Such a transaction has 4 important properties.</p>
+
+<ul class="fa-ul">
+  <li><i class="fa-li fa fa-caret-right"></i> Each of its SELECTs behaves as though a snapshot of the database is taken at the start of the SELECT, containing only committed data from other transactions <a class="reference" title="Test showing read committed SELECTs see snapshots of committed data" href="https://github.com/michalc/django-postgres-isolation-levels/blob/master/test_read_committed_sees_snapshots.py"></a>.</li>
+
+  <li><i class="fa-li fa fa-caret-right"></i> Each of its UPDATEs can block if concurrent transactions have UPDATEd the same rows, and block until those transactions COMMIT or ROLLBACK <a class="reference" title="Test showing autocommit updates can block" href="https://github.com/michalc/django-postgres-isolation-levels/blob/master/test_read_committed_update_blocks.py"></a>.</li>
+
+  <li><i class="fa-li fa fa-caret-right"></i> This blocking can lead to deadlock if concurrent UPDATEs on the same rows are done in different orders <a class="reference" title="Test showing autocommit updates can block" href="https://github.com/michalc/django-postgres-isolation-levels/blob/master/test_read_committed_update_deadlock.py"></a>.</li>
+
+  <li><i class="fa-li fa fa-caret-right"></i> Its COMMIT <em>won't</em> fail due to concurrent transactions COMMITting changes to the same rows <a class="reference" title="Test showing autocommit updates can block" href="https://github.com/michalc/django-postgres-isolation-levels/blob/master/test_read_committed_update_succeeds.py"></a>.</li>
+</ul>
+
+<p>This leaves a lot of room for race conditions, which can be roughly split into two classes.</p>
+
+<ul class="fa-ul">
+    <li><i class="fa-li fa fa-caret-right"></i> Between multiple SELECTs, other concurrent transactions can COMMIT, and so their changes become visible <a class="reference" title="Test showing read committed SELECTs see snapshots of committed data" href="https://github.com/michalc/django-postgres-isolation-levels/blob/master/test_read_committed_sees_snapshots.py"></a>. Consider a Sock model, where each sock is either white or black.</p>
+
+{{#highlight 'python'}}
+with transaction.atomic():
+    black_socks = list(Sock.objects.filter(colour='black'))  # A SELECT query
+    white_socks = list(Sock.objects.filter(colour='white'))  # A SELECT query
+{{/highlight}}
+
+    <p>You might be tempted to assume that due to the <code class="inline">transaction.atomic()</code>, each sock will be in exactly one of <code class="inline">black_socks</code> or <code class="inline">white_socks</code>. However, since each SELECT uses a different snapshot of database state, a given sock can be in both, or neither, of these lists.</p><p></p>
+    </li>
+
+    <li><i class="fa-li fa fa-caret-right"></i> <p>Statements that change the database, such as UPDATEs with WHERE clauses, have more complex semantics, effectively using mutiple snapshots over their lifetimes. Similar to SELECT, they effectively take a snapshot at start to initially choose the rows; they then <em>block</em> until the COMMIT of concurrent transactions that are updating those rows; and once unblocked, take snapshots again to re-evaluate the WHERE clause, and, if it passes for any given row, perform the update on it. This re-evaluation on a new snapshot means that such statements may "miss" rows <a class="reference" title="Test showing updates in read committed transactions can miss rows" href="https://github.com/michalc/django-postgres-isolation-levels/blob/master/test_read_committed_update_misses_rows.py"></a>.</p>
+
+    <p>What are typically safe from this class of race-conditions are UPDATEs where the WHERE clause is based on columns that do not change, such as primary keys. From experience, this is the vast majority of UPDATEs.</p>
+    <p></p>
+    </li>
+</ul>
+
+<h3>Repeatable read</h3>
+
+<p>A <em>Repeatable read</em> transaction 
+
+{{#highlight 'python'}}
+with transaction.atomic():
+    cursor = connection.cursor()
+    cursor.execute('SET TRANSACTION ISOLATION LEVEL REPEATABLE READ')
+    # ...
+{{/highlight}}
+
+<p>has 4 important properties.</p>
+
+<ul class="fa-ul">
+    <li><i class="fa-li fa fa-caret-right"></i> It behaves as though a snapshot of the database is taken at the first non transaction-control statement [e.g. a SELECT, UPDATE], which is used throughout the entire transaction, and data it sees is not affected by others transactions COMMITting modifications <a class="reference" title="Test showing repeatable read SELECTs see a single snapshot of committed data" href="https://github.com/michalc/django-postgres-isolation-levels/blob/master/test_repeatable_read_sees_snapshot.py"></a>.</li>
+
+    <li><i class="fa-li fa fa-caret-right"></i> Each of its UPDATEs can block if concurrent transactions UPDATE the same rows, until those transactions COMMIT or ROLLBACK <a class="reference" title="Test showing repeatable read UPDATEs can block" href="https://github.com/michalc/django-postgres-isolation-levels/blob/master/test_repeatable_read_update_blocks.py"></a>. This is the same as Read committed.</li>
+
+    <li><i class="fa-li fa fa-caret-right"></i> This blocking can lead to deadlock if UPDATEs are not ordered <a class="reference" title="Test showing repeatable read UPDATEs can deadlock" href="https://github.com/michalc/django-postgres-isolation-levels/blob/master/test_repeatable_read_update_deadlock.py"></a>. This is the same as Read committed.</li>
+
+    <li><i class="fa-li fa fa-caret-right"></i> It will fail on COMMIT if a concurrent transaction committed updates to the same rows <a class="reference" title="Test showing repeatable reads can fail on commit" href="https://github.com/michalc/django-postgres-isolation-levels/blob/master/test_repeatable_read_fails_if_updating_same_rows.py"></a>.</li>
+</ul>
+
+<p>While attractive, this isn't enough to avoid race conditions. Multiple concurrent transactions can use the same snapshot <a class="reference" title="Test showing concurrent repeatable reads can see the same snapshot" href="https://github.com/michalc/django-postgres-isolation-levels/blob/master/test_repeatable_read_concurrent_see_same_snapshot.py"></a>, violate assumptions of your code, and cause bugs.</p>
+
+<h3>Serializable</h3>
+
+<p><em>Serializable</em> is the strongest isolation level. It's similar to Repeatable read in that a snapshot is taken at the beginning of the first non transaction-control statement <a class="reference" title="Test showing serializable transactions see a single snapshot" href="https://github.com/michalc/django-postgres-isolation-levels/blob/master/test_serializable_sees_snapshot.py"></a>, and it will fail if concurrent serializable transactions attempt to commit updates to the same rows <a class="reference" title="Test showing serializable transactions fail if attempting to commit updates to the same rows" href="https://github.com/michalc/django-postgres-isolation-levels/blob/master/test_serializable_fails_if_update_same_rows.py"></a>.</p>
+
+<p>However, it will fail in more situations than Repeatable read. Specifically, if at COMMIT the database cannot determine that the transaction could have been performed serially with respect to the read/writes of other transactions, then it will fail with a <code class="inline">django.db.DatabaseError</code>. This can happen even if they updated different rows <a class="reference" title="Test showing serializable transactions can fail on commit even if they updated different rows" href="https://github.com/michalc/django-postgres-isolation-levels/blob/master/test_serializable_fails_if_updating_different_rows.py"></a>.</p>
+
+<p>PostgreSQL is somewhat overcautious doing this. For example, the following faily simple example can fail if performed concurrently <a class="reference" title="Test showing serializable transactions can fail on commit if they used count" href="https://github.com/michalc/django-postgres-isolation-levels/blob/master/test_serializable_count_can_fail.py"></a>.</p>
+
+{{#highlight 'python'}}
+with transaction.atomic():
+    cursor = connection.cursor()
+    cursor.execute('SET TRANSACTION ISOLATION LEVEL SERIALIZABLE')
+    Sock.objects.all().count()
+    Sock.objects.get(id=request.POST['sock__id']).save()
+{{/highlight}}
+
+<h3>Do it yourself: select_for_update</h3>
+
+<p>You can "add to" isolation inside transactions using <code class="inline">select_for_update</code>. This blocks until the current transaction can obtain the same locks as an UPDATE would on the matching rows, which are kept until the end of the transaction <a class="reference" title="Test showing select_for_update can block" href="https://github.com/michalc/django-postgres-isolation-levels/blob/master/test_select_for_update_blocks.py"></a>.</p>
+
+<p>A use for this is in a <em>Read committed</em> transaction to enforce serializability, but without the risk of commits failing as they could in a true Serializable transaction, but at the cost of the time of blocking, and the risk of deadlock <a class="reference" title="Test showing select_for_update can deadlock" href="https://github.com/michalc/django-postgres-isolation-levels/blob/master/test_select_for_update_can_deadlock.py"></a>.</p>
+
+<p>At the time of writing this appears to be the only technique that is a first-class Django citizen: no need to write explit SQL.</p>
+
+<h3>Summary</h3>
+
+<p>There is no magic or one-size-fits-all approach to database transactions, and you can't trust Django to always do the right thing, even with a <code class="inline">transaction.atomic()</code> or <code class="inline">select_for_update</code>.</p>
+
+<hr>
+
+<p>Thank you to a collegue of mine who basically told me what I thought I knew was wrong. Thanks also to the <a href="https://www.postgresql.org/docs/12/transaction-iso.html">PostgreSQL isolation levels documentation</a> and to the <a href="https://wiki.postgresql.org/wiki/SSI">PostgreSQL Serializable Snapshot Isolation (SSI) documentation</a> on which some of the above examples are based. These pages are good for further reading for more details on INSERT, DELETE, and other forms of SELECT which are ommitted in the above for brevity.</p>
