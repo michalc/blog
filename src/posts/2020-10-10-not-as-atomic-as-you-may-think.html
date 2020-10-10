@@ -129,7 +129,7 @@ with transaction.atomic():
 <p>has 4 important properties.</p>
 
 <ul class="fa-ul">
-    <li><i class="fa-li fa fa-caret-right"></i> It behaves as though a snapshot of the database is taken at the first non transaction-control statement [e.g. a SELECT, UPDATE], which is used throughout the entire transaction, and data it sees is not affected by others transactions COMMITting modifications <a class="reference" title="Test showing repeatable read SELECTs see a single snapshot of committed data" href="https://github.com/michalc/django-postgres-isolation-levels/blob/master/test_repeatable_read_sees_snapshot.py"></a>.</li>
+    <li><i class="fa-li fa fa-caret-right"></i> It behaves as though a snapshot of the database is taken at the first non transaction-control statement [e.g. a SELECT, UPDATE], which is used throughout the entire transaction, and data it sees is not affected by other transactions COMMITting modifications <a class="reference" title="Test showing repeatable read SELECTs see a single snapshot of committed data" href="https://github.com/michalc/django-postgres-isolation-levels/blob/master/test_repeatable_read_sees_snapshot.py"></a>.</li>
 
     <li><i class="fa-li fa fa-caret-right"></i> Each of its UPDATEs can block if concurrent transactions UPDATE the same rows, until those transactions COMMIT or ROLLBACK <a class="reference" title="Test showing repeatable read UPDATEs can block" href="https://github.com/michalc/django-postgres-isolation-levels/blob/master/test_repeatable_read_update_blocks.py"></a>. This is the same as Read committed.</li>
 
