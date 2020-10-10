@@ -160,7 +160,7 @@ with transaction.atomic():
 
 <p>You can "add to" isolation inside transactions using <code class="inline">select_for_update</code>. This blocks until the current transaction can obtain the same locks as an UPDATE would on the matching rows, which are then kept until the end of the transaction <a class="reference" title="Test showing select_for_update can block" href="https://github.com/michalc/django-postgres-isolation-levels/blob/master/test_select_for_update_blocks.py"></a>.</p>
 
-<p>A use for this is in a <em>Read committed</em> transaction to enforce serializability, but without the risk of commits failing as they could in a true Serializable transaction, but at the cost of the time of blocking, and the risk of deadlock <a class="reference" title="Test showing select_for_update can deadlock" href="https://github.com/michalc/django-postgres-isolation-levels/blob/master/test_select_for_update_can_deadlock.py"></a>.</p>
+<p>A use for this is in a <em>Read committed</em> transaction to enforce serializability, without the risk of commits failing as they could in a true Serializable transaction, but at the cost of the time of blocking, and the risk of deadlock <a class="reference" title="Test showing select_for_update can deadlock" href="https://github.com/michalc/django-postgres-isolation-levels/blob/master/test_select_for_update_can_deadlock.py"></a>.</p>
 
 <p>At the time of writing this appears to be the only technique that is a first-class Django citizen: no need to write explit SQL.</p>
 
