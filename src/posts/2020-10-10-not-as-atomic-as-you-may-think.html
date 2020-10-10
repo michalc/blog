@@ -91,7 +91,7 @@ with transaction.atomic():
 
   <li><i class="fa-li fa fa-caret-right"></i> This blocking can lead to deadlock if concurrent UPDATEs on the same rows are done in different orders <a class="reference" title="Test showing autocommit updates can block" href="https://github.com/michalc/django-postgres-isolation-levels/blob/master/test_read_committed_update_deadlock.py"></a>.</li>
 
-  <li><i class="fa-li fa fa-caret-right"></i> Its COMMIT <em>won't</em> fail due to concurrent transactions COMMITting changes to the same rows <a class="reference" title="Test showing autocommit updates can block" href="https://github.com/michalc/django-postgres-isolation-levels/blob/master/test_read_committed_update_succeeds.py"></a>.</li>
+  <li><i class="fa-li fa fa-caret-right"></i> Its COMMIT <em>won't</em> fail due to concurrent transactions COMMITting the same rows <a class="reference" title="Test showing autocommit updates can block" href="https://github.com/michalc/django-postgres-isolation-levels/blob/master/test_read_committed_update_succeeds.py"></a>.</li>
 </ul>
 
 <p>This leaves a lot of room for race conditions, which can be roughly split into two classes.</p>
