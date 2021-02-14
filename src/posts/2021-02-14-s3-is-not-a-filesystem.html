@@ -1,0 +1,38 @@
+---
+layout: post
+title: "S3 is not a filesystem"
+subtitle: "and that's OK"
+date: 2020-02-14 13:00:00
+categories: s3
+---
+
+<p>Something that occasionally catches developers out is the fact that S3 is not a filesystem, but a key-value store. Specifically</p>
+
+<ul class="fa-ul">
+  <li><i class="fa-li fa fa-caret-right"></i> the keys can be any UTF-8 encoded string, between 1 and 1024 bytes long;</li>
+  <li><i class="fa-li fa fa-caret-right"></i> the values can be any binary string, beteen 0 bytes and 5 terabytes long.</li>
+</li>
+
+<p>Yes, you can emulate certain features of a filesystem using slashes in the keys. In fact, the AWS console does this: it creates a folder by creating a 0-byte object with a trailing slash in its key.</p>
+
+<p>But, you don't have to be limited by the key-structure that a filesystem imposes. For example, if you want to:</p>
+
+<ul class="fa-ul">
+  <li><i class="fa-li fa fa-caret-right"></i> you can have objects, with data, at both of the keys <code class="inline">a</code> and <code class="inline">a/b</code>;</li>
+<li><i class="fa-li fa fa-caret-right"></i> and you can have objects, with data, that have keys ending in <code class="inline">/</code>;</li>
+</ul>
+
+<p>Both of these are impossible in a traditional filesystem.</p>
+
+<p>An example of using this is to store an uploaded file, <code class="inline">some-unique-name.txt</code> say, and then calculate derived data inside its "folder", for example <code class="inline">some-unique-name/analysis1</code> and <code class="inline">some-unique-name/analysis2</code>.</p>
+
+<h3>Now a warning</h3>
+
+<p>If you're above to leverage the fact S3 is a key-value store by having non-filesystem compatible keys, be warned: there are consequences.</p>
+
+<ul class="fa-ul">
+  <li><i class="fa-li fa fa-caret-right"></i> You won't be able to easily sync from S3 to a filesystem.</li>
+  <li><i class="fa-li fa fa-caret-right"></i> Everything that claims to be S3 compatible may not be, and so migrating to them, or using them in a test environment, may be trickier. Specifically, <a href="https://github.com/minio/minio/issues/10160">minio, [that I have used many times and generally really like], is not S3-compatible in this way</a>.</li>
+</ul>
+
+<p>So, there are some valid pragmatic reasons to make sure your keys are filesystem-compatible. But, I can't help the niggling feeling that it's a shame to be limited by systems you're not using...</p>
