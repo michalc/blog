@@ -23,7 +23,7 @@ image-width: 1024
 
 <p>By default, if the connection is interrupted, browsers will have to restart the download from the beginning. If you support HTTP range requests, which use the <code class="inline">accept-ranges</code>, <code class="inline">range</code>, <code class="inline">content-range</code> headers, [and <code class="inline">content-length</code> header] then browsers can resume downloads from where they left off.</p>
 
-<p>See the <a href="https://developer.mozilla.org/en-US/docs/Web/HTTP/Range_requests">MDN docs on HTTP range requests</a> for information. Note that <a href="https://docs.aws.amazon.com/whitepapers/latest/s3-optimizing-performance-best-practices/use-byte-range-fetches.html">S3 supports range requests</a>, so if your code is essentially a proxy to S3, you can proxy the headers to and from S3 to support this fairly easily.</p>
+<p>See the <a href="https://developer.mozilla.org/en-US/docs/Web/HTTP/Range_requests">MDN docs on HTTP range requests</a> for more information. Note that <a href="https://docs.aws.amazon.com/whitepapers/latest/s3-optimizing-performance-best-practices/use-byte-range-fetches.html">S3 supports range requests</a>, so if your code is essentially a proxy to S3, you can proxy the headers to and from S3 to support this fairly easily.</p>
 
 <h3>content-disposition</h3>
 
