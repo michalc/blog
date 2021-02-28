@@ -1,0 +1,39 @@
+---
+layout: post
+title: "How to offer better downloads"
+subtitle: "HTTP headers for pain-free downloads of largish files"
+date: 2021-02-28 07:20:00
+categories: http downloads
+---
+
+<p>If you're offering HTTP file downloads via your own code [rather than redirecting elsewhere], it's often quick and easy to rustle something up quickly. However, the default behaviour in a lot of cases may not give users as good an experience as possible. With a bit of effort, you can polish that right up, and here are 4 sets of HTTP headers that help you do just that.</p>
+
+<h3>content-length</h3>
+
+<p>If you are able to, set the <code class="inline">content-length</code> header with the total size of the file.</p>
+
+<p>This simple header will cause browsers to tell the user an estimated time remaining until the file has download. [It's also required for browsers to attempt to do range requests, as in the following section.]</p>
+
+<p>Note that if streaming a file to the client, e.g. using <a href="https://docs.djangoproject.com/en/3.1/ref/request-response/#streaminghttpresponse-object">Django's StreamingHttpResponse</a>, then at the point the HTTP headers are generated, the full bytes of the file are not available, so this can't happen automatically. You have to explicitly determine the length of the file and set the header. For example, if your data is stored in S3, S3 returns a <code class="inline">content-length</code> header with all responses, and you can take the value of this header and return it to the client.</p>
+
+<h3>accept-ranges / range / content-range [/ content-length]</h3>
+
+<p>By default, if the connection is interrupted, browsers will have to restart the download from the beginning. If you support HTTP range requests, which use the <code class="inline">accept-ranges</code>, <code class="inline">range</code>, <code class="inline">content-range</code> headers, [and <code class="inline">content-length</code> header] then browsers can resume downloads from where they left off.</p>
+
+<p>See the <a href="https://developer.mozilla.org/en-US/docs/Web/HTTP/Range_requests">MDN docs on HTTP range requests</a> for information. Note that <a href="https://docs.aws.amazon.com/whitepapers/latest/s3-optimizing-performance-best-practices/use-byte-range-fetches.html">S3 supports range requests</a>, so if your code is essentially a proxy to S3, you can proxy the headers to and from S3 to support this fairly easily.</p>
+
+<h3>content-disposition</h3>
+
+<p>By default, browsers will guess at a suitable filename for the downloaded file, typically using the last path-component from the URL. Instead, consider what would be a more helpful filename, and set something like <code class="inline">content-disposition: attachment; filename="very-helpful-filename.csv"</code>.</p>
+
+<h3>accept-encoding / content-encoding</h3>
+
+<p>Some files compress well, for example typical CSV files. Serving compressed versions of these would often make downloads much faster. However, if the most likely thing users will do will do is immediately and manually uncompress the file, you've just made their life a tiny bit harder.</p>
+
+<p>However, the browser can do this so the user will never even notice. For example, if the browser sends an <code class="inline">accept-encoding</code> header specifying it accepts gzip [which most modern browsers do], and if the server returns a header of <code class="inline">content-encoding: gzip</code> with gzipped data, the browser will automatically decompress this data on download. The user will notice nothing other than faster downloads.</p>
+
+<p>Unfortunately, S3 doesn't support this sort of content negotiation. If you're storing your data on S3, and want to support both gzipped and non-gzipped versions of an object, you'll have to store them under separate keys. To avoid this, you might be tempted to compress on-the-fly. However, you then won't be able to send a <code class="inline">content-length</code>, or handle range requests.</p>
+
+<hr>
+
+<p>That's it!</p>
