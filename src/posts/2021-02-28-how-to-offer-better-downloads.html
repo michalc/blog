@@ -15,7 +15,7 @@ image-width: 1024
 
 <p>If you are able to, set the <code class="inline">content-length</code> header with the total size of the file.</p>
 
-<p>This simple header will cause browsers to tell the user an estimated time remaining until the file has download. [It's also required for browsers to attempt to do range requests, as in the following section.]</p>
+<p>This simple header will cause browsers to tell users [estimates for] the time-to-completion of downloads. [It's also required for browsers to attempt to do range requests, as in the following section.]</p>
 
 <p>Note that if streaming a file to the client, e.g. using <a href="https://docs.djangoproject.com/en/3.1/ref/request-response/#streaminghttpresponse-object">Django's StreamingHttpResponse</a>, then at the point the HTTP headers are generated, the full bytes of the file are not available, so this can't happen automatically. You have to explicitly determine the length of the file and set the header. For example, if your data is stored in S3, S3 returns a <code class="inline">content-length</code> header with all responses, and you can take the value of this header and return it to the client.</p>
 
