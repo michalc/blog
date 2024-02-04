@@ -23,8 +23,7 @@ jobs:
           aws-region: eu-west-2
       - name: Setup dependencies
         run: |
-          for f in .modules/*.tgz; do tar -zxf "$f" -C node_modules/; done
-          npm rebuild
+          npm install
       - name: Build and publish
         run: |
           ./node_modules/gulp/bin/gulp.js publish
