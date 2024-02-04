@@ -14,7 +14,7 @@
     "dateformat": "^1.0.12",
     "ellipsize": "0.0.2",
     "es6-promise": "^3.1.2",
-    "gulp": "^3.9.0",
+    "gulp": "^4.0.2",
     "gulp-babel": "^6.1.2",
     "gulp-clean-css": "^2.0.5",
     "gulp-compile-handlebars": "^0.6.1",
@@ -28,7 +28,7 @@
     "gulp-sass": "^5.1.0",
     "gulp-uglify": "^2.0.0",
     "gulp-util": "^3.0.7",
-    "gulp-wrap": "^0.11.0",
+    "gulp-wrap": "^0.15.0",
     "install": "^0.8.4",
     "into-stream": "^2.0.0",
     "merge-stream": "^1.0.0",
@@ -40,7 +40,7 @@
     "prismjs": "^1.6.0",
     "stream-to-array": "^2.2.0",
     "striptags": "^2.0.4",
-    "uncss": "^0.14.1",
+    "uncss": "^0.17.3",
     "vinyl-buffer": "^1.0.0"
   },
   "overrides": {
