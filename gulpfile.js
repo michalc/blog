@@ -10,7 +10,7 @@ gulp.task('build', function() {
   var download = require('gulp-download-stream');
   var filter = require('gulp-filter');
   var frontMatter = require('gulp-front-matter');
-  var sass = require('gulp-sass');
+  var sass = require('gulp-sass')(require('node-sass'));
   var postcss = require('gulp-postcss');
   var cleancss = require('gulp-clean-css');
   var autoprefixer = require('autoprefixer');
