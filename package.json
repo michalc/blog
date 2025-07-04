@@ -26,7 +26,7 @@
     "gulp-postcss": "^6.1.0",
     "gulp-rename": "^1.2.2",
     "gulp-sass": "^5.1.0",
-    "gulp-uglify": "^2.0.0",
+    "gulp-uglify": "^3.0.2",
     "gulp-util": "^3.0.7",
     "gulp-wrap": "^0.11.0",
     "install": "^0.8.4",

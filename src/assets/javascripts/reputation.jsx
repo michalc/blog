@@ -93,59 +93,14 @@ document.addEventListener("DOMContentLoaded", function() {
   );
 });
 
-
-var HackerNews = (function() {
-  var base = 'https://hn.algolia.com/api/v1/';
-
-  function fetch(url) {
-    return new Promise((resolve, reject) => {
-      function reqListener() {
-        resolve(JSON.parse(oReq.responseText));
-      }
-
-      var oReq = new XMLHttpRequest();
-      oReq.addEventListener('load', reqListener);
-      oReq.open('GET', url);
-      oReq.send();
-    });
-  }
-
-  function fetchItem(itemId) {
-    return fetch(base + 'items/' + itemId);
-  };
-
-  return {
-    fetchItem: fetchItem
-  };
-})();
-
-class HackerNewsScore extends Preact.Component {
-  constructor(props) {
-    super(props);
-    var itemId = props['item-id'];
-    HackerNews.fetchItem(itemId).then((item) => {
-      this.setState({
-        points: item.points
-      });
-    });
-  }
-
-  render() {
-    return (
-      <span>
-        {this.state.points ? formatNumber(this.state.points) + ' points' : '...'}
-      </span>
-    );
-  }
-}
-
 document.addEventListener("DOMContentLoaded", function() {
-  var elements = document.getElementsByClassName('hacker-news-score');
-  Array.prototype.slice.call(elements).forEach((element) => {
-    var itemId = element.getAttribute('data-hacker-news-item-id');
-    Preact.render(
-      <HackerNewsScore item-id={itemId} />,
-      element
-    );
-  })
+  const elements = document.getElementsByClassName('hacker-news-score');
+  const base = 'https://hn.algolia.com/api/v1/';
+
+  Array.from(elements).forEach(async (element) => {
+    element.innerText = '...';
+    const itemId = element.getAttribute('data-hacker-news-item-id');
+    const response = await (await fetch(base + 'items/' + itemId)).json();
+    element.innerText = formatNumber(response.points);
+  });
 });
