@@ -69,21 +69,6 @@
     </p>
   </footer></div>
 
-  <noscript id="deferred-styles">
-    <link rel="stylesheet" href="https://hello.myfonts.net/count/2d48a7">
-  </noscript>
-  <script>
-    var loadDeferredStyles = function() {
-      var addStylesNode = document.getElementById("deferred-styles");
-      var replacement = document.createElement("div");
-      replacement.innerHTML = addStylesNode.textContent;
-      document.body.appendChild(replacement)
-      addStylesNode.parentElement.removeChild(addStylesNode);
-    };
-    var raf = requestAnimationFrame || mozRequestAnimationFrame ||
-        webkitRequestAnimationFrame || msRequestAnimationFrame;
-    if (raf) raf(function() { window.setTimeout(loadDeferredStyles, 0); });
-    else window.addEventListener('load', loadDeferredStyles);
-  </script>
+  <link rel="stylesheet" href="https://hello.myfonts.net/count/2d48a7" media="print" onload="this.media='all'; this.onload=null;">
 </body>
 </html>
