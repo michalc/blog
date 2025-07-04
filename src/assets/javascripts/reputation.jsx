@@ -37,8 +37,8 @@ async function getSEUser(userId) {
 
 function renderReputation(element, reputation) {
   element.innerHTML = `
-    <span className="reputation">
-      <i className="fa fa-stack-overflow"></i><span className="icon-link-text">${escapeHtml(formatNumber(reputation))}</span>
+    <span class="reputation">
+      <i class="fa fa-stack-overflow"></i><span class="icon-link-text">${escapeHtml(formatNumber(reputation))}</span>
     </span>
   `
 }
