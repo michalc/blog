@@ -1,96 +1,60 @@
-/** @jsx Preact.h */
-
-var Preact = require('preact');
-
-var USER_ID = 1319998;
-var SITE = "stackoverflow.com";
-var KEY = "IuEWeQbgKqLACgi0FNMcOQ((";
-
-var SE = (function() {
-  var base = 'https://api.stackexchange.com/2.1/';
-
-  function fetch(url) {
-    return new Promise((resolve, reject) => {
-      function reqListener() {
-        resolve(JSON.parse(oReq.responseText));
-      }
-
-      var oReq = new XMLHttpRequest();
-      oReq.addEventListener('load', reqListener);
-      oReq.open('GET', url);
-      oReq.send(); 
-    });
-  }
-
-  function toQueryString(obj) {
-    var str = [];
-    for (var key in obj) {
-      str.push(encodeURIComponent(key) + '=' + encodeURIComponent(obj[key]));
-    }
-    return str.join('&');
-  }
-
-  function getUser(userId, site, key) {
-    var params = {
-      site: site,
-      key: key,
-      pagesize: 10
-    };
-
-    return fetch(base + 'users/' + userId + '?' + toQueryString(params)).then(function(response) {
-      return response.items[0];
-    });
-  };
-
-  return {
-    getUser: getUser
-  };
-})();
-
 function formatNumber(num) {
   return num.toString().replace(/(\d)(?=(\d{3})+(?!\d))/g, "$1,");
 }
 
-var user = SE.getUser(USER_ID, SITE, KEY).then(function(user) {
-  return user;
-  self.setState({
-     data: user.reputation
-  });
-  localStorage.setItem('user-' + USER_ID, user.reputation);
-});
-
-class ReputationBox extends Preact.Component {
-  constructor(props) {
-    super(props);
-    var cachedReputation = localStorage.getItem('user-' + USER_ID);
-    this.state = {
-      data: cachedReputation || ''
-    };
+function toQueryString(obj) {
+  var str = [];
+  for (var key in obj) {
+    str.push(encodeURIComponent(key) + '=' + encodeURIComponent(obj[key]));
   }
-  componentDidMount() {
-    var self = this;
-    user.then(function(user) {
-      self.setState({
-        data: user.reputation
-      });
-      localStorage.setItem('user-' + USER_ID, user.reputation);
-    });
-  }
-  render() {
-    if (!this.state.data) return false;
-    return (
-      <span className="reputation">
-        <i className="fa fa-stack-overflow" /><span className="icon-link-text">{formatNumber(this.state.data)}</span>
-      </span>
-    );
-  }
+  return str.join('&');
 }
 
-document.addEventListener("DOMContentLoaded", function() {
-  Preact.render(
-    <ReputationBox />,
-    document.getElementById('reputation')
-  );
+// https://stackoverflow.com/a/6234804/1319998
+function escapeHtml(unsafe) {
+  return unsafe
+    .replaceAll("&", "&amp;")
+    .replaceAll("<", "&lt;")
+    .replaceAll(">", "&gt;")
+    .replaceAll('"', "&quot;")
+    .replaceAll("'", "&#039;");
+};
+
+async function getSEUser(userId) {
+  const site = "stackoverflow.com";
+  const key = "IuEWeQbgKqLACgi0FNMcOQ((";
+  const base = 'https://api.stackexchange.com/2.1/';
+
+  const params = {
+    site: site,
+    key: key,
+    pagesize: 10
+  };
+
+  response = await (await fetch(base + 'users/' + userId + '?' + toQueryString(params))).json()
+  return response.items[0];
+};
+
+function renderReputation(element, reputation) {
+  element.innerHTML = `
+    <span className="reputation">
+      <i className="fa fa-stack-overflow" /><span className="icon-link-text">${escapeHtml(formatNumber(reputation))}</span>
+    </span>
+  `
+}
+
+document.addEventListener("DOMContentLoaded", async function() {
+  const user_id = 1319998;
+
+  const element = document.getElementById('reputation');
+  if (!element) return;
+
+  const cachedReputation = localStorage.getItem('user-' + user_id);
+  if (cachedReputation) renderReputation(element, cachedReputation);
+
+  var user = await getSEUser(user_id);
+  renderReputation(element, user.reputation);
+  localStorage.setItem('user-' + user_id, user.reputation);
 });
 
 document.addEventListener("DOMContentLoaded", function() {

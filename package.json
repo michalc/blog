@@ -36,7 +36,6 @@
     "node-sass": "^9.0.0",
     "npm": "^4.1.2",
     "parse5": "^3.0.1",
-    "preact": "^7.1.0",
     "prismjs": "^1.6.0",
     "stream-to-array": "^2.2.0",
     "striptags": "^2.0.4",
