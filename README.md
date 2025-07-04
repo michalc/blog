@@ -1,6 +1,6 @@
-# blog [![Build Status](https://travis-ci.org/michalc/blog.svg?branch=master)](https://travis-ci.org/michalc/blog)
+# blog [![Build status](https://img.shields.io/github/actions/workflow/status/michalc/blog/test.yml?label=Test%20suite)](https://github.com/michalc/blog/actions/workflows/test.yml)
 
-The source for my personal blog at [http://charemza.name/](http://charemza.name/), built using gulp, hosted on AWS S3 with Cloudfront as CDN, and deployed using Travis.
+The source for my personal blog at [http://charemza.name/](http://charemza.name/), built using gulp, hosted on AWS S3 with Cloudfront as CDN, and deployed using GitHub actions.
 
 
 ## Build
