@@ -1,4 +1,4 @@
-# blog [![Build status](https://img.shields.io/github/actions/workflow/status/michalc/blog/test.yml?label=Test%20suite)](https://github.com/michalc/blog/actions/workflows/test.yml)
+# blog [![Build status](https://img.shields.io/github/actions/workflow/status/michalc/blog/publish.yml?label=Build%20status)](https://github.com/michalc/blog/actions/workflows/publish.yml)
 
 The source for my personal blog at [http://charemza.name/](http://charemza.name/), built using gulp, hosted on AWS S3 with Cloudfront as CDN, and deployed using GitHub actions.
 
