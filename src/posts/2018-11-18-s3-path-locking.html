@@ -1,5 +1,6 @@
 ---
 layout: post
+tags: post
 title:  "S3 path/pseudo-folder locking"
 subtitle: "Efficient concurrent access when using S3 as a filesystem using read/write tree locking"
 date: 2018-11-18 18:50:00
@@ -120,7 +121,7 @@ categories: python asyncio
 
 <p>Knowing the categories of operations we are interested in, we can design an API for a class, <code class="inline">PathLock</code>. If implemented, we could write something like the below.</p>
 
-{{#highlight 'python'}}
+{% highlight python %}
 import asyncio
 from path_lock import PathLock
 
@@ -145,7 +146,7 @@ async def copy(path_from, path_to):
 async def read(path):
   async with lock(read=[path], write=[]):
     ...
-{{/highlight}}
+{% endhighlight %}
 
 <p>Each <code class="inline">path</code> argument can be some object that represents the path of a pseudo folder, such as <a href="https://docs.python.org/3/library/pathlib.html#pathlib.PurePosixPath">PurePosixPath</a>.</p>
 

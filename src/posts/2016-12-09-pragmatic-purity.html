@@ -1,5 +1,6 @@
 ---
 layout: post
+tags: post
 title:  "Pragmatic Purity"
 subtitle: "Keep pure and impure code separate, with fewer impure code paths"
 date: 2016-12-09 16:00:00
@@ -10,20 +11,20 @@ categories: programming pure
 
 <p>The code below follows a common pattern in impure code.</p>
 
-{{#highlight 'javascript'}}
+{% highlight js %}
 if (condition) {
   doFooImpurely();
 } else {
   doBarImpurely();
 }
-{{/highlight}}
+{% endhighlight %}
 
 <p>If you can extract out common logic from <code class="inline">doFooImpurely</code> and <code class="inline">doBarImpurely</code> into a meaningful intermediate variable that can be calculated purely, so the code is of the following form</p>
 
-{{#highlight 'javascript'}}
+{% highlight js %}
 const intermediateValue = condition ? getFooValuePurely() : getBarValuePurely();
 doImpurely(intermediateValue);
-{{/highlight}}
+{% endhighlight %}
 
 <p>then I would recommend considering it. Even if the total cycomatic complexity of the code is equal to what it was, I usually judge the latter to be better because</p>
 
@@ -34,7 +35,7 @@ doImpurely(intermediateValue);
 
 <p>The benefit is greater in more complex cases.</p>
 
-{{#highlight 'javascript'}}
+{% highlight js %}
 if (condition) {
   doFooImpurely();
 } else if (anotherCondition) {
@@ -42,15 +43,15 @@ if (condition) {
 } else {
   doQuxImpurely();
 }
-{{/highlight}}
+{% endhighlight %}
 
 <p>If you can extract out the pure logic, the code can then take the below form.</p>
 
-{{#highlight 'javascript'}}
+{% highlight js %}
 const intermediateValue = 
    condition        ? getFooValuePurely() :
   (anotherCondition ? getQuxValuePurely() : getBarValuePurely());
 doImpurely(intermediateValue);
-{{/highlight}}
+{% endhighlight %}
 
 <p>If you're not a fan of the nested ternary operator, you can easily restructure the pure part of the code: make it a series of if statements, extract out to another function, etc. A really nice benefit of pure code is that you can really easily move code about, and have confidence that it doesn't negatively affect the code that "does stuff", i.e. the impure code.</p>

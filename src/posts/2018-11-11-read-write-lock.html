@@ -1,5 +1,6 @@
 ---
 layout: post
+tags: post
 title:  "Python asyncio read/write lock"
 subtitle: "Using asynccontextmanager to create a read/write lock"
 date: 2018-11-11 14:50:00
@@ -25,7 +26,7 @@ categories: python asyncio
 
 <p>Python's standard library comes with an <a href="https://docs.python.org/3/library/asyncio-sync.html#asyncio.Lock">exclusive lock</a>. This can be used, for example:</p>
 
-{{#highlight 'python'}}
+{% highlight python %}
 import asyncio
 lock = asyncio.Lock()
 
@@ -34,7 +35,7 @@ async def locked():
     # ...
     async with lock:
        # only one task can be here at any given time
-{{/highlight}}
+{% endhighlight %}
 
 <p>Note that a lock in this context isn't really analogous to a lock on a door. An exclusive lock is better compared to a talking stick or a talking spoon, in that only the person who has acquired the talking stick can talk, others must wait until they acquire it. For other sorts of locks, it's a bit more complex and the analogy can break down.</p>
 
@@ -83,7 +84,7 @@ async def locked():
 
 <p>The usage is very similar to the built-in exclusive lock, except that the lock object is callable with a required argument, an object representing which of the <code class="inline">Read</code> and <code class="inline">Write</code> lock modes is desired.</p>
 
-{{#highlight 'python'}}
+{% highlight python %}
 from asyncio_read_write_lock import FifoLock, Read, Write
 
 lock = FifoLock()
@@ -99,7 +100,7 @@ async def write():
     # ...
     async with lock(Write):
        # only one task can be here at any given time, and only if no readers
-{{/highlight}}
+{% endhighlight %}
 
 <p>The lock class <code class="inline">FifoLock</code> is general, and can support more complex locks than read/write, although here we just use it as a read/write lock.</p>
 

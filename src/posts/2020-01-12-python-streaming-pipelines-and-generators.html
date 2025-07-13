@@ -1,5 +1,6 @@
 ---
 layout: post
+tags: post
 title:  "Python generators"
 subtitle: "Neatly manage stream processing pipelines for medium data"
 date: 2020-01-12 11:00:00
@@ -14,7 +15,7 @@ categories: python streaming
 
 <h3>Basic examples</h3>
 
-{{#highlight 'python'}}
+{% highlight python %}
 def generate_words():
     yield 'first'
     yield 'second'
@@ -24,11 +25,11 @@ def generate_words():
 words = generate_words()
 for word in words:
     print(word, end=', ')
-{{/highlight}}
+{% endhighlight %}
 
 <p>Often the keyword <code class="inline">yield</code> is itself in a loop. For example, the above is equivalent to the below.</p>
 
-{{#highlight 'python'}}
+{% highlight python %}
 def generate_words():
     for word in ['first', 'second', 'third']:
         yield word
@@ -37,11 +38,11 @@ def generate_words():
 words = generate_words()
 for word in words:
     print(word, end=', ')
-{{/highlight}}
+{% endhighlight %}
 
 <p>Generators can then be chained together to make a pipeline.</p>
 
-{{#highlight 'python'}}
+{% highlight python %}
 def generate_words():
     for word in ['first', 'second', 'third']:
         yield word
@@ -55,7 +56,7 @@ words = generate_words()
 processed_words = process_words(words)
 for word in processed_words:
     print(word, end=', ')
-{{/highlight}}
+{% endhighlight %}
 
 <h3>Declaring a generator</h3>
 
@@ -83,7 +84,7 @@ for word in processed_words:
 
 <p>A more real-world, and complex, example is constructing a CSV dump of table from a Postgres database using psycopg2, using a single database query [not using an ORM], and streaming it from a Django view. You could do something like the following, which uses a chain of generators.</p>
 
-{{#highlight 'python'}}
+{% highlight python %}
 import csv
 import os
 import psycopg2
@@ -129,7 +130,7 @@ def my_streaming_csv_view(_):
     # Django/the web-server adds to this pipeline: adding HTTP chunked
     # headers, and sending data to the underlying socket
     return StreamingHttpResponse(csv_bytes, content_type='text/csv')
-{{/highlight}}
+{% endhighlight %}
 
 <p>This is ok, especially in terms of separation of components in the pipeline: fetching from the database is separate from conversion to CSV, which in turn is separate from any HTTP concerns.</p>
 
@@ -139,7 +140,7 @@ def my_streaming_csv_view(_):
 
 <p>We can send HTTP chunks of [for example] 8KB, even if each CSV row is smaller or bigger than 8KB. To do this we add a buffering step to the pipeline: we don't need to touch the database code, the CSV-writing code, or the code of <code class="inline">StreamingHttpResponse</code>.</p>
 
-{{#highlight 'python'}}
+{% highlight python %}
 def buffer(chunk_size, bytes_items):
     queue = []
     queue_length = 0
@@ -173,7 +174,7 @@ def my_streaming_csv_view(_):
     chunked_csv_bytes = buffer(8192, csv_bytes)
 
     return StreamingHttpResponse(chunked_csv_bytes, content_type='text/csv')
-{{/highlight}}
+{% endhighlight %}
 
 <p>This mechanism of being able to define and maintain a pipeline, in code, with the minimum of boilerplate, and without needing any extra libraries, in my opinion is wonderful.</p>
 

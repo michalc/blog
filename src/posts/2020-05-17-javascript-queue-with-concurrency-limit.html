@@ -1,5 +1,6 @@
 ---
 layout: post
+tags: post
 title: "JavaScript task queue"
 subtitle: "Simple FIFO task queue with limited concurrency"
 date: 2020-05-17 11:00:00
@@ -11,7 +12,7 @@ image-width: 1024
 
 <p>Here's <code class="inline">Queue</code>, a small utility function to queue and run tasks with limited concurrency.</p>
 
-{{#highlight 'javascript'}}
+{% highlight js %}
 const Queue = (concurrency) => {
     var running = 0;
     const tasks = [];
@@ -31,11 +32,11 @@ const Queue = (concurrency) => {
         --running;
     }
 }
-{{/highlight}}
+{% endhighlight %}
 
 <p>You enqueue a task by passing it to the function returned by <code class="inline">Queue</code>.</p>
 
-{{#highlight 'javascript'}}
+{% highlight js %}
 // Create the queue with a concurrency limit
 const concurrency = 4
 const enqueue = Queue(concurrency);
@@ -48,7 +49,7 @@ const files = [...];
 files.forEach((file) => {
     enqueue(async () => upload(file));
 });
-{{/highlight}}
+{% endhighlight %}
 
 <p>If there is available concurrency, the task will run [almost] immediately. Otherwise, it will wait until enough tasks ahead of it have completed for it to run within the concurrency limit.</p>
 

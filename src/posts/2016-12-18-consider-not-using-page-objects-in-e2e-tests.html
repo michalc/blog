@@ -1,5 +1,6 @@
 ---
 layout: post
+tags: post
 title:  "Reasons to not use page objects in E2E tests"
 subtitle: "They can result in code that is harder to reason about"
 date: 2016-12-18 10:00:00
@@ -18,7 +19,7 @@ categories: angularjs e2e
 
 <p>Consider the <a href="https://github.com/angular/protractor/blob/7b371fcd9e47904dd6e3a226edc70292f08a2547/docs/page-objects.md">official example</a> below.</p>
 
-{{#highlight 'javascript'}}
+{% highlight js %}
 var AngularHomepage = function() {
   var nameInput = element(by.model('yourName'));
   var greeting = element(by.binding('yourName'));
@@ -35,7 +36,7 @@ var AngularHomepage = function() {
     return greeting.getText();
   };
 };
-{{/highlight}}
+{% endhighlight %}
 
 <p>Because of the behaviour of <code class="inline">ElementFinder</code>, the elements are actually only retrieved when you call <code class="inline">setName</code> or <code class="inline">getGreeting</code>. Of course you know this, since you know how Protractor behaves, and can see the code of the page object. But you could have this information much closer to the test rather than elsewhere. When you have more complex page behaviour, with elements appearing and disappearing due to non-trivial behaviour, in order to keep the tests maintainable, it is important to make sure that they are doing what you think they're doing.</p>
 
@@ -47,11 +48,11 @@ var AngularHomepage = function() {
 
 <p>Consider the example above. As mentioned, the elements are actually found on the page when you call <code class="inline">setName</code> or <code class="inline">getGreeting</code>, but you are offered no way to "refind" an element, say if the application removes them and new ones are added to the DOM. Of course, you can create a new instance of that page object, or add a method to do it, 
 
-{{#highlight 'javascript'}}
+{% highlight js %}
 this.refindNameInput = function() {
   nameInput = element(by.model('yourName'))
 };
-{{/highlight}}
+{% endhighlight %}
 
 <p>but doing this means that you are completely leaking how the page object handles state internally. Encapsulation has offered little but another layer of code between the test and what it's doing.</p>
 
@@ -59,15 +60,15 @@ this.refindNameInput = function() {
 
 <p><a href="https://github.com/angular/protractor/blob/7b371fcd9e47904dd6e3a226edc70292f08a2547/docs/page-objects.md">The page object example in the documentation<a> suggests wrapping the non-semantic UI actions such as typing in an input and getting text from an element...</a>
 
-{{#highlight 'javascript'}}
+{% highlight js %}
 nameInput.sendKeys(name);
 ...
 greeting.getText();
-{{/highlight}}
+{% endhighlight %}
 
 <p>... with functions with semantic names.</p>
 
-{{#highlight 'javascript'}}
+{% highlight js %}
 this.setName = function(name) {
   nameInput.sendKeys(name);
 };
@@ -75,7 +76,7 @@ this.setName = function(name) {
 this.getGreeting = function() {
   return greeting.getText();
 };
-{{/highlight}}
+{% endhighlight %}
 
 <p>The main problems is that it's needlessly hiding how the object is interacting with the elements on the page and where the object gets its data. This means it's less clear what the test is testing.</p>
 
@@ -117,7 +118,7 @@ testing can save me hours of planning.</p>
 
 <p>For example, consider the following test.</p>
 
-{{#highlight 'javascript'}}
+{% highlight js %}
 describe('my homepage', function() {
   it('should greet the named user', function() {
     browser.get('http://mypage.com');
@@ -127,7 +128,7 @@ describe('my homepage', function() {
     expect(greeting.getText()).toEqual('Hello Julie!');
   });
 });
-{{/highlight}}
+{% endhighlight %}
 
 <p>You can see, right here in these few lines of code, what the test is doing: how the elements are being found and how Protractor is interacting with them. I think each test of your suite should be this clear. This does mean they will be some repeat calls to <code class="inline">ElementFinder</code> functions, or maybe some repeated locators, but so be it!</p>
 

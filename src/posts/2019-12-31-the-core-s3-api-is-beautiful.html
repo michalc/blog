@@ -1,5 +1,6 @@
 ---
 layout: post
+tags: post
 title:  "The core S3 API is beautiful"
 subtitle: "Just PUT and GET: it couldn't be simpler"
 date: 2019-12-31 08:10:00
@@ -31,7 +32,7 @@ x-amz-date: ...\r\n
 
 <p>This means that as long as you can inject the right headers, you can use <em>any</em> HTTP client to make the requests. Here's an example using Python requests.</p>
 
-{{#highlight 'python'}}
+{% highlight python %}
 import os
 import requests
 
@@ -50,7 +51,7 @@ headers = aws_sig_v4_headers(
 	service, region, host, 'GET', path, query, data,
 )
 response = requests.get(f'https://{host}{path}', headers=headers)
-{{/highlight}}
+{% endhighlight %}
 
 <p>If the core wasn't so straightforward, I suspect S3 would not be anywhere near as popular, and S3-compatible storage providers may not even exist.</p>
 

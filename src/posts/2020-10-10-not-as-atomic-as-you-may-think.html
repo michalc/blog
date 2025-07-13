@@ -1,5 +1,6 @@
 ---
 layout: post
+tags: post
 title: "Django's transaction.atomic()"
 subtitle: "It may not be as atomic as you think: it wasn't for me"
 date: 2020-10-10 11:00:00
@@ -21,10 +22,10 @@ image-width: 1024
 
 <p class="reference-counter-reset">I have a confession: I assumed things about Django's <code class="inline">transaction.atomic()</code> that are not true, at least not true by default in PostgreSQL. I assumed that in a <code class="inline">transaction.atomic()</code> context as below, database statements are protected from any race conditions, and everything will Just Work™.</p>
 
-{{#highlight 'python'}}
+{% highlight python %}
 with transaction.atomic():
     # Database statements
-{{/highlight}}
+{% endhighlight %}
 
 <p>But that's really not true.</p>
 
@@ -98,11 +99,11 @@ with transaction.atomic():
 <ul class="fa-ul">
     <li><i class="fa-li fa fa-caret-right"></i> Between multiple SELECTs in a Read committed transaction, other concurrent transactions can COMMIT, and so their changes become visible <a class="reference" title="Test showing read committed SELECTs see snapshots of committed data" href="https://github.com/michalc/django-postgres-isolation-levels/blob/master/test_read_committed_sees_snapshots.py"></a>. Consider a Sock model, where each sock is either white or black.</p>
 
-{{#highlight 'python'}}
+{% highlight python %}
 with transaction.atomic():
     black_socks = list(Sock.objects.filter(colour='black'))  # A SELECT query
     white_socks = list(Sock.objects.filter(colour='white'))  # A SELECT query
-{{/highlight}}
+{% endhighlight %}
 
     <p>You might be tempted to assume that due to the <code class="inline">transaction.atomic()</code>, each sock will be in exactly one of <code class="inline">black_socks</code> or <code class="inline">white_socks</code>. However, since each SELECT uses a different snapshot of database state, a given sock can be in both, or neither, of these lists.</p><p></p>
     </li>
@@ -118,12 +119,12 @@ with transaction.atomic():
 
 <p>A <em>Repeatable read</em> transaction 
 
-{{#highlight 'python'}}
+{% highlight python %}
 with transaction.atomic():
     cursor = connection.cursor()
     cursor.execute('SET TRANSACTION ISOLATION LEVEL REPEATABLE READ')
     # ...
-{{/highlight}}
+{% endhighlight %}
 
 <p>has 4 important properties.</p>
 
@@ -147,13 +148,13 @@ with transaction.atomic():
 
 <p>PostgreSQL is somewhat overcautious doing this. For example, the following faily simple example can fail if performed concurrently <a class="reference" title="Test showing serializable transactions can fail on commit if they used count" href="https://github.com/michalc/django-postgres-isolation-levels/blob/master/test_serializable_count_can_fail.py"></a>.</p>
 
-{{#highlight 'python'}}
+{% highlight python %}
 with transaction.atomic():
     cursor = connection.cursor()
     cursor.execute('SET TRANSACTION ISOLATION LEVEL SERIALIZABLE')
     Sock.objects.all().count()
     Sock.objects.get(id=request.POST['sock__id']).save()
-{{/highlight}}
+{% endhighlight %}
 
 <h3>Do it yourself: select_for_update</h3>
 

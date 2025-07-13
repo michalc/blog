@@ -1,19 +1,21 @@
-# blog [![Build status](https://img.shields.io/github/actions/workflow/status/michalc/blog/publish.yml?label=Build%20status)](https://github.com/michalc/blog/actions/workflows/publish.yml)
+# blog [![Build status](https://img.shields.io/github/actions/workflow/status/michalc/blog/deploy-to-github-pages.yml?label=Build%20status)](https://github.com/michalc/blog/actions/workflows/deploy-to-github-pages.yml)
 
-The source for my personal blog at [http://charemza.name/](http://charemza.name/), built using gulp, hosted on AWS S3 with Cloudfront as CDN, and deployed using GitHub actions.
+The source for my personal blog at [http://charemza.name/](http://charemza.name/), deployed using GitHub actions.
 
+## Build locally
 
-## Build
+To build locally, for the first time run:
 
-To build the site into the `build` directory for the first time:
-
-```
+```bash
 npm install
-gulp
+npm rebuild node-sass
 ```
 
-Subsequent changes can be built by:
+And then run
 
+```bash
+ npx @11ty/eleventy --serve
 ```
-gulp
-```
+
+
+

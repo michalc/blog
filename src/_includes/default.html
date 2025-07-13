@@ -1,38 +1,36 @@
-<!DOCTYPE html>
+<!doctype html>
 <html lang="en">
 <head>
   <meta http-equiv="Content-Type" content="text/html;charset=utf-8" />
-  {{#if title}}
-  <title>{{ title }} - {{ site.name }}</title>
+  {% if title %}
+  <title>{{ title }} - {{ siteName }}</title>
   <meta property="og:title" content="{{ title }}">
-  {{else}}
-  <title>{{ site.name }}</title>
-  <meta property="og:title" content="{{ site.name }}">
-  {{/if}}
-  {{#if title}}
+  {% else %}
+  <title>{{ siteName }}</title>
+  <meta property="og:title" content="{{ siteName }}">
+  {% endif %}
+  {% if title %}
   <meta name="description" content="{{ subtitle }}">
   <meta property="og:description" content="{{ subtitle }}">
   <meta property="og:type" content="article">
-  {{else}}
+  {% else %}
   <meta name="description" content="Software, data, and cloud infrastructure engineer">
-  <meta property="og:description" content="Software, data, and cloud infrastructure engineerr">
-  {{/if}}
-  {{#if image}}
+  <meta property="og:description" content="Software, data, and cloud infrastructure engineer">
+  {% endif %}
+  {% if image %}
   <meta name="twitter:card" content="summary_large_image">
-  <meta property="og:image" content="{{ site.url-no-slash }}{{ lookup assets image }}">
-  {{/if}}
-  {{#if image-width}}
+  <meta property="og:image" content="{{ siteUrlNoSlash }}/{{ image }}">
+  {% endif %}
+  {% if image-width %}
   <meta property="og:image:width" content="{{ image-width }}">
-  {{/if}}
-  {{#if image-height}}
+  {% endif %}
+  {% if image-width %}
   <meta property="og:image:height" content="{{ image-height }}">
-  {{/if}}
+  {% endif %}
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <link rel="shortcut icon" href="{{ lookup assets 'assets/images/favicon.ico' }}">
-  <style>
-    {{ safe styles }}
-  </style>
-  <script src="{{ lookup assets 'assets/javascripts/reputation.js' }}" defer></script>
+  <link rel="shortcut icon" href="/assets/images/favicon.ico">
+  <link rel="stylesheet" href="/assets/stylesheets/site.css">
+  <script src="/assets/javascripts/reputation.js" defer></script>
 </head>
 <body>
   <header class="page-header" id="michal-charemza-author" itemprop="author" itemscope itemtype="http://schema.org/Person"><div class="page-header-inner">
@@ -49,20 +47,20 @@
         </span>
       </div>
       <a href="/">
-        <img class="avatar" alt="Michal Charemza" src="{{ site.url-no-slash }}{{ lookup assets 'assets/images/michal-charemza.jpeg' }}" width="125" height="125" itemprop="image" id="michal-charemza-image">
+        <img class="avatar" alt="Michal Charemza" src="/assets/images/michal-charemza.jpeg" width="125" height="125" itemprop="image" id="michal-charemza-image">
       </a>
     </div>
   </div></header>
   <div class="page-content"><div class="page-content-inner">
-      <%= contents %>
+      {{ content }}
   </div></div>
 
   <div class="page-content"><footer itemprop="publisher" itemscope itemtype="http://schema.org/Organization" id="michal-charemza-limited-publisher">
     <p>
       © 2013 - 2025 <span itemprop="name">Michal Charemza Limited</span>. Licensed under a <a rel="license" href="http://creativecommons.org/licenses/by/4.0/">CC BY 4.0 License</a>.
-      <meta itemprop="url" content="{{ site.url-no-slash }}/">
+      <meta itemprop="url" content="{{ siteUrlNoSlash }}/">
       <span itemprop="logo" itemscope itemtype="https://schema.org/ImageObject">
-        <meta itemprop="url" content="{{ site.url-no-slash }}{{ lookup assets 'assets/images/michal-charemza-logo.png' }}">
+        <meta itemprop="url" content="{{ siteUrlNoSlash }}/assets/images/michal-charemza-logo.png">
         <meta itemprop="width" content="520">
         <meta itemprop="height" content="60">
       </span>

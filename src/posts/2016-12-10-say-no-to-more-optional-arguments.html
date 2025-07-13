@@ -1,5 +1,6 @@
 ---
 layout: post
+tags: post
 title: "Say no to more optional arguments"
 subtitle: "They're often smelly and biased towards historical code"
 date: 2016-12-10 16:00:00
@@ -9,87 +10,87 @@ categories: programming smells
 
 <p>Often you want to pass in an extra variable to an existing function</p>
 
-{{#highlight 'python'}}
+{% highlight python %}
 def my_func(a):
   ...
-{{/highlight}}
+{% endhighlight %}
 
 <p>so it supports a new use. You usually want the old use to remain the same, so you add a optional argument with a default value. Often, in Python at least, this default is <code class="inline">None</code>.</p>
 
-{{#highlight 'python'}}
+{% highlight python %}
 def my_func(a, b=None):
   ...
-{{/highlight}}
+{% endhighlight %}
 
 <p>So after adding this, you would have two (or more) call sites.</p>
 
-{{#highlight 'python'}}
+{% highlight python %}
 # Original call site
 my_func(a=arg_original)
 
 # New call site
 my_func(a=arg_new_1, b=arg_new_2)
-{{/highlight}}
+{% endhighlight %}
 
 <p>and quite likely inside the function there will be at least one new block of code that modifies its behaviour in the new case.</p>
 
-{{#highlight 'python'}}
+{% highlight python %}
 def my_func(a, b=None):
   ...
   if b is not None:
     ...
-{{/highlight}}
+{% endhighlight %}
 
 <p>This is a run-time check, even though you know, at write-time, that the case you want this to run is in the new call site. Having write-time knowledge that you convert to a run-time check is often needlessly increasing number of branches in the code<sup><a href="#footnote-1">1</a></sup>. I suspect it is a response to personal bias against touching existing code, and it biases the code itself: the original use case is clearer than than the new one. All this, I suspect, is likely to make further changes to the code more difficult.</p>
 
 <p>One small improvement is to not have a default value in the parameter list, so the function looks like<p>
 
-{{#highlight 'python'}}
+{% highlight python %}
 def my_func(a, b):
   ...
   if b is not None:
     ...
-{{/highlight}}
+{% endhighlight %}
 
 <p>and change the original call site to explicitly pass <code class="inline">None</code>.</p>
-{{#highlight 'python'}}
+{% highlight python %}
 # Original call site
 my_func(a=arg_original, b=None)
-{{/highlight}}
+{% endhighlight %}
 
 <p>However, exactly because you can pass <code class="inline">None</code>, and the function handles this case separately, <code class="inline">b</code> is still a <a href="http://mypy.readthedocs.io/en/latest/kinds_of_types.html#the-type-of-none-and-optional-types">de-facto optional argument</a> to the function.</p>
 
 <p>What to do about this depends on the actual code in question. However, often there is code in the function that can be factored out to functions called from outside of the function in question, ideally each returning meaningful values.</p>
 
-{{#highlight 'python'}}
+{% highlight python %}
 # Original call site
 my_func(a=arg_original, b=foo())
 
 # New call site
 my_func(a=arg_new, b=bar())
-{{/highlight}}
+{% endhighlight %}
 
 <p>so the code of <code class="inline">my_func</code> no longer has a special case of handling <code class="inline">b</code> being <code class="inline">None</code>.
 
 <p>In some cases, if you're working in a language that allows lambda functions, it might be clearer to extract out a lambda function that you pass in.</p>
 
-{{#highlight 'python'}}
+{% highlight python %}
 # Original call site
 my_func(a=arg_original, b=lambda x: foo(x))
 
 # New call site
 my_func(a=arg_new, b=lambda x: bar(x))
-{{/highlight}}
+{% endhighlight %}
 
 <p>And of course, if you're working in an object oriented language, it might be appropriate to go the whole hog and pass in an object.</p>
 
-{{#highlight 'python'}}
+{% highlight python %}
 # Original call site
 my_func(a=arg_original, b=new Foo())
 
 # New call site
 my_func(a=arg_new, b=new Bar())
-{{/highlight}}
+{% endhighlight %}
 
 <p>These changes have benefits that they keeps the reponsibility of the original function small, chances are it has limited the number of branches, and it does not bias the code base: the new call site is as clear and deliberate as the original call site.</p>
 

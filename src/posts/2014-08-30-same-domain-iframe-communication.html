@@ -1,5 +1,6 @@
 ---
 layout: post
+tags: post
 title:  "Same-domain iframe communication"
 subtitle: "AngularJS scope events for same-domain bi-directional iframe communication"
 date: 2014-07-27 09:19:00
@@ -13,15 +14,15 @@ categories: angularjs iframe
 
 <p>For simplicity, I've opted to create a small factory in the child app that returns the scope of the iframe in the parent app. This way, it can be used in a very similar way to <code class="inline">$rootScope</code>.</p>
 
-{{#highlight 'javascript'}}
+{% highlight js %}
 appInIframe.factory('$parentScope', function($window) {
   return $window.parent.angular.element($window.frameElement).scope();
 });
-{{/highlight}}
+{% endhighlight %}
 
 <p>Then in any controller in the child app that wants to communicate with the parent, you can use these functions as per the following example.</p>
 
-{{#highlight 'javascript'}}
+{% highlight js %}
 appInIframe.controller('ChildController', function($scope, $parentScope) {
   $scope.messages = [];
   $scope.message = function() {
@@ -33,13 +34,13 @@ appInIframe.controller('ChildController', function($scope, $parentScope) {
     $scope.$apply();
   });
 });
-{{/highlight}}
+{% endhighlight %}
 
 <p>The only thing you should remember is that you need to trigger a digest manually in each app.</p>
 
 <p>The controller in the parent app can then use standard <code class="inline">$broadcast</code> and <code class="inline">$on</code> to commnicate to the iframe.</p>
 
-{{#highlight 'javascript'}}
+{% highlight js %}
 appInParentWindow.controller('ParentController', function($scope) {
   $scope.messages = [];
   $scope.$on('from-iframe', function(e, message) {
@@ -50,7 +51,7 @@ appInParentWindow.controller('ParentController', function($scope) {
     $scope.$broadcast('from-parent', 'Sent from parent');
   };
 });
-{{/highlight}}
+{% endhighlight %}
 
 <p>You can see an <a href="http://plnkr.co/edit/q7h8nU?p=preview">example of this technique in a plunker</a>.</p>
 

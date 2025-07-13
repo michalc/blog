@@ -33,17 +33,17 @@
 @font-face {
   font-family: 'ProximaNova';
   font-weight: 300;
-  src: url('{{ lookup assets "assets/fonts/proxima-nova/2D48A7_0_0.woff" }}') format('woff');
+  src: url('/assets/fonts/proxima-nova-2D48A7_0_0.woff') format('woff');
 }
  
 @font-face {
   font-family: 'ProximaNova';
   font-width: 400;
-  src: url('{{ lookup assets "assets/fonts/proxima-nova/2D48A7_1_0.woff" }}') format('woff');
+  src: url('/assets/fonts/proxima-nova-2D48A7_1_0.woff') format('woff');
 }
  
 @font-face {
   font-family: 'ProximaNova';
   font-weight: 700;
-  src: url('{{ lookup assets "assets/fonts/proxima-nova/2D48A7_2_0.woff" }}') format('woff');
+  src: url('/assets/fonts/proxima-nova-2D48A7_2_0.woff') format('woff');
 }

@@ -1,5 +1,6 @@
 ---
 layout: post
+tags: post
 title:  "I admit it: I like Python's ternary operator"
 subtitle: "With a bit of whitespace, even when nested, I find it clear and safe"
 date: 2019-03-09 10:00:00
@@ -9,18 +10,18 @@ categories: python syntax
 
 <p>Lots of people hate Python's ternary operator. If laid out as:</p>
 
-{{#highlight 'python'}}
+{% highlight python %}
 selected_value = value_1 if condition_1 else value_2 if condition_2 else value_3
-{{/highlight}}
+{% endhighlight %}
 
 <p>I can see why: it's hard to see what's going on. However, laid out differently, it's a different story:</p>
 
-{{#highlight 'python'}}
+{% highlight python %}
 selected_value = \
   value_1 if condition_1 else \
   value_2 if condition_2 else \
   value_3
-{{/highlight}}
+{% endhighlight %}
 
 <p>You can much more clearly see what the possible values are, and under what conditions they're used.</p>
 

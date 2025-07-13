@@ -3,12 +3,12 @@
   font-family: 'Source Code Pro';
   font-style: normal;
   font-weight: 400;
-  src: local('Source Code Pro'), local('SourceCodePro-Regular'), url('{{ lookup assets "assets/fonts/source-code-pro-v6-latin-regular.woff" }}') format('woff');
+  src: local('Source Code Pro'), local('SourceCodePro-Regular'), url('/assets/fonts/source-code-pro-v6-latin-regular.woff') format('woff');
 }
 /* source-code-pro-700 - latin */
 @font-face {
   font-family: 'Source Code Pro';
   font-style: normal;
   font-weight: 700;
-  src: local('Source Code Pro Bold'), local('SourceCodePro-Bold'), url('{{ lookup assets "assets/fonts/source-code-pro-v6-latin-700.woff" }}') format('woff');
+  src: local('Source Code Pro Bold'), local('SourceCodePro-Bold'), url('/assets/fonts/source-code-pro-v6-latin-700.woff') format('woff');
 }

@@ -1,5 +1,6 @@
 ---
 layout: post
+tags: post
 title:  "AngularJS Transclude"
 subtitle: "Break free from the DOM: move compiled elements to arbitrary locations"
 date: 2014-07-27 09:19:00
@@ -9,12 +10,12 @@ categories: angularjs transclude
 
 <p>Transclusion allows a directive to move clone(s) of the contents of a directive to an arbitrary place in the DOM. Usually this is at the original location of the directive, wrapped in some extra elements, but it doesn't have to be. So why move the element? You might want components to still have access to the original scope, with any models and methods, but for page-layout or CSS reasons be elsewhere.</p>
 
-{{#highlight 'markup'}}
+{% highlight html %}}
 \{{model.variable}}
 <move>
   Contents bound to local scope \{{model.variable}}
 </move>
-{{/highlight}}
+{% endhighlight %}
 
 <p>Example components that use this could be</p>
 
@@ -27,7 +28,7 @@ categories: angularjs transclude
 
 <p>One thing to keep in mind is that you'll have to make sure you remove the element from the DOM when the original scope is destroyed. The high-level code would look like the following.</p>
 
-{{#highlight 'javascript'}}
+{% highlight js %}
 app.directive('move', function() {
   return {
     restrict: 'E',
@@ -42,7 +43,7 @@ app.directive('move', function() {
     }
   };
 });
-{{/highlight}}
+{% endhighlight %}
 
 <p>There are a few techniques that can be used to communicate the clone of the element to the new location.</p>
 

@@ -1,5 +1,6 @@
 ---
 layout: post
+tags: post
 title:  "The beauty and the horror of Haskell monads"
 subtitle: "They are wonderful, but terrible"
 date: 2017-05-06 10:00:00
@@ -28,7 +29,7 @@ categories: haskell monad
 
 <p>Taking and modifying some examples from <a href="http://dev.stephendiehl.com/hask/#readert">What I Wish I Knew When Learning Haskell</a>, we can see a use of the Maybe monad,
 
-{{#highlight 'haskell'}}
+{% highlight haskell %}
 main :: IO ()
 main = putStrLn . show $ example
 
@@ -37,11 +38,11 @@ example = do
   a <- Just 3
   b <- Nothing
   return $ a + b
-{{/highlight}}
+{% endhighlight %}
 
 <p>and an example of the Reader monad.</p>
 
-{{#highlight 'haskell'}}
+{% highlight haskell %}
 import Control.Monad.Reader
 
 data MyContext = MyContext
@@ -59,19 +60,19 @@ computation = do
   if n > 0
     then return (Just x)
     else return Nothing
-{{/highlight}}
+{% endhighlight %}
 
 <p>The monadic values <code class="inline">example</code> and <code class="inline">compution</code> definitions have similarities: do notation, <-, and return. However, these similarities are misleading. Take for example <code class="inline">return</code> from the Maybe monad. Its definition is</p>
 
-{{#highlight 'haskell'}}
+{% highlight haskell %}
 return = Just
-{{/highlight}}
+{% endhighlight %}
 
 <p>while the Reader monad's definition is</p>
 
-{{#highlight 'haskell'}}
+{% highlight haskell %}
 return a = Reader $ \_ -> a
-{{/highlight}}
+{% endhighlight %}
 
 <p>Similarly, because of the different implementations of <code class="inline">&gt;&gt;=</code>, line breaks in the do-notations result in different code. Hence how monads are sometimes described as <em>programmable semicolons</em>.</p>
 

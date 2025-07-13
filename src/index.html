@@ -1,19 +1,23 @@
 ---
 subtitle: A few of my thoughts on a few web-related issues.
+eleventyExcludeFromCollections: true
+eleventyImport:
+  collections: ["all"]
+layout: default
 ---
 
 <p>A few of my thoughts on web-related issues. Feel free to contact me at <a href="mailto:michal@charemza.name">michal@charemza.name</a>.</p>
 <div>
-  {{#each posts as |post i| }}
+  {%- for post in collections.post reversed -%}
   <section class="post-summary">
-    <a href="{{ post.url }}" >
+    <a href="{{ post.url }}">
       <header>
         <i class="fa fa-angle-right"></i>
-        <h2>{{ post.title }}</h2>
-        <p class="post-subtitle">{{ post.subtitle }} </p>
-        <p class="post-date"><time datetime="{{ isodate post.date }}">{{ nicedate post.date }}</time></p>
+        <h2>{{ post.data.title }}</h2>
+        <p class="post-subtitle">{{ post.data.subtitle }} </p>
+        <p class="post-date"><time datetime="{{ isodate post.date }}">{{ post.date | nicedate }}</time></p>
       </header>
     </a>
   </section>
-  {{/each}}
+  {%- endfor -%}
 </div>

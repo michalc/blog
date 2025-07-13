@@ -324,7 +324,7 @@ code.inline {
 }
 
 /* Code Font */
-.highlight, code, pre {
+.highlight, pre[class*="language-"] {
 	font-family: "Source Code Pro";
   font-size: 13px;
 }

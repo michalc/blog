@@ -1,5 +1,6 @@
 ---
 layout: post
+tags: post
 title:  "Hidden structure"
 subtitle: "The unexpected similarities between mapping over a list and function composition"
 date: 2017-05-22 10:00:00
@@ -10,48 +11,48 @@ categories: haskell functor
 
 <p>Trying to understand functors, I came accross the initially strange fact that functions are functors. Which means, roughly speaking, you can "map", another function over it. So given a function</p>
 
-{{#highlight 'haskell'}}
+{% highlight haskell %}
 g :: r -> a
-{{/highlight}}
+{% endhighlight %}
 
 <p>and another function</p>
 
-{{#highlight 'haskell'}}
+{% highlight haskell %}
 f :: a -> b
-{{/highlight}}
+{% endhighlight %}
 
 <p>you can "map" the second function over the first to get another function, which is defined as the composition of the two.</p>
 
-{{#highlight 'haskell'}}
+{% highlight haskell %}
 fmap f g :: r -> b
 fmap f g = f . g
-{{/highlight}}
+{% endhighlight %}
 
 <p>Similarly, and more familiarly, you can take a list</p>
 
-{{#highlight 'haskell'}}
+{% highlight haskell %}
 xs :: [a]
-{{/highlight}}
+{% endhighlight %}
 
 <p>and a function</p>
 
-{{#highlight 'haskell'}}
+{% highlight haskell %}
 f :: a -> b
-{{/highlight}}
+{% endhighlight %}
 
 <p>and map the function over the list to get another list.</p>
 
-{{#highlight 'haskell'}}
+{% highlight haskell %}
 fmap f xs :: [b]
 fmap f xs = [f x | x <- xs]
-{{/highlight}}
+{% endhighlight %}
 
 <p>(I suspect this isn't how <code class="inline">fmap</code> is defined on a list in the real source, but I find list comprehensions quite easy to understand.)</p>
 
 <p>The suprising thing is that you can express two seemingly very different activities, mapping a function over a list, and composing a function with another function, in Haskell using the same function: <code class="inline">fmap</code>. Here "the same" is defined as having the same type signature.</p>
 
-{{#highlight 'haskell'}}
+{% highlight haskell %}
 fmap :: Functor f => (a -> b) -> f a -> f b
-{{/highlight}}
+{% endhighlight %}
 
 <p>Although yes, the implementation of <code class="inline">fmap</code> for functions and lists are indeed different.</p>

@@ -1,5 +1,6 @@
 ---
 layout: post
+tags: post
 title:  "Structured data in environment variables"
 subtitle: "A straightforward way to store nested dictionaries and lists in environment variables"
 date: 2018-07-07 12:30:00
@@ -10,7 +11,7 @@ categories: software-engineering devops
 
 <p>However, for various reasons beyond the scope of this post, it was helpful to have <em>structured</em> data stored in the environment: lists, dictionaries, and even lists of dictionaries. So when the application runs, it should be able to extract this and get something that looks like:</p>
 
-{{#highlight 'python'}}
+{% highlight python %}
 config = {
     "FOO": [{
         "BAR": "setting-1",
@@ -25,7 +26,7 @@ config = {
     ],
     "BILL": "setting-7",
 }
-{{/highlight}}
+{% endhighlight %}
 
 <p>This could be done by encoding such a structure into a single string, perhaps using JSON, throwing it into a single environment variable, and decoding it in the application. However, this would be fairly painful to edit and difficult to debug in many situations.</p>
 
@@ -49,10 +50,10 @@ export BILL=setting-7
 
 <p>and to convert this list of environment variables to nested Python dictionaries and lists, you can use <a href="https://gist.github.com/michalc/59efee4bde412d137367d44049df8924">normalise_environment.py</a>:</p>
 
-{{#highlight 'python'}}
+{% highlight python %}
 import os
 config = normalise_environment(os.environ)
-{{/highlight}}
+{% endhighlight %}
 
 <p>This way of incorporating structure into environment variables has some nice properties.</p>
 

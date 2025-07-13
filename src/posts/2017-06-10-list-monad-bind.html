@@ -1,5 +1,6 @@
 ---
 layout: post
+tags: post
 title:  "The list monad's bind"
 subtitle: "It can map, filter, and locally transform a list"
 date: 2017-06-10 10:00:00
@@ -9,10 +10,10 @@ categories: haskell monad
 
 <p>The word monad can be seen as scary, but you don't particularly need to worry about what it means in the general case in order to use the implementations of <code class="inline">&gt;&gt;=</code> (bind). For example, the list monad, where <code class="inline">&gt;&gt;=</code> is defined as below.</p>
 
-{{#highlight 'haskell'}}
+{% highlight haskell %}
 (>>=) :: [a] -> (a -> [a]) -> [a]
 xs >>= k = join (fmap k xs)
-{{/highlight}}
+{% endhighlight %}
 
 <p>When evaluating <code class="inline">&gt;&gt;=</code>, each element of <code class="inline">xs</code> is passed to <code class="inline">k</code>, which returns a list, and then the lists from each invocation of <code class="inline">k</code> are concatanated back together for the final value. This means that <code class="inline">&gt;&gt;=</code> can be used as an alternative to <code class="inline">filter</code>, <code class="inline">map</code>, or be used for local transformations of the list, such as repeating each element.</p>
 
@@ -20,37 +21,37 @@ xs >>= k = join (fmap k xs)
 
 <p>Often you would like to filter a list based on a predicate. This can be done with <code class="inline">&gt;&gt;=</code> as below.</p>
 
-{{#highlight 'haskell'}}
+{% highlight haskell %}
 filtered = list >>= \x -> if predicate x then [x] else []
-{{/highlight}}
+{% endhighlight %}
 
 <p>This is equivalent to the below use of <code class="inline">filter</code>.</p>
 
-{{#highlight 'haskell'}}
+{% highlight haskell %}
 filtered = filter predicate list
-{{/highlight}}
+{% endhighlight %}
 
 <h3>As a map</h3>
 
 <p><code class="inline">&gt;&gt;=</code> can also be used to map a function over the elements of a list, i.e. end up with a list of the same length, but each element has been passed through another function. An example of this is below.</p>
 
-{{#highlight 'haskell'}}
+{% highlight haskell %}
 mapped = list >>= return . mapper
-{{/highlight}}
+{% endhighlight %}
 
 <p>This is equivalent to just using <code class="inline">map</code>.</p>
 
-{{#highlight 'haskell'}}
+{% highlight haskell %}
 mapped = map mapper list
-{{/highlight}}
+{% endhighlight %}
 
 <h3>As a local transform</h3>
 
 <p>The cases where <code class="inline">>&gt;&gt;=</code> shines are those that can't be achieved using a single higher-order function. For example, repeating each element twice in a list.</p>
 
-{{#highlight 'haskell'}}
+{% highlight haskell %}
 repeated = list >>= \x -> [x, x]
-{{/highlight}}
+{% endhighlight %}
 
 <h3>Should I use <code class="inline">&gt;&gt;=</code>?</h3>
 

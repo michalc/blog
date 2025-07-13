@@ -1,5 +1,4 @@
 .DS_Store
-_environment.sh
-build
+_site
 node_modules
 

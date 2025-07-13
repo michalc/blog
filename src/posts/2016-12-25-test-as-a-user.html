@@ -1,5 +1,6 @@
 ---
 layout: post
+tags: post
 title:  "E2E Tests: Test as a user would"
 subtitle: "Make your E2E tests less of a time-sink"
 date: 2016-12-25 10:00:00
@@ -28,43 +29,43 @@ categories: angularjs e2e
 
 <p>Instead, consider using minimal CSS or XPath selectors to pick elements as close as possible to how a user would, that would survive internal refactorings. For example, the first <code class="inline">table</code> after a <code class="inline">h2</code> element with text content "Section 1".</p>
 
-{{#highlight 'javascript'}}
+{% highlight js %}
 table = element(by.xpath('//h2[text()="Section 1"]/following::table[1]'))
-{{/highlight}}
+{% endhighlight %}
 
 <p>Or, if you have used a custom element for your UI widget directives, the first <code class="inline">&lt;my-widget&gt;&lt;/my-widget&gt;</code> in the first <code class="inline">&lt;nav&gt;&lt;/nav&gt;</code> of the page.<p>
 
-{{#highlight 'javascript'}}
+{% highlight js %}
 widget = element(by.xpath('//nav[1]//my-widget[1]'))
-{{/highlight}}
+{% endhighlight %}
 
 <p>Consider how specific you want the selectors to be. If you have only one  <code class="inline">my-widget</code> in the page, you can be more minimal in the selector.</p>
 
-{{#highlight 'javascript'}}
+{% highlight js %}
 widget = element(by.xpath('//my-widget'))
-{{/highlight}}
+{% endhighlight %}
 
 <p>This makes the test less fragile to moving the element around the page. If it's crucial to test where this is in the page, you could always have an explicit assertion for that, perhaps in a separate test.</p>
 
 <p>Another technique is to choose elements using ARIA roles.</p>
 
-{{#highlight 'javascript'}}
+{% highlight js %}
 dialog = element(by.css('[role="dialog"]'))
-{{/highlight}}
+{% endhighlight %}
 
 <p>This has the handy benefit of gently pushing you to add accessiblity attributes.</p>
 
 <p>Another technique is selecting elements using <code class="inline">cssContainingText</code>, say to find <code class="inline">button</code> that also has the text "Go to stage 2".
 
-{{#highlight 'javascript'}}
+{% highlight js %}
 button = element(by.cssContainingText('button', 'Go to stage 2'))
-{{/highlight}}
+{% endhighlight %}
 
 <p>And as a last, but perhaps still common, resort, using a plain class.</p>
 
-{{#highlight 'javascript'}}
+{% highlight js %}
 message = element(by.css('.message'))
-{{/highlight}}
+{% endhighlight %}
 
 <p>If using classes I recommend considering that they are as semantic as possible. This isn't just to make the HTML "nice": it's so that the tests continue to pass as long as the element behaves as it should, independent of any changes or internal refactoring or renaming of non-sematic (with respect to the UI) elements on the page.</p>
 
@@ -76,12 +77,12 @@ message = element(by.css('.message'))
 
 <p>Instead, wait for changes in the page elements to appear on the screen. You can do this explicitly in your first few tests, but then you might want to factor the waiting out once you are clear what you're waiting for and commonality between the cases is clear. Your tests will be less flakey to changes you might make in the application. Even, if you eventually decide to swap out Angular!</p>
 
-{{#highlight 'javascript'}}
+{% highlight js %}
 browser.ignoreSynchronization = true;
 browser.wait(function () {
    return element(by.css('[role="dialog"]')).isPresent()
 });
-{{/highlight}}
+{% endhighlight %}
 
 <p>Of course, if you're not using what Protractor builds on top of Selenium, then I would seriously consider just using plain Selenium, or a different framework like <a href="http://webdriver.io/">WebdriverIO</a>.</p>
 

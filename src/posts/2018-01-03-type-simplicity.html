@@ -1,5 +1,6 @@
 ---
 layout: post
+tags: post
 title:  "Type simplicity"
 subtitle: "If you can't have type safety, have the next best thing"
 date: 2018-01-04 20:00:00
@@ -18,9 +19,9 @@ image-width: 1024
 
 <p>They are types that have two (or more) cases. For example, in Haskell, you have to be explicit, via a bit of effort, as to "which" type is used. A basic situation is using <code class="inline">Either</code>, which allows a <code class="inline">Left</code> type and a <code class="inline">Right</code> type:</p>
 
-{{#highlight 'haskell'}}
+{% highlight haskell %}
 a = if condition then Left 3 else Right "three"
-{{/highlight}}
+{% endhighlight %}
 
 <p>In this case, <code class="inline">a</code> would have the type <code class="inline">Either Int String</code>. [This is slightly inaccurate due to typeclasses, but this isn't relevant here.]</p>
 
@@ -28,29 +29,29 @@ a = if condition then Left 3 else Right "three"
 
 <p>For example, in Python, you can write:</p>
 
-{{#highlight 'python'}}
+{% highlight python %}
 if condition:
   a = 3
 else:
   a = "three"
-{{/highlight}}
+{% endhighlight %}
 
 <p>where the type of <code class="inline">a</code> would be <code class="inline">Union[int,string]</code> (using Python's type annotation syntax). The similar Javascript code:</p>
 
-{{#highlight 'javascript'}}
+{% highlight js %}
 var a;
 if (condition) {
   a = 3;
 } else {
   a = "three";
 }
-{{/highlight}}
+{% endhighlight %}
 
 <p>would result in the type of <code class="inline">a</code> being the union type <code class="inline">number | string</code> (using Flow's type annotation syntax).</p>
 
 <p>A more complex, but more realistic example, would be an object with differerent keys:</p>
 
-{{#highlight 'javascript'}}
+{% highlight js %}
 var obj = {}
 if (condition_1) {
   obj.key_1 = "value_1";
@@ -61,11 +62,11 @@ if (condition_2) {
 if (condition_3) {
   obj.key_2 = "value_3";
 }
-{{/highlight}}
+{% endhighlight %}
 
 <p>Slightly shockingly, this is a union of 8 types:</p>
 
-{{#highlight 'javascript'}}
+{% highlight js %}
 {}
 | {key_1: string}
 | {key_1: string, key_2: string}
@@ -74,7 +75,7 @@ if (condition_3) {
 | {key_2: string}
 | {key_2: string, key_3: string}
 | {key_3: string}
-{{/highlight}}
+{% endhighlight %}
 
 <p>[You can write a similar type more concisely in Flow. The types are written out here to make clear all the different cases.]</p>
 
@@ -82,26 +83,26 @@ if (condition_3) {
 
 <p>These are a common union type that crops up in code. In Haskell again you have to be explicit adding a <code class="inline">Just</code> to wrap a value:</p>
 
-{{#highlight 'haskell'}}
+{% highlight haskell %}
 a = if condition then Just 3 else Nothing
-{{/highlight}}
+{% endhighlight %}
 
 <p>However in Python you can just set the values as desired,</p>
 
-{{#highlight 'python'}}
+{% highlight python %}
 a = None
 if condition:
   a = 3
-{{/highlight}}
+{% endhighlight %}
 
 <p>where the type would be <code class="inline">Union[int, None]</code> or more concisely <code class="inline">Optional[int]</code>. Similarly you write in Javascript:</p>
 
-{{#highlight 'javascript'}}
+{% highlight js %}
 var a = null;
 if (condition) {
   a = 3;
 }
-{{/highlight}}
+{% endhighlight %}
 
 <p>where the Flow type annotation would be <code class="inline">?number</code>.</p>
 
@@ -109,10 +110,10 @@ if (condition) {
 
 <p>It is common to use optional arguments to function that have a default of None:</p>
 
-{{#highlight 'python'}}
+{% highlight python %}
 def my_func(a=None):
   ...
-{{/highlight}}
+{% endhighlight %}
 
 <p>You should be conscious of the fact that, unless <code class="inline">None</code> is the <em>only</em> value ever passed, the arguments will be of a union type.</p>
 
@@ -120,10 +121,10 @@ def my_func(a=None):
 
 <p>In imperitive languages, it's often possible to only sometimes define a variable. For example <code class="inline">the_filter</code> is only sometimes defined below.</p>
 
-{{#highlight 'python'}}
+{% highlight python %}
 if condition:
   the_filter = filter_function
-{{/highlight}}
+{% endhighlight %}
 
 <p>In Python, it would causes a runtime error if you try to access the variable when it's not defined. However, it's useful to keep in mind that there are 2 cases, so the type of the variable can be usefully classed as a union, of the defined and not defined cases.</p>
 
@@ -138,7 +139,7 @@ if condition:
 
 <p>For example, if you're adding a feature where an existing list is filtered by a filter based on some conditions, you may have written:</p>
 
-{{#highlight 'python'}}
+{% highlight python %}
 selected_filter = None
 if condition_1:
   selected_filter = filter_function_1
@@ -149,18 +150,18 @@ if selected_filter is not None:
   data_filtered = filter(data, selected_filter)
 else:
   data_filtered = data
-{{/highlight}}
+{% endhighlight %}
 
 <p>The type of <code class="inline">selected_filter</code> would be <code class="inline">Union[function, None]</code>. You can rewrite this to always set a filter, using a constant function for the original case:</p>
 
-{{#highlight 'python'}}
+{% highlight python %}
 selected_filter = \
   filter_function_1 if condition_1 else \
   filter_function_2 if condition_2 else \
   lambda x: True
 
 data_filtered = filter(data, selected_filter)
-{{/highlight}}
+{% endhighlight %}
 
 <p>In this version, the type of <code class="inline">selected_filter</code> would just be <code class="inline">function</code>. There are fewer cases in the code, all things being equal, this makes the code easier to reason about.</p>
 

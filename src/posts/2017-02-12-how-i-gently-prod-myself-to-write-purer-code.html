@@ -1,5 +1,6 @@
 ---
 layout: post
+tags: post
 title:  "Avoid stateful variables"
 subtitle: "How I gently prod myself to write purer code"
 date: 2017-02-12 10:00:00
@@ -19,17 +20,17 @@ categories: programming pure
 
 <p>What I mean by stateful variable is a variable whose value changes once set. This include simple re-assignment,</p>
 
-{{#highlight 'python'}}
+{% highlight python %}
 a = f()
 a = g(a)
-{{/highlight}}
+{% endhighlight %}
 
 <p>but it also includes calls that change the internal state of an object after it has been created.</p>
 
-{{#highlight 'python'}}
+{% highlight python %}
 a = MyClass()
 a.setFoo('bar')
-{{/highlight}}
+{% endhighlight %}
 
 <p>Both of these mean there is a state that changes over time in the code. It might be short-lived, just in a single function, but it can still make the code harder to reason about. There is no, easily determined, single expression that can replace a stateful variable wherever it is used. You have to think about the entire history of the variable, and what caused it to change. Using a more technical term, stateful variables cannot be used in a referentially transparent way.</p>
 
@@ -39,81 +40,81 @@ a.setFoo('bar')
 
 <p>A way to avoid state<em>ful</em> variables is to declare more state<em>less</em> variables. These are variables that don't change once set. For example,</p>
 
-{{#highlight 'python'}}
+{% highlight python %}
 a = f()
 a = g(a)
-{{/highlight}}
+{% endhighlight %}
 
 <p>could become as below.</p>
 
-{{#highlight 'python'}}
+{% highlight python %}
 a = f()
 b = g(a)
-{{/highlight}}
+{% endhighlight %}
 
 <p>This might be a bit more complex if you have branching involved.</p>
 
-{{#highlight 'python'}}
+{% highlight python %}
 a = f()
 if test():
   a = g(a)
-{{/highlight}}
+{% endhighlight %}
 
 <p>This above could become as below.</p>
 
-{{#highlight 'python'}}
+{% highlight python %}
 a = f()
 b = g(a) if test() else a
-{{/highlight}}
+{% endhighlight %}
 
 <p>Or, if you can change <code class="inline">g</code>, it might make sense for it to handle a boolean,</p>
 
-{{#highlight 'python'}}
+{% highlight python %}
 a = f()
 b = g(a, test())
-{{/highlight}}
+{% endhighlight %}
 
 <p>or even for it to call a function that returns a boolean.</p>
 
-{{#highlight 'python'}}
+{% highlight python %}
 a = f()
 b = g(a, test)
-{{/highlight}}
+{% endhighlight %}
 
 <h3>Alternative 2: Declare fewer variables by inlining</h3>
 
 <p>A simple technique is just to not use as many variables. The code</p>
 
-{{#highlight 'python'}}
+{% highlight python %}
 a = f()
 a = g(a)
-{{/highlight}}
+{% endhighlight %}
 
 <p>could just be as below.</p>
 
-{{#highlight 'python'}}
+{% highlight python %}
 a = g(f())
-{{/highlight}}
+{% endhighlight %}
 
 <p>A more horrible example is if you have a stateful variable that depends on another stateful variable.</p>
 
-{{#highlight 'python'}}
+{% highlight python %}
 condition = condition_1()
 if condition and condition_2():
   condition = condition_3() 
 a = f()
 if condition:
   a = g(a)
-{{/highlight}}
+{% endhighlight %}
 
 <p>This abomination is equivalent to the below, assuming all functions have no side-effects.</p>
 
-{{#highlight 'python'}}
+{% highlight python %}
 if (condition_1() and not condition_2()) or (condition_1() and condition_2() and condition_3())
   a = g(f())
 else:
   a = f()
-{{/highlight}}
+{% endhighlight %}
 
 <p>Yes, there is a little bit of duplication. but I wouldn't fear this, especially for such a tiny amount of duplication. It's case-dependent, but it may well be worth seeing exactly the cases certain code is run, and this might mean a little bit of duplication.</p>
 
@@ -124,15 +125,15 @@ else:
 
 <h3>Alternative 3: Create objects as needed rather than changing them</h3>
 
-{{#highlight 'python'}}
+{% highlight python %}
 a = MyClass()
 if test():
   a.setFoo('mary')
-{{/highlight}}
+{% endhighlight %}
 
-{{#highlight 'python'}}
+{% highlight python %}
 a = MyClass(foo='mary' if test() else None)
-{{/highlight}}
+{% endhighlight %}
 
 <p>This code might not be strictly equivalent, but I would put in the effort to make sure MyClass works with <code class="inline">foo</code> being <code class="inline">None</code>.</p>
 
@@ -144,7 +145,7 @@ a = MyClass(foo='mary' if test() else None)
 
 <p>In some cases you have a "pipeline" where a value is repeatedly modified for various reasons. For example a list of filters that are each applied conditionally.</p>
 
-{{#highlight 'python'}}
+{% highlight python %}
 a = f()
 
 if condition_1():
@@ -160,11 +161,11 @@ if condition_4():
   a = filter_4(a)
 
 filtered = a
-{{/highlight}}
+{% endhighlight %}
 
 <p>In this case, you can construct a structure of functions, and run them using a reduce.</p> 
 
-{{#highlight 'python'}}
+{% highlight python %}
 a = f()
 
 def conditional_filter(condition_filter, value):
@@ -178,7 +179,7 @@ condition_filters = [
 ]
 
 filtered = reduce(conditional_filter, condition_filters, a)
-{{/highlight}}
+{% endhighlight %}
 
 <h3>Going overboard</h3>
 

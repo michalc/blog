@@ -1,5 +1,6 @@
 ---
 layout: post
+tags: post
 title:  "Haskell do notation protects you from parentheses"
 subtitle: "Nested monads and function application $ do not play well with bind >>="
 date: 2017-04-21 10:00:00
@@ -11,7 +12,7 @@ categories: haskell monad
 
 <p>However, I have found a small stumping block in my quest for de-sugaring. Function application <code class="inline">$</code> and nested <code class="inline">do</code> notation results in quite clear imperative-style code. For example, E2E tests using <a href="https://hackage.haskell.org/package/hspec-webdriver-1.2.0/docs/Test-Hspec-WebDriver.html">Test.Hspec.Webdriver</a>.</p>
 
-{{#highlight 'haskell'}}
+{% highlight haskell %}
 main :: IO ()
 main = hspec $
   describe "E2E smoke test" $ do
@@ -26,7 +27,7 @@ main = hspec $
         openPage "http://web_test/test/files/index.html"
         e <- findElem $ ByCSS "p strong"
         e `shouldHaveText` "HTML"
-{{/highlight}}
+{% endhighlight %}
 
 <p>Desugaring isn't just a case of removing <code class="inline">do</code> and changing the line breaks to <code class="inline">&gt;&gt;</code> or <code class="inline">v &lt;- expression</code> to <code class="inline">expression &gt;&gt;= \v -&gt;</code>. It turns out that
 
@@ -46,7 +47,7 @@ main = hspec $
 
 <p>This means that the above E2E tests, but without <code class="inline">do</code> notation, look like the following.</p>
 
-{{#highlight 'haskell'}}
+{% highlight haskell %}
 main :: IO ()
 main = hspec $
   describe "E2E smoke test" $
@@ -61,6 +62,6 @@ main = hspec $
         (openPage "http://web_test/test/files/index.html" >>
         findElem (ByCSS "p strong") >>= \e ->
         e `shouldHaveText` "HTML"))
-{{/highlight}}
+{% endhighlight %}
 
 <p>Not the end of the world of course, but certainly a point in the <code class="inline">do</code>-notation column for clarity, and certainly conciseness.</p>

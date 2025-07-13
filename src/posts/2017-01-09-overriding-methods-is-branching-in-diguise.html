@@ -1,5 +1,6 @@
 ---
 layout: post
+tags: post
 title:  "Overriding methods is spaghetti in disguise"
 subtitle: "An argument for composition over inheritance"
 date: 2017-01-09 10:00:00
@@ -9,7 +10,7 @@ categories: oop patterns
 
 <p>A common pattern I have seen is having some default behaviour in a base class, that is sometimes overwritten in subclasses, and sometimes not.</p>
 
-{{#highlight 'python'}}
+{% highlight python %}
 class Base(object):
   def colour(self):
     return "red"
@@ -26,7 +27,7 @@ print a.colour()  #  "red"
 
 b = ClassB()
 print b.colour()  #  "green"
-{{/highlight}}
+{% endhighlight %}
 
 <p>The usual reason for this is that the Base case was written first, and then new behaviour was needed that didn't quite match up with the original.</p>
 
@@ -34,7 +35,7 @@ print b.colour()  #  "green"
 
 <p>The simple case above isn't too bad since it's, well, simple. A more complex case however, is when you have more subclasses, more methods calling each other, and each subclass overriding a different subset of the base methods.</p>
 
-{{#highlight 'python'}}
+{% highlight python %}
 class Base(object):
   def colour(self):
     return "red"
@@ -64,11 +65,11 @@ print b.size()    #  "medium"
 c = ClassC()
 print c.colour()  #  "red"
 print c.size()    #  "small"
-{{/highlight}}
+{% endhighlight %}
 
 <p>Or, a similar pattern, but utilizing the fact that <a href="http://inspirated.com/2009/05/03/all-methods-in-python-are-effectively-virtual">all methods in Python are effectively virtual</a>.<p>
 
-{{#highlight 'python'}}
+{% highlight python %}
 class Base(object):
   def colour(self):
     return self._colour()
@@ -95,7 +96,7 @@ print b.colour()  #  "green"
 
 c = ClassC()
 print c.colour()  #  "blue"
-{{/highlight}}
+{% endhighlight %}
 
 <p>At first glance, the code doesn't look like traditional spaghetti: there are no if statements, no booleans being passed around, no optional arguments, and no global variables. It all <em>looks</em> quite clean.</p>
 
@@ -129,7 +130,7 @@ print c.colour()  #  "blue"
 
 <p>They depend on the code in question, but they all involve moving the code out from the base class, so that each subclass <em>explicitly</em> states what it uses. For example the code could just be in pure functions not associated with any particular class...</p>
 
-{{#highlight 'python'}}
+{% highlight python %}
 def red():
   ...
 
@@ -152,11 +153,11 @@ class ClassB(object):
 
   def size(self):
     return medium()
-{{/highlight}}
+{% endhighlight %}
 
 <p>... or if they do need to be part of a class, they could be composed at import time... </p>
 
-{{#highlight 'python'}}
+{% highlight python %}
 def red():
   ...
 
@@ -180,11 +181,11 @@ class ClassA(Base):
 class ClassB(Base):
   _color = green
   _size = medium
-{{/highlight}}
+{% endhighlight %}
 
 <p>... or without any inheritance involved...</p>
 
-{{#highlight 'python'}}
+{% highlight python %}
 def red():
   ...
 
@@ -213,11 +214,11 @@ class ClassB(object):
 
   def size(self):
     return self.medium
-{{/highlight}}
+{% endhighlight %}
 
 <p>... or even with just a single class that is wired up at runtime.</p>
 
-{{#highlight 'python'}}
+{% highlight python %}
 class Class(object):
   def __init__(self, colour, size):
     self._colour = colour
@@ -236,7 +237,7 @@ def blue():
   ...
 
 a = Class(colour=red, size=blue)
-{{/highlight}}
+{% endhighlight %}
 
 <p>The examples above all "wire up" functions to the classes/instances. However, you can use objects if you want or need to.</p>
 
@@ -254,7 +255,7 @@ a = Class(colour=red, size=blue)
 
 <p>If so, you have an option: deriving from one or multiple abstract base classes.</p>
 
-{{#highlight 'python'}}
+{% highlight python %}
 from abc import ABCMeta, abstractmethod
 
 class Colour(object):
@@ -273,11 +274,11 @@ class Size(object):
 
 class Class(Colour, Size):
   # Any of the options above
-{{/highlight}}
+{% endhighlight %}
 
 <p>C++ has something similar: you can define a class with only pure virtual functions.</p>
 
-{{#highlight 'cpp'}}
+{% highlight cpp %}
 class Colour {
 public:
   virtual void colour() = 0;
@@ -297,11 +298,11 @@ public:
     ...
   }
 }
-{{/highlight}}
+{% endhighlight %}
 
 <p>Java, although often encouraging of code reuse using inheritance, has quite nicely got pure abstract base classes built right into the language as interfaces.</p>
 
-{{#highlight 'java'}}
+{% highlight java %}
 interface Colour {
   public void colour();
 }
@@ -318,6 +319,6 @@ public class Class implements Colour, Size {
     ...
   }
 }
-{{/highlight}}
+{% endhighlight %}
 
 <p>That's it!</p>
