@@ -2,6 +2,7 @@ import path from "node:path";
 import sass from  "sass";
 import syntaxHighlight from "@11ty/eleventy-plugin-syntaxhighlight";
 import dateformat from 'dateformat';
+import htmlmin from "html-minifier-terser";
 
 export default function (eleventyConfig) {
     // Input directory
@@ -64,5 +65,17 @@ export default function (eleventyConfig) {
     });
     eleventyConfig.addFilter("isodate", function(date) {
         return (new Date(date)).toISOString();
+    });
+
+    // Minify html
+    eleventyConfig.addTransform("htmlmin", function (content) {
+        if (!(this.page.outputPath || "").endsWith(".html")) return content;
+
+        return htmlmin.minify(content, {
+            useShortDoctype: true,
+            removeComments: true,
+            collapseWhitespace: true,
+            removeAttributeQuotes: true,
+        });
     });
 };

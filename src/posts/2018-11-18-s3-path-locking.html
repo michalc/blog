@@ -655,7 +655,7 @@ async def read(path):
 
 <h4>Conditions</h4>
 
-<p>Let \(L=\{L_i\}_{i \in S} \) for some \(S \subset \mathbb{Z} \) be a set of independent locks, each with at least one mode, and let \(<_L\) be a strict total order relation between elements of \(L\). Let \(T = \{T_i\}_0^{M-1}\) for some \(M \in \mathbb{N} \) be a set of tasks, where each acquires locks in \(L\) in a strictly increasing order according to \(<_L\), and at any given moment is waiting to acquire at most one lock.</p>
+<p>Let \(L=\{L_i\}_{i \in S} \) for some \(S \subset \mathbb{Z} \) be a set of independent locks, each with at least one mode, and let \(&lt;_L\) be a strict total order relation between elements of \(L\). Let \(T = \{T_i\}_0^{M-1}\) for some \(M \in \mathbb{N} \) be a set of tasks, where each acquires locks in \(L\) in a strictly increasing order according to \(&lt;_L\), and at any given moment is waiting to acquire at most one lock.</p>
 
 <h4>Statement</h4>
 
@@ -665,29 +665,29 @@ async def read(path):
 
 <p>Assume \(T\) are in deadlock. We'll show that this leads to a contradiction.</p>
 
-<p>Without loss of generality, we index the \( \{L_i\}_{i \in S} \) such that they form strictly increasing sequence according to \(<_L\)</p>
+<p>Without loss of generality, we index the \( \{L_i\}_{i \in S} \) such that they form strictly increasing sequence according to \(&lt;_L\)</p>
 
-\[ L_0 <_L L_1 <_L \ldots .\]
+\[ L_0 &lt;_L L_1 &lt;_L \ldots .\]
 
 <p>By <a href="https://en.wikipedia.org/wiki/Deadlock#Necessary_conditions">definition of deadlock</a>, \(M \geq 2\), each \(T_i\) has acquired at least one a lock, and each is waiting for a lock held by another task in \( T \). For each \(T_i\), let \( A_i \) be the indexes of the locks that \(T_i\) has acquired, and let \(w_i\) be the index that it waits for. Since all tasks acquire their locks in increasing order,</p>
 
-\[ L_a <_L L_{w_i}, \forall a \in A_i \]
+\[ L_a &lt;_L L_{w_i}, \forall a \in A_i \]
 
 <p>or equivalently</p>
 
-\[ a < w_i, \forall a \in A_i \tag{1}\label{eq:a} .\]
+\[ a &lt; w_i, \forall a \in A_i \tag{1}\label{eq:a} .\]
 
-<p>Without loss of generality, we index the tasks such that each \( T_i \) is waiting for a lock held by \( T_{i+1 \pmod{M} } \). So each \(w_i \in A_{i+1 \pmod{M}}\), and so by \eqref{eq:a} \(w_i <  w_{i + 1 \pmod{M}} \). This is true for all \( i \in {0 \ldots M-1} \), and so</p>
+<p>Without loss of generality, we index the tasks such that each \( T_i \) is waiting for a lock held by \( T_{i+1 \pmod{M} } \). So each \(w_i \in A_{i+1 \pmod{M}}\), and so by \eqref{eq:a} \(w_i &lt;  w_{i + 1 \pmod{M}} \). This is true for all \( i \in {0 \ldots M-1} \), and so</p>
 
-\[ w_0 < w_{1 \pmod{M}} < \ldots < w_{M-1\pmod{M}} < w_{M \pmod{M}} \]
+\[ w_0 &lt; w_{1 \pmod{M}} &lt; \ldots &lt; w_{M-1\pmod{M}} &lt; w_{M \pmod{M}} \]
 
 <p>and therefore</p>
 
-\[ w_0 < w_{M \pmod{M}} .\]
+\[ w_0 &lt; w_{M \pmod{M}} .\]
 
 <p>However, \(M \pmod{M} = 0\), which implies
 
-\[ w_0 < w_0 .\]
+\[ w_0 &lt; w_0 .\]
 
 <p>This is a contradiction. \(\square\)</p>
 
