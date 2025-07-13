@@ -36,13 +36,13 @@ export default function (eleventyConfig) {
     });
 
     // Static assets
-    eleventyConfig.addPassthroughCopy("**/*.svg");
-    eleventyConfig.addPassthroughCopy("**/*.jpeg");
-    eleventyConfig.addPassthroughCopy("**/*.png");
-    eleventyConfig.addPassthroughCopy("**/*.woff");
-    eleventyConfig.addPassthroughCopy("**/*.otf");
-    eleventyConfig.addPassthroughCopy("**/*.js");
-    eleventyConfig.addPassthroughCopy("**/*.ico");
+    eleventyConfig.addPassthroughCopy("src/**/*.svg");
+    eleventyConfig.addPassthroughCopy("src/**/*.jpeg");
+    eleventyConfig.addPassthroughCopy("src/**/*.png");
+    eleventyConfig.addPassthroughCopy("src/**/*.woff");
+    eleventyConfig.addPassthroughCopy("src/**/*.otf");
+    eleventyConfig.addPassthroughCopy("src/**/*.js");
+    eleventyConfig.addPassthroughCopy("src/**/*.ico");
 
     // Data
     eleventyConfig.addGlobalData("siteName", "Michal Charemza");
