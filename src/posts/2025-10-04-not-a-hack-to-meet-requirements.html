@@ -1,0 +1,63 @@
+---
+layout: post
+tags: post
+title:  "It's not a hack to satisfy known requirements"
+subtitle: "And you should even take pride in doing less"
+date: 2025-10-04 14:10:00
+categories: agile over-engineering
+---
+
+<p>I so frequently see extremely capable software engineers waste their skills with over-engineering, and it makes me feel sad. Here are some tips to help avoid the over-engineering trap, and so also to help keep me happy 😀.</p>
+
+<h3>Find out what is seen as valuable</h3>
+
+<p>We're not here to write code, but to solve problems. Find exactly what problems you are expected to solve and focus on those. Remember that code that clearly solves just those problems is in no way a hack.</p>
+
+<h3>Deliver value as often as possible to get feedback</h3>
+
+<p>Frequently delivering value is a great way to avoid over-engineering. It basically gives you regular course correction towards appropriate-engineering, because you quickly and frequently find out if there is no value for the code you're writing.</p>
+
+<p>I generally argue for at least daily delivery of value; see the <a href="https://delivervaluedaily.dev/">Deliver value daily" manifesto</a> (which I co-wrote).</p>
+
+<h3>Write and maintain integration tests that survive refactoring</h3>
+
+<p>One of the worst pieces of advice that I ever received was that every function should be unit tested. This is the path to designing code that you never want to change because no matter what change you make, tests will break, and thus leads you to trying to handle every possible future up-front. Please, I beg you, no.</p>
+
+<p>Instead, write higher level tests close to the client/user facing behaviour that actually give you protection against breaking things unintentionally, and so free to you make changes later once you have evidence they're needed.</p>
+
+<h3>Avoid Object-Oriented Programming, or at least be extra careful with it</h3>
+
+<p>Object-oriented code is more susceptible to over-engineering if you're not careful, because every object has its own set of responsibilities on what it looks after, often quite divorced from the actual data flows in your application. So many problems have only a handful of possible cases, and yet if you look at all the classes and member functions involved in typical object-oriented solutions, they're coded up as though there were many orders of magnitude more cases, which makes them difficult to optimise for the actual cases. Inheritance-based resuse is also notoriously hard to change, and so pushes you to design the "perfect" system up front.</p>
+
+<p>Don't be scared of keeping data and code separate via free functions, especially pure functions. Basic data-in data-out patterns often result in very clear separation of responsibilities, and they are often easy to refactor.</p>
+
+<h3>Remember you can still add in that complication tomorrow</h3>
+
+<p>Train yourself to realise you can always add in that complication tomorrow if you judge that it's still needed tomorrow. Sometimes the answer will be yes, but so often the answer will be no, and that's a great thing.</p>
+
+<p>This is much easier when high-level integration tests are in place.</p>
+
+<h3>Be concious of what makes you over-engineer</h3>
+
+<p>Run a search for <a href="https://www.google.com/search?q=what+causes+software+over-engineering">"What causes software over-engeneering?"</a> and see which apply to you. Self-awareness is half the battle.</p>
+
+<h3>Get yourself a better definition of perfection</h3>
+
+<p>If you think you're fighting against a drive for perfectionism, give in to the drive but instead find a better definition of perfection. This is basically mine:</p>
+
+<blockquote>
+  <p>Perfection is achieved, not when there is nothing more to add, but when there is nothing left to take away.</p>
+  <cite>Antoine de Saint-Exupéry</cite>
+</blockquote>
+
+<h3>When <em>should</em> you create stuff just in case?</h3>
+
+<p>This all being said, there are times when you should create something just in case, and that's when all three of the following are satisfied:</p>
+
+<ol>
+  <li>There is a reasonable chance it will be useful later</li>
+  <li>It will be difficult to add in later</li>
+  <li>It won't meanginfully slow down the meeting of more likely requirements</li>
+</ol>
+
+<p>To determine if all those hold true, you have to have an idea of what features are likely going to be needed. This is beyond the scope of code and much more do with people—users or stakeholders—that you will have to speak to. You can always choose to assume without validating the assumption, but doing so will almost definitely be due to arrogance or fear. Do not make engineering decisions because of arrogance or fear!</p>
