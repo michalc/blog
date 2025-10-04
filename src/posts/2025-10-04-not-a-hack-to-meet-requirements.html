@@ -27,7 +27,7 @@ categories: agile over-engineering
 
 <h3>Avoid Object-Oriented Programming, or at least be extra careful with it</h3>
 
-<p>Object-oriented code is more susceptible to over-engineering if you're not careful, because every object has its own set of responsibilities on what it looks after, often quite divorced from the actual data flows in your application. So many problems have only a handful of possible cases, and yet if you look at all the classes and member functions involved in typical object-oriented solutions, they're coded up as though there were many orders of magnitude more cases, which makes them difficult to optimise for the actual cases. Inheritance-based resuse is also notoriously hard to change, and so pushes you to design the "perfect" system up front.</p>
+<p>Object-oriented code is more susceptible to over-engineering if you're not careful, because every object has its own set of responsibilities on what it looks after, often quite divorced from the actual data flows in your application. So many problems have only a handful of possible cases, and yet if you look at all the classes and member functions involved in typical object-oriented solutions, they're coded up as though there were many orders of magnitude more cases, which makes them difficult to optimise for the actual cases. Inheritance-based reuse is also notoriously hard to change, and so pushes you to design the "perfect" system up front.</p>
 
 <p>Don't be scared of keeping data and code separate via free functions, especially pure functions. Basic data-in data-out patterns often result in very clear separation of responsibilities, and they are often easy to refactor.</p>
 
