@@ -1,0 +1,60 @@
+---
+layout: post
+tags: post
+title:  "I don't use the term technical debt"
+subtitle: "And neither should you"
+date: 2026-01-04 08:35:00
+categories: software communication
+---
+
+<p>I generally avoid referring to anything as technical debt. While not an <em>entirely</em> meaningless term, I suspect that in almost all contexts there are better things to say. In this post I argue why I think the term shouldn't be used, and what should be said instead.</p>
+
+<h3>It means too many things</h3>
+
+<p>I've heard the term technical debt being used for:</p>
+
+<ul class="fa-ul">
+  <li><i class="fa-li fa fa-caret-right"></i> Bugs that exist right now</li>
+  <li><i class="fa-li fa fa-caret-right"></i> Properties that risk introducing bugs with future development</li>
+  <li><i class="fa-li fa fa-caret-right"></i> Properties that risk slowing future development</li>
+  <li><i class="fa-li fa fa-caret-right"></i> Not having some form of quality assurance or tests</li>
+  <li><i class="fa-li fa fa-caret-right"></i> Not using a consistent architecture</li>
+  <li><i class="fa-li fa fa-caret-right"></i> Limits of scalability of a system in terms of users/usage</li>
+  <li><i class="fa-li fa fa-caret-right"></i> Things that mean security isn't as tight as it could be</li>
+  <li><i class="fa-li fa fa-caret-right"></i> Things that mean performance/efficiency isn't as good as it could be</li>
+  <li><i class="fa-li fa fa-caret-right"></i> Even just regular not-implemented user-facing features</li>
+</ul>
+
+<p>Putting all this together "technical debt" means virtually property of a system that can be improved in any way! It's far too vague to have meaningful conversations about it in general.</p>
+
+<h3>It has a ring of absolute-ness</h3>
+
+<p>The debt metaphor makes it sounds absolute: for a financial debt, who can argue that it exists and it has to be dealt with. But this is engineering dealing with humans, trade-offs and risks, all of which which can change over time when situations evolve or when information is revealed, and so very much <em>not</em> absolute.</p>
+
+<h3>You may even decide to never address it</h3>
+
+<p>Even if limiting to the what I think are the most typical definitions — properties of code that slow development or risk more bugs when code is changed — it would only involve a subset of all possible changes. If the need for those changes doesn't arise then you never realise the effect of the so-called debt. Or even if they do arise, you still might choose to not address the issue. This is where the debt metaphor really breaks down: other than by taking drastic actions, most of us can't choose to not pay back financial debt, but you certainly can choose to not "pay back" technical debt.</p>
+
+<h3>It can lead to wishful thinking</h3>
+
+<p>I think because the term debt sounds like it <em>will</em> be addressed, it can lead to wishful thinking, which itself leads to affecting decisions on what you do today. Veering slightly from the point of this post into avoiding "technical debt", I very rarely make a change that is contingent on a future task in order to be acceptable.</p>
+
+<h3>The term can sound so negative it can lead to over-engineering</h3>
+
+<p>On the other hand, I suspect sometimes technical debt sounds so negative, the avoidance of it can lead to over-engineering solutions, rather than considering the fact that if something is needed later, it often can and should be done later.</p>
+
+<h3>It's not obviously linked to real-world consequences</h3>
+
+<p>From what I know the term was coined to communicate technical concepts to non-technical people. But because the term is so vague, and I think still sounds quite technical, I think this ironically makes it harder to convince that things labelled (just) as "technical debt" have real-world consequences and so should be avoided or addressed.</p>
+
+<h3>It can suggest an ideal architecture independent of contraints</h3>
+
+<p>If you don't have the resources — for example time/knowledge/money — to make an architecture, then it's clearly not the perfect architecture for the situation at hand. If it can't exist, it's not ideal in any meaningful sense, so labelling non-achievement of such an architecture as "technical debt" can be a waste of words, time, or even emotions.</p>
+
+<h3>What to say instead?</h3>
+
+<p>Say the thing: bug, scalability limitation, performance issue (ideally with at least rough numbers), security issue (stating how severe or how it would be exploited), development productivity issue (around what specific classes of features), missing user-facing feature, lack of quality assurance, and ideally along with the consequences of not addressing it. It's such a clearer starting off point for discussions around if/when it should be addressed or not.</p>
+
+<p>For changes that allow you to <em>subsequently</em> address a need, for example some types of refactorings, make sure to say that need when talking about it: "doing X will allow us to easily or more safely do Y" for example. Make sure it's clear that you're aware that refactoring is often necessary, but is never an end unto itself.</p>
+
+<p>And finally, explain rather than apologise in almost all cases! Achieving requirements within contraints is something to be proud of, even if some decisions led to one of the many things that could be labelled as "technical debt". If you've not done X, Y, or Z because they weren't as high priority as other things, that is something to be feel good about, not guilty (as long as you haven't made it meaningfuly harder to do those things if/when they <em>are</em> needed). Apologise only if you've made a mistake and would not take the same steps next time.</p>
