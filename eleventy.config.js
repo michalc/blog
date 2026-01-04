@@ -1,6 +1,7 @@
 import path from "node:path";
 import sass from  "sass";
 import syntaxHighlight from "@11ty/eleventy-plugin-syntaxhighlight";
+import { feedPlugin } from "@11ty/eleventy-plugin-rss";
 import dateformat from 'dateformat';
 import htmlmin from "html-minifier-terser";
 
@@ -10,6 +11,26 @@ export default function (eleventyConfig) {
 
     // Syntax highlighting
     eleventyConfig.addPlugin(syntaxHighlight);
+
+    // Atom feed
+    eleventyConfig.addPlugin(feedPlugin, {
+        type: "atom",
+        outputPath: "/feed.xml",
+        collection: {
+            name: "post",
+            limit: 100,
+        },
+        metadata: {
+            language: "en",
+            title: "Michal Charemza",
+            subtitle: "Software, data, and cloud infrastructure engineer",
+            base: "https://charemza.name/",
+            author: {
+                name: "Michal Charemza",
+                email: "michal@charemza.name",
+            }
+        }
+    });
     
     // Sass
     eleventyConfig.addTemplateFormats("scss");
