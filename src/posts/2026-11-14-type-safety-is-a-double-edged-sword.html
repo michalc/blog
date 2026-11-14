@@ -63,6 +63,6 @@ save_result_to_database(result)
 
 <p>You now have a well-defined validation stage where you explicitly error out if data is not how you expect, you avoid saving bad data to the database, you still have a clear core function that doesn't deal with <code class="inline">None</code>, and the type checker is happy 🏆.</p>
 
-<p>In this case the type checker passes because it can interet the checks against <code class="inline">None</code>, but in more complex cases <a href="https://typing.python.org/en/latest/spec/narrowing.html#typeguard">TypeGuard</a> is a great tool that lets you introduce runtime checks that communicate to the type checker.</p>
+<p>In this case the type checker passes because it can interpret the checks against <code class="inline">None</code>, but in more complex cases <a href="https://typing.python.org/en/latest/spec/narrowing.html#typeguard">TypeGuard</a> is a great tool that lets you introduce runtime checks that communicate to the type checker.</p>
 
 <p>In summary, type safety is a great tool, but appeasing the type checker with no thought can not only waste time (or tokens 😜), but make your system worse if you do it the wrong way.</p>
