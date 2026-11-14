@@ -1,0 +1,68 @@
+---
+layout: post
+tags: post
+title: "Type safety is a double-edged sword (at least in Python)"
+subtitle: "Don't let type checkers push you to convert loud runtime errors to silent bugs"
+date: 2026-11-14 17:00:00
+categories: software type-safety 
+---
+
+<p>You've just written a calculation function that makes a calculation and saves it to a database:</p>
+
+{% highlight python %}
+def calculation(a: int, b: int) -> int:
+    return a + b
+
+result = calculation(data_a, data_b)
+save_result_to_database(result)
+{% endhighlight %}
+
+<p>And being the diligent Python developer you are, you run a type checker against it. And it errors:</p>
+
+<div class="highlight"><pre><code class="block">error: Argument 1 to "calculation" has incompatible type "int | None"; expected "int"
+error: Argument 2 to "calculation" has incompatible type "int | None"; expected "int</code></pre></div>
+
+<p>And so you change the function to make the type checker pass:</p>
+
+{% highlight python %}
+def calculation(a: int | None, b: int | None) -> int | None:
+	if a is None or b is None:
+		return None
+    return a + b
+
+result = calculation(data_a, data_b)
+save_result_to_database(result)
+{% endhighlight %}
+
+<p>This <em>might</em> be The Right Thing. You might want that <code class="inline">None</code> value in the database. But from my experience it is much more likely that what you have just done is convert what would have been a loud runtime error to a silent bug.</p>
+
+<p>This is not exactly a win for type safety.</p>
+
+<h3>What to do instead?</h3>
+
+<p>It's pretty much a mindset thing:</p>
+
+<ul class="fa-ul">
+  <li><i class="fa-li fa fa-caret-right"></i> Get into the mindset that failing loudly can be <em>much</em> better than marching forward silently. Don't let that type checker push you into hiding those runtime errors: it doesn't know the context, but you do.</li>
+  <li><i class="fa-li fa fa-caret-right"></i> If you don't know the context, for example if you're not sure if failing is better than marching foward, then find out. This might mean speaking to people.</li>
+  <li><i class="fa-li fa fa-caret-right"></i> Develop an aversion to complex types, especially <code class="inline">| None</code>. Or at least look at them with some suspicion.</li>
+</ul> 
+
+<p>So in the above example, look (maybe far) earlier in the processing than where the type checker is complaining, and deal with the <code class="inline">None</code> case there.</p>
+
+{% highlight python %}
+if data_a is None or data_b is None:
+    raise ValueError()	
+
+def calculation(a: int, b: int) -> int:
+    return a + b
+
+result = calculation(data_a, data_b)
+save_result_to_database(result)
+{% endhighlight %}
+
+<p>You now have a well-defined validation stage where you explicitly error out if data is not how you expect, you avoid saving bad data to the database, you still have a clear core function that doesn't deal with <code class="inline">None</code>, and the type checker is happy 🏆.</p>
+
+<p>In this case the type checker passes because it can interet the checks against <code class="inline">None</code>, but in more complex cases <a href="https://typing.python.org/en/latest/spec/narrowing.html#typeguard">TypeGuard</a> is a great tool that lets you introduce runtime checks that communicate to the type checker.</p>
+
+<p>In summary, type safety is a great tool, but appeasing the type checker with no thought can not only waste time (or tokens 😜), but make your system worse if you do it the wrong way.</p>
